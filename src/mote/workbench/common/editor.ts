@@ -8,6 +8,8 @@ import { URI } from 'vs/base/common/uri';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { IPathData } from 'vs/platform/window/common/window';
 
+export type GroupIdentifier = number;
+
 
 // Static values for editor contributions
 export const EditorExtensions = {

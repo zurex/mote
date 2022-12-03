@@ -5,6 +5,7 @@ import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import * as editorCommon from 'mote/editor/common/editorCommon';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 
 /**
  * Type of hit element with the mouse in the editor.
@@ -181,6 +182,19 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	 * @param payload Extra data to be sent to the handler.
 	 */
 	trigger(source: string | null | undefined, handlerId: string, payload: any): void;
+
+	/**
+	 * Get a contribution of this editor.
+	 * @id Unique identifier of the contribution.
+	 * @return The contribution or null if contribution not found.
+	 */
+	getContribution<T extends editorCommon.IEditorContribution>(id: string): T | null;
+
+	/**
+	 * Execute `fn` with the editor's services.
+	 * @internal
+	 */
+	invokeWithinContext<T>(fn: (accessor: ServicesAccessor) => T): T;
 }
 
 

@@ -51,6 +51,10 @@ export class StrikeAnnotation extends AbstractAnnotation implements IAnnotation 
 	type = AnnotationType.Strike;
 }
 
+export class CodeAnnotation extends AbstractAnnotation implements IAnnotation {
+	type = AnnotationType.Code;
+}
+
 export class LinkAnnotation implements IAnnotation {
 	type = AnnotationType.Link;
 
@@ -86,6 +90,12 @@ export namespace Annotation {
 		switch (type) {
 			case AnnotationType.Bold:
 				return new BoldAnnotation();
+			case AnnotationType.Italics:
+				return new ItalicsAnnotation();
+			case AnnotationType.Strike:
+				return new StrikeAnnotation();
+			case AnnotationType.Code:
+				return new CodeAnnotation();
 			case AnnotationType.Link:
 				return new LinkAnnotation(getSecondArrayInArray(annotation));
 			default:

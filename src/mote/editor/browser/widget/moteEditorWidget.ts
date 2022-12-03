@@ -5,7 +5,7 @@ import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { IDimension } from 'vs/editor/common/core/dimension';
 import { Emitter, Event, EventDeliveryQueue } from 'vs/base/common/event';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 import { EditorView, IOverlayWidgetData } from 'mote/editor/browser/editorView';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { OutgoingViewEventKind } from 'mote/editor/common/viewEventDispatcher';
@@ -196,6 +196,10 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 		this._onDidDispose.fire();
 
 		super.dispose();
+	}
+
+	public invokeWithinContext<T>(fn: (accessor: ServicesAccessor) => T): T {
+		return this.instantiationService.invokeFunction(fn);
 	}
 
 	addOverlayWidget(widget: editorBrowser.IOverlayWidget): void {
