@@ -399,6 +399,7 @@ export class ViewController extends Disposable {
 				transaction
 			);
 
+			// Markdown part
 			transaction.postSubmitActions.push(() => {
 				const transaction = Transaction.create(userId);
 				const contentChanged = Markdown.parse({
@@ -413,6 +414,9 @@ export class ViewController extends Disposable {
 				}
 				transaction.commit();
 			});
+
+			// Slash command
+
 		}
 	}
 

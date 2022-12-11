@@ -2,6 +2,7 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { CommandsRegistry, ICommandHandlerDescription } from 'mote/platform/commands/common/commands';
+import { IKeybindings } from 'mote/platform/keybinding/common/keybindingsRegistry';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { MenuId } from 'vs/platform/actions/common/actions';
@@ -19,6 +20,15 @@ export interface IEditorContributionDescription {
 
 //#region Command
 
+export interface ICommandKeybindingsOptions extends IKeybindings {
+	kbExpr?: ContextKeyExpression | null;
+	weight: number;
+	/**
+	 * the default keybinding arguments
+	 */
+	args?: any;
+}
+
 export interface ICommandMenuOptions {
 	menuId: MenuId;
 	group: string;
@@ -31,7 +41,7 @@ export interface ICommandMenuOptions {
 export interface ICommandOptions {
 	id: string;
 	precondition: ContextKeyExpression | undefined;
-	//kbOpts?: ICommandKeybindingsOptions | ICommandKeybindingsOptions[];
+	kbOpts?: ICommandKeybindingsOptions | ICommandKeybindingsOptions[];
 	description?: ICommandHandlerDescription;
 	menuOpts?: ICommandMenuOptions | ICommandMenuOptions[];
 }
