@@ -27,6 +27,7 @@ export type WorkbenchActionExecutedEvent = {
 export interface IAction extends IDisposable {
 	readonly id: string;
 	label: string;
+	thumbnail?: string;
 	tooltip: string;
 	class: string | undefined;
 	enabled: boolean;

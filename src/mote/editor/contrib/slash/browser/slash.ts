@@ -6,9 +6,9 @@
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorAction, EditorCommand, registerEditorAction, registerEditorContribution } from 'mote/editor/browser/editorExtensions';
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 
-class SlashController implements IEditorContribution {
+export class SlashController implements IEditorContribution {
 
 	public static readonly ID = 'editor.contrib.slashController';
 
@@ -16,8 +16,19 @@ class SlashController implements IEditorContribution {
 		return editor.getContribution<SlashController>(SlashController.ID);
 	}
 
+	constructor(
+		public readonly editor: IMoteEditor,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
+	) {
+
+	}
+
+	public showSlashCommandsMenu() {
+
+	}
+
 	dispose(): void {
-		throw new Error('Method not implemented.');
+
 	}
 
 }

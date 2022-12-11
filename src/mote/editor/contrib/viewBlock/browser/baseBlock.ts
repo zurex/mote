@@ -41,7 +41,7 @@ export abstract class BaseBlock extends Themable {
 	}
 
 	setValue(store: BlockStore) {
-		const segments = store.getTitleStore().getValue();
+		const segments = store.getTitleStore().getValue() || [];
 		const html = renderSegments(segments.map(Segment.from)).join('');
 		this.editableHandler.setValue(html);
 		this.editableHandler.setEnabled(store.canEdit());
