@@ -1,9 +1,11 @@
-import { IThemeService } from "mote/platform/theme/common/themeService";
-import { Component } from "mote/workbench/common/component";
-import { Dimension } from "vs/base/browser/dom";
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { Component } from 'mote/workbench/common/component';
+import { ICompositeControl } from 'mote/workbench/common/composite';
+import { Dimension } from 'mote/base/browser/dom';
+import { Emitter } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IConstructorSignature, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 /**
  * Composites are layed out in the sidebar and panel part of the workbench. At a time only one composite
@@ -25,8 +27,9 @@ export abstract class Composite extends Component {
 	constructor(
 		id: string,
 		themeService: IThemeService,
+		storageService: IStorageService,
 	) {
-		super(id, themeService);
+		super(id, themeService, storageService);
 
 		this.visible = false;
 	}
@@ -88,6 +91,13 @@ export abstract class Composite extends Component {
 	 * Layout the contents of this composite using the provided dimensions.
 	 */
 	abstract layout(dimension: Dimension): void;
+
+	/**
+	 * Returns the underlying composite control or `undefined` if it is not accessible.
+	 */
+	getControl(): ICompositeControl | undefined {
+		return undefined;
+	}
 }
 
 /**

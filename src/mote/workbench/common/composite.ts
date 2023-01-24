@@ -10,3 +10,8 @@ export interface IComposite {
 	 */
 	focus(): void;
 }
+
+/**
+ * Marker interface for the composite control
+ */
+export interface ICompositeControl { }

@@ -1,11 +1,12 @@
 import 'vs/css!./media/part';
-import { IThemeService } from "mote/platform/theme/common/themeService";
-import { Component } from "mote/workbench/common/component";
-import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import { Dimension, IDimension, size } from "vs/base/browser/dom";
-import { ISerializableView, IViewSize } from "vs/base/browser/ui/grid/grid";
-import { Emitter, Event } from "vs/base/common/event";
-import { assertIsDefined } from "vs/base/common/types";
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { Component } from 'mote/workbench/common/component';
+import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
+import { Dimension, IDimension, size } from 'mote/base/browser/dom';
+import { ISerializableView, IViewSize } from 'mote/base/browser/ui/grid/grid';
+import { Emitter, Event } from 'mote/base/common/event';
+import { assertIsDefined } from 'mote/base/common/types';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export interface IPartOptions {
 	hasTitle?: boolean;
@@ -54,6 +55,9 @@ export abstract class Part extends Component implements ISerializableView {
 	private _dimension: Dimension | undefined;
 	get dimension(): Dimension | undefined { return this._dimension; }
 
+	protected _onDidVisibilityChange = this._register(new Emitter<boolean>());
+	readonly onDidVisibilityChange = this._onDidVisibilityChange.event;
+
 	private parent: HTMLElement | undefined;
 	private titleArea: HTMLElement | undefined;
 	private contentArea: HTMLElement | undefined;
@@ -63,9 +67,10 @@ export abstract class Part extends Component implements ISerializableView {
 		id: string,
 		private options: IPartOptions,
 		themeService: IThemeService,
+		storageService: IStorageService,
 		protected readonly layoutService: IWorkbenchLayoutService
 	) {
-		super(id, themeService);
+		super(id, themeService, storageService);
 
 		layoutService.registerPart(this);
 	}

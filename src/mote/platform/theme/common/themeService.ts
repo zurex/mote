@@ -1,11 +1,11 @@
 import { IconContribution, IconDefinition } from 'mote/platform/theme/common/iconRegistry';
 import { Codicon, CSSIcon } from 'vs/base/common/codicons';
-import { Color } from 'vs/base/common/color';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { Color } from 'mote/base/common/color';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { ColorIdentifier } from './colorRegistry';
 import { ColorScheme } from './theme';
 

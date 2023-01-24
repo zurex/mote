@@ -1,10 +1,10 @@
-import * as types from 'vs/base/common/types';
+import * as types from 'mote/base/common/types';
 import { ColorExtensions, ColorIdentifier, IColorRegistry } from 'mote/platform/theme/common/colorRegistry';
 import { ExtensionData, IColorCustomizations, IColorMap, IThemeExtensionPoint, IThemeScopableCustomizations, IThemeScopedCustomizations, IWorkbenchColorTheme, MOTE_HC_DARK_THEME, MOTE_HC_LIGHT_THEME, MOTE_LIGHT_THEME, themeScopeRegex, THEME_SCOPE_CLOSE_PAREN, THEME_SCOPE_OPEN_PAREN, THEME_SCOPE_WILDCARD } from 'mote/workbench/services/themes/common/workbenchThemeService';
-import { Color } from 'vs/base/common/color';
-import { basename } from 'vs/base/common/path';
-import { URI } from 'vs/base/common/uri';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Color } from 'mote/base/common/color';
+import { basename } from 'mote/base/common/path';
+import { URI } from 'mote/base/common/uri';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 import { getThemeTypeSelector } from 'mote/platform/theme/common/themeService';
@@ -110,7 +110,7 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 		let themeSpecificColors;
 		for (const key in colors) {
 			const scopedColors = colors[key];
-			if (this.isThemeScope(key) && scopedColors instanceof Object && !types.isArray(scopedColors)) {
+			if (this.isThemeScope(key) && scopedColors instanceof Object && !Array.isArray(scopedColors)) {
 				const themeScopeList = key.match(themeScopeRegex) || [];
 				for (const themeScope of themeScopeList) {
 					const themeId = themeScope.substring(1, themeScope.length - 1);
@@ -122,7 +122,7 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 						for (const subkey in scopedThemeSpecificColors) {
 							const originalColors = themeSpecificColors[subkey];
 							const overrideColors = scopedThemeSpecificColors[subkey];
-							if (types.isArray(originalColors) && types.isArray(overrideColors)) {
+							if (Array.isArray(originalColors) && Array.isArray(overrideColors)) {
 								themeSpecificColors[subkey] = originalColors.concat(overrideColors);
 							} else if (overrideColors) {
 								themeSpecificColors[subkey] = overrideColors;

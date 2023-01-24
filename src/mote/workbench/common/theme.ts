@@ -4,7 +4,7 @@ import { localize } from 'vs/nls';
 
 import { contrastBorder, editorForeground, registerColor } from 'mote/platform/theme/common/themeColors';
 import { transparent } from 'mote/platform/theme/common/colorRegistry';
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
 
 export const SIDE_BAR_BACKGROUND = registerColor('sideBar.background', {
 	dark: '#252526',
@@ -87,5 +87,17 @@ export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor('activityBarBadge.for
 	hcDark: Color.white,
 	hcLight: Color.white
 }, localize('activityBarBadgeForeground', "Activity notification badge foreground color. The activity bar is showing on the far left or right and allows to switch between views of the side bar."));
+
+//#endregion
+
+//#region Editor
+
+export const EDITOR_GROUP_BORDER = registerColor('editorGroup.border', {
+	dark: '#444444',
+	light: '#E7E7E7',
+	hcDark: contrastBorder,
+	hcLight: contrastBorder
+}, localize('editorGroupBorder', "Color to separate multiple editor groups from each other. Editor groups are the containers of editors."));
+
 
 //#endregion

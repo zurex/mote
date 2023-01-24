@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { asCSSPropertyValue, asCSSUrl } from 'vs/base/browser/dom';
-import { Emitter, Event } from 'vs/base/common/event';
+import { asCSSPropertyValue, asCSSUrl } from 'mote/base/browser/dom';
+import { Emitter, Event } from 'mote/base/common/event';
 import { getIconRegistry, IconContribution, IconFontDefinition } from 'mote/platform/theme/common/iconRegistry';
 import { IProductIconTheme, IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
 

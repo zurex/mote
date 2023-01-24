@@ -1,8 +1,8 @@
 import * as nls from 'vs/nls';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { ColorDefaults, ColorExtensions, ColorIdentifier, IColorRegistry, transparent } from 'mote/platform/theme/common/colorRegistry';
 import { ThemedColors, ThemedStyles } from 'mote/base/common/themes';
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
 
 const colorRegistry = Registry.as<IColorRegistry>(ColorExtensions.ColorContribution);
 

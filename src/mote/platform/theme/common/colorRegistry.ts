@@ -1,10 +1,10 @@
 import { IColorTheme } from 'mote/platform/theme/common/themeService';
-import { Color } from 'vs/base/common/color';
-import { Emitter, Event } from 'vs/base/common/event';
-import { IJSONSchema, IJSONSchemaMap } from 'vs/base/common/jsonSchema';
-import { assertNever } from 'vs/base/common/types';
-import { Extensions as JSONExtensions, IJSONContributionRegistry } from 'vs/platform/jsonschemas/common/jsonContributionRegistry';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Color } from 'mote/base/common/color';
+import { Emitter, Event } from 'mote/base/common/event';
+import { IJSONSchema, IJSONSchemaMap } from 'mote/base/common/jsonSchema';
+import { assertNever } from 'mote/base/common/assert';
+import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 //  ------ API types
 

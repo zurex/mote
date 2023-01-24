@@ -8,8 +8,8 @@ import { IPaneCompositePart, IPaneCompositeSelectorPart } from 'mote/workbench/b
 import { IViewContainerModel, IViewDescriptorService, ViewContainer, ViewContainerLocation } from 'mote/workbench/common/views';
 import { IBadge } from 'mote/workbench/services/activity/common/activity';
 import { IWorkbenchLayoutService, Parts, Position } from 'mote/workbench/services/layout/browser/layoutService';
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { assertIsDefined, isString } from 'vs/base/common/types';
+import { DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
+import { assertIsDefined, isString } from 'mote/base/common/types';
 import { URI, UriComponents } from 'vs/base/common/uri';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
@@ -69,7 +69,6 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 	private content: HTMLElement | undefined;
 
 	private compositeBar: CompositeBar;
-	private compositeBarContainer: HTMLElement | undefined;
 
 	private readonly compositeActions = new Map<string, { activityAction: ViewContainerActivityAction; pinnedAction: ToggleCompositePinnedAction }>();
 	private readonly viewContainerDisposables = new Map<string, IDisposable>();
@@ -85,7 +84,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		@IInstantiationService private instantiationService: IInstantiationService,
 		//@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 	) {
-		super(Parts.ACTIVITYBAR_PART, { hasTitle: false }, themeService, layoutService);
+		super(Parts.ACTIVITYBAR_PART, { hasTitle: false }, themeService, storageService, layoutService);
 
 		this.compositeBar = this.createCompositeBar();
 
@@ -102,7 +101,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		parent.appendChild(this.content);
 
 		// View Containers action bar
-		this.compositeBarContainer = this.compositeBar.create(this.content);
+		//this.compositeBarContainer = this.compositeBar.create(this.content);
 
 		return this.content;
 	}
@@ -177,7 +176,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		this.onDidRegisterViewContainers(added.filter(({ location }) => location === ViewContainerLocation.Sidebar).map(({ container }) => container));
 	}
 
-	private onDidChangeViewContainerLocation(container: ViewContainer, from: ViewContainerLocation, to: ViewContainerLocation) {
+	onDidChangeViewContainerLocation(container: ViewContainer, from: ViewContainerLocation, to: ViewContainerLocation) {
 		if (from === this.location) {
 			this.onDidDeregisterViewContainer(container);
 		}
@@ -197,7 +196,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		}
 	}
 
-	private onDidRegisterExtensions(): void {
+	onDidRegisterExtensions(): void {
 		//this.hasExtensionsRegistered = true;
 
 		// show/hide/remove composites

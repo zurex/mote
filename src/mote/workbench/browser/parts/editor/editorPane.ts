@@ -4,6 +4,8 @@ import { Composite } from 'mote/workbench/browser/composite';
 import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'mote/workbench/browser/parts/editor/editor';
 import { IEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
+import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 /**
  * The base class of editors in the workbench. Editors register themselves for specific editor inputs.
@@ -39,11 +41,15 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	protected _options: IEditorOptions | undefined;
 	get options(): IEditorOptions | undefined { return this._options; }
 
+	private _group: IEditorGroup | undefined;
+	get group(): IEditorGroup | undefined { return this._group; }
+
 	constructor(
 		id: string,
 		themeService: IThemeService,
+		storageService: IStorageService,
 	) {
-		super(id, themeService);
+		super(id, themeService, storageService);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -75,5 +81,16 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	async setInput(input: EditorInput, options: IEditorOptions | undefined): Promise<void> {
 		this._input = input;
 		this._options = options;
+	}
+
+	/**
+	 * Indicates that the editor control got visible or hidden in a specific group. A
+	 * editor instance will only ever be visible in one editor group.
+	 *
+	 * @param visible the state of visibility of this editor
+	 * @param group the editor group this editor is in.
+	 */
+	protected setEditorVisible(visible: boolean, group: IEditorGroup | undefined): void {
+		this._group = group;
 	}
 }

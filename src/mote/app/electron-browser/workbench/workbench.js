@@ -26,7 +26,7 @@
 		function (_, configuration) {
 
 			// Mark start of workbench
-			performance.mark('code/didLoadWorkbenchMain');
+			performance.mark('mote/didLoadWorkbenchMain');
 
 			// @ts-ignore
 			return require('mote/workbench/electron-sandbox/desktop.main').main(configuration);

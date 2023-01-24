@@ -7,7 +7,7 @@ import { IDialogHandler, IDialogResult, IDialogService } from 'vs/platform/dialo
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IProductService } from 'vs/platform/product/common/productService';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, WorkbenchExtensions } from 'mote/workbench/common/contributions';
 import { IDialogsModel, IDialogViewItem } from 'vs/workbench/common/dialogs';

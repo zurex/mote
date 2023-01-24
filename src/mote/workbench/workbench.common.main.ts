@@ -28,6 +28,7 @@ import 'mote/workbench/services/remote/browser/remoteService';
 import 'mote/workbench/services/dialogs/common/dialogService';
 import 'mote/workbench/services/workspaces/browser/workspacesService';
 import 'mote/workbench/services/editor/browser/editorResolverService';
+import 'mote/workbench/services/editor/browser/editorService';
 
 //#endregion
 

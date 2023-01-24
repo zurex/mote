@@ -1,8 +1,8 @@
 import { IconContribution, IconDefinition } from 'mote/platform/theme/common/iconRegistry';
 import { IColorTheme, IProductIconTheme, IThemeService } from 'mote/platform/theme/common/themeService';
-import { Color } from 'vs/base/common/color';
-import { isBoolean, isString } from 'vs/base/common/types';
-import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
+import { Color } from 'mote/base/common/color';
+import { isBoolean, isString } from 'mote/base/common/types';
+import { ConfigurationTarget } from 'mote/platform/configuration/common/configuration';
 import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export const IWorkbenchThemeService = refineServiceDecorator<IThemeService, IWorkbenchThemeService>(IThemeService);

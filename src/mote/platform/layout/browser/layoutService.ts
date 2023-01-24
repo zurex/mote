@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDimension } from 'vs/base/browser/dom';
-import { Event } from 'vs/base/common/event';
+import { IDimension } from 'mote/base/browser/dom';
+import { Event } from 'mote/base/common/event';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export const ILayoutService = createDecorator<ILayoutService>('layoutService');
@@ -23,7 +23,7 @@ export interface ILayoutService {
 	 */
 	readonly hasContainer: boolean;
 
-    /**
+	/**
 	 * Container of the application.
 	 *
 	 * **NOTE**: In the standalone editor case, multiple editors can be created on a page.

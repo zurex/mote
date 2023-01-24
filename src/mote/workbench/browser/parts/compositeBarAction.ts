@@ -5,8 +5,8 @@ import { IBadge, IconBadge, NumberBadge, ProgressBadge, TextBadge } from 'mote/w
 import { BaseActionViewItem, IBaseActionViewItemOptions } from 'vs/base/browser/ui/actionbar/actionViewItems';
 import { Action, IAction } from 'vs/base/common/actions';
 import { Codicon } from 'vs/base/common/codicons';
-import { Color } from 'vs/base/common/color';
-import { Emitter } from 'vs/base/common/event';
+import { Color } from 'mote/base/common/color';
+import { Emitter } from 'mote/base/common/event';
 import { localize } from 'vs/nls';
 import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
 import { IHoverService, IHoverWidget } from 'mote/workbench/services/hover/browser/hover';
@@ -455,7 +455,7 @@ export class CompositeOverflowActivityActionViewItem extends ActivityActionViewI
 
 }
 
-class ManageExtensionAction extends Action {
+export class ManageExtensionAction extends Action {
 
 	constructor(
 		@ICommandService private readonly commandService: ICommandService
@@ -472,11 +472,11 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 
 	constructor(
 		options: IActivityActionViewItemOptions,
-		private readonly compositeActivityAction: ActivityAction,
-		private readonly toggleCompositePinnedAction: IAction,
+		compositeActivityAction: ActivityAction,
+		toggleCompositePinnedAction: IAction,
 		//private readonly compositeContextMenuActionsProvider: (compositeId: string) => IAction[],
 		//private readonly contextMenuActionsProvider: () => IAction[],
-		private readonly compositeBar: ICompositeBar,
+		compositeBar: ICompositeBar,
 		@IThemeService themeService: IThemeService,
 		@IHoverService hoverService: IHoverService,
 	) {
