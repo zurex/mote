@@ -69,6 +69,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 	private content: HTMLElement | undefined;
 
 	private compositeBar: CompositeBar;
+	private compositeBarContainer: HTMLElement | undefined;
 
 	private readonly compositeActions = new Map<string, { activityAction: ViewContainerActivityAction; pinnedAction: ToggleCompositePinnedAction }>();
 	private readonly viewContainerDisposables = new Map<string, IDisposable>();
@@ -101,7 +102,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		parent.appendChild(this.content);
 
 		// View Containers action bar
-		//this.compositeBarContainer = this.compositeBar.create(this.content);
+		this.compositeBarContainer = this.compositeBar.create(this.content);
 
 		return this.content;
 	}

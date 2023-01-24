@@ -9,7 +9,7 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { ILogService } from 'vs/platform/log/common/log';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { FILES_VIEWLET_ID } from '../common/files';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { IWorkbenchContribution } from 'mote/workbench/common/contributions';
 import { EmptyView } from './views/emptyView';
 import { ExplorerView } from './views/explorerView';
@@ -103,7 +103,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		return {
 			id: EmptyView.ID,
 			name: EmptyView.NAME,
-			//containerIcon: explorerViewIcon,
+			containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(EmptyView),
 			order: 1,
 			canToggleVisibility: true,
@@ -114,7 +114,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		return {
 			id: ExplorerView.ID,
 			name: localize('folders', "Folders"),
-			//containerIcon: explorerViewIcon,
+			containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(ExplorerView),
 			order: 1,
 			canToggleVisibility: false,
