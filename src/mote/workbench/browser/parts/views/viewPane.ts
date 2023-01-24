@@ -13,7 +13,7 @@ import { ScrollbarVisibility } from "vs/base/common/scrollable";
 import { ILogService } from "vs/platform/log/common/log";
 import { parseLinkedText } from "vs/base/common/linkedText";
 import { Button } from "vs/base/browser/ui/button/button";
-import { Registry } from "vs/platform/registry/common/platform";
+import { Registry } from 'mote/platform/registry/common/platform';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { Codicon } from 'vs/base/common/codicons';

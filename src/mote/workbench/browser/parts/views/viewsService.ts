@@ -10,9 +10,10 @@ import { Disposable, DisposableStore, IDisposable, toDisposable } from "vs/base/
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
-import { Registry } from "vs/platform/registry/common/platform";
+import { Registry } from 'mote/platform/registry/common/platform';
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "../../panecomposite";
 import { ViewPaneContainer } from "./viewPaneContainer";
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export class ViewsService extends Disposable implements IViewsService {
 
@@ -138,13 +139,13 @@ export class ViewsService extends Disposable implements IViewsService {
 				@ILogService logService: ILogService,
 				//@ITelemetryService telemetryService: ITelemetryService,
 				@IWorkspaceContextService contextService: IWorkspaceContextService,
-				//@IStorageService storageService: IStorageService,
+				@IStorageService storageService: IStorageService,
 				@IInstantiationService instantiationService: IInstantiationService,
 				@IThemeService themeService: IThemeService,
 				//@IContextMenuService contextMenuService: IContextMenuService,
 				//@IExtensionService extensionService: IExtensionService,
 			) {
-				super(viewContainer.id, logService, instantiationService, themeService);
+				super(viewContainer.id, logService, instantiationService, themeService, storageService);
 			}
 
 			protected createViewPaneContainer(element: HTMLElement): ViewPaneContainer {

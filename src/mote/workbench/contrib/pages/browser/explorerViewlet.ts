@@ -1,13 +1,13 @@
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
-import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
+import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
 
 import { localize } from 'vs/nls';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ILogService } from 'vs/platform/log/common/log';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { FILES_VIEWLET_ID } from '../common/files';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IWorkbenchContribution } from 'mote/workbench/common/contributions';
@@ -55,6 +55,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 
 	constructor(
 		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IViewsService viewsService: IViewsService,
 	) {
 		super();
 		this.registerView();

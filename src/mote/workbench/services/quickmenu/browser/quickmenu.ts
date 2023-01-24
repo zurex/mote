@@ -3,7 +3,7 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { TextSelectionState } from 'mote/editor/common/core/selectionUtils';
 import { IAction, IActionRunner } from 'vs/base/common/actions';
 import { BrandedService, createDecorator, IConstructorSignature } from 'vs/platform/instantiation/common/instantiation';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 export interface IQuickMenuOptions {
 

@@ -5,13 +5,13 @@
 
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { Codicon, CSSIcon } from 'vs/base/common/codicons';
-import { Emitter, Event } from 'vs/base/common/event';
-import { IJSONSchema, IJSONSchemaMap } from 'vs/base/common/jsonSchema';
+import { Emitter, Event } from 'mote/base/common/event';
+import { IJSONSchema, IJSONSchemaMap } from 'mote/base/common/jsonSchema';
 import { isString } from 'vs/base/common/types';
-import { URI } from 'vs/base/common/uri';
+import { URI } from 'mote/base/common/uri';
 import { localize } from 'vs/nls';
-import { Extensions as JSONExtensions, IJSONContributionRegistry } from 'vs/platform/jsonschemas/common/jsonContributionRegistry';
-import * as platform from 'vs/platform/registry/common/platform';
+import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
+import * as platform from 'mote/platform/registry/common/platform';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 
 //  ------ API types
@@ -304,7 +304,7 @@ function initialize() {
 }
 initialize();
 
-export const iconsSchemaId = 'vscode://schemas/icons';
+export const iconsSchemaId = 'mote://schemas/icons';
 
 const schemaRegistry = platform.Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
 schemaRegistry.registerSchema(iconsSchemaId, iconRegistry.getIconSchema());

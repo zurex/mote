@@ -1,8 +1,8 @@
 import { ColorExtensions, ColorIdentifier, IColorRegistry } from 'mote/platform/theme/common/colorRegistry';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { IColorTheme } from 'mote/platform/theme/common/themeService';
-import { Color } from 'vs/base/common/color';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Color } from 'mote/base/common/color';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 const colorRegistry = Registry.as<IColorRegistry>(ColorExtensions.ColorContribution);
 
