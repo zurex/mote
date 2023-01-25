@@ -1,14 +1,14 @@
-import * as dom from 'vs/base/browser/dom';
+import * as dom from 'mote/base/browser/dom';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
 import { ViewLines } from 'mote/editor/browser/viewParts/lines/viewLines';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { onUnexpectedError } from 'vs/base/common/errors';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'mote/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
@@ -21,6 +21,7 @@ import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/e
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { TemplatePicker } from 'mote/editor/browser/viewParts/templatePicker/templatePicker';
+import { IViewModel } from 'mote/editor/common/viewModel';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -48,6 +49,7 @@ export class EditorView extends ViewEventHandler {
 	constructor(
 		configuration: IEditorConfiguration,
 		viewController: ViewController,
+		model: IViewModel,
 		private readonly pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
@@ -65,9 +67,8 @@ export class EditorView extends ViewEventHandler {
 		this.linesContent.domNode.style.position = 'relative';
 
 		const contentStore = pageStore.getContentStore();
-		const viewLayout = this._register(this.createViewLayout(configuration, 0));
-		viewController.setViewLayout(viewLayout);
-		this.context = new ViewContext(configuration, contentStore, viewLayout, viewController);
+		//viewController.setViewLayout(model.viewLayout);
+		this.context = new ViewContext(configuration, contentStore, model.viewLayout, viewController);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);
@@ -307,10 +308,6 @@ export class EditorView extends ViewEventHandler {
 		this.templatePicker.getDomNode().setWidth(width);
 		this.viewLines.getDomNode().setWidth(width);
 
-	}
-
-	private createViewLayout(configuration: IEditorConfiguration, lineCount: number) {
-		return new ViewLayout(configuration, () => this.viewLines && this.viewLines.getDomNode(), dom.scheduleAtNextAnimationFrame);
 	}
 }
 

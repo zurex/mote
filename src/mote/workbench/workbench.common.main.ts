@@ -29,6 +29,7 @@ import 'mote/workbench/services/dialogs/common/dialogService';
 import 'mote/workbench/services/workspaces/browser/workspacesService';
 import 'mote/workbench/services/editor/browser/editorResolverService';
 import 'mote/workbench/services/editor/browser/editorService';
+import 'mote/workbench/services/editor/browser/moteEditorService';
 
 //#endregion
 
@@ -46,6 +47,7 @@ import { StoreService } from 'mote/platform/store/common/storeService';
 registerSingleton(IContextViewService, ContextViewService, true);
 registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
 registerSingleton(IStoreService, StoreService);
+registerSingleton(IContextKeyService, ContextKeyService, true);
 
 
 
@@ -61,5 +63,7 @@ import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contributio
 import 'mote/workbench/contrib/login/browser/login.contribution';
 
 import 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspace.contribution';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
+import { ContextKeyService } from 'mote/platform/contextkey/browser/contextKeyService';
 
 //#endregion

@@ -4,12 +4,12 @@ import * as arrays from 'vs/base/common/arrays';
 import * as platform from 'vs/base/common/platform';
 import { ElementSizeObserver } from 'mote/editor/browser/config/elementSizeObserver';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
-import { ConfigurationChangedEvent, EditorOption, editorOptionsRegistry, FindComputedEditorOptionValueById, IComputedEditorOptions, IEnvironmentalOptions } from 'mote/editor/common/config/editorOptions';
+import { ConfigurationChangedEvent, EditorOption, editorOptionsRegistry, FindComputedEditorOptionValueById, IComputedEditorOptions, IEditorOptions, IEnvironmentalOptions } from 'mote/editor/common/config/editorOptions';
 import { IDimension } from 'mote/editor/common/core/dimension';
-import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { IValidatedEditorOptions } from 'mote/editor/common/config/fontInfo';
+import { BareFontInfo, FontInfo, IValidatedEditorOptions } from 'mote/editor/common/config/fontInfo';
 import { Emitter, Event } from 'vs/base/common/event';
+import { FontMeasurements } from 'mote/editor/browser/config/fontMeasurements';
 
 export interface IEditorConstructionOptions extends IEditorOptions {
 	/**
@@ -74,6 +74,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 	private readonly containerObserver: ElementSizeObserver;
 
 	private viewLineCount: number = 1;
+	private _isDominatedByLongLines: boolean = false;
 
 	/**
 	 * Raw options as they were passed in and merged with all calls to `updateOptions`.
@@ -91,6 +92,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 	public options: ComputedEditorOptions;
 
 	constructor(
+		public readonly isSimpleWidget: boolean,
 		options: Readonly<IEditorConstructionOptions>,
 		container: HTMLElement | null,
 	) {
@@ -124,10 +126,14 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 
 	private computeOptions() {
 		const partialEnv = this.readEnvConfiguration();
+		const bareFontInfo = BareFontInfo.createFromValidatedSettings(this.validatedOptions, partialEnv.pixelRatio, this.isSimpleWidget);
+		const fontInfo = this.readFontInfo(bareFontInfo);
 		const env: IEnvironmentalOptions = {
 			outerWidth: partialEnv.outerWidth,
 			outerHeight: partialEnv.outerHeight,
+			fontInfo: fontInfo,
 			extraEditorClassName: partialEnv.extraEditorClassName,
+			isDominatedByLongLines: this._isDominatedByLongLines,
 			viewLineCount: this.viewLineCount,
 			pixelRatio: partialEnv.pixelRatio,
 		};
@@ -142,6 +148,10 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 			emptySelectionClipboard: browser.isWebKit || browser.isFirefox,
 			pixelRatio: browser.PixelRatio.value,
 		};
+	}
+
+	protected readFontInfo(bareFontInfo: BareFontInfo): FontInfo {
+		return FontMeasurements.readFontInfo(bareFontInfo);
 	}
 
 	public setViewLineCount(viewLineCount: number): void {

@@ -1,5 +1,5 @@
 import * as nls from 'vs/nls';
-import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { RawContextKey } from 'mote/platform/contextkey/common/contextkey';
 
 export namespace EditorContextKeys {
 

@@ -1,12 +1,12 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import * as DOM from 'vs/base/browser/dom';
-import { addDisposableListener, EventType, IFocusTracker, trackFocus } from 'vs/base/browser/dom';
+import * as DOM from 'mote/base/browser/dom';
+import { addDisposableListener, EventType, IFocusTracker, trackFocus } from 'mote/base/browser/dom';
 import { EventType as TouchEventType, Gesture } from 'vs/base/browser/touch';
-import { Color } from 'vs/base/common/color';
-import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Color } from 'mote/base/common/color';
+import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
 
 
 export interface ListItemOptions {

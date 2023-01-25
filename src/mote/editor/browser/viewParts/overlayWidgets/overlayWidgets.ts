@@ -1,7 +1,7 @@
 import { IOverlayWidget, OverlayWidgetPositionPreference } from 'mote/editor/browser/editorBrowser';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 
 interface IWidgetData {
 	widget: IOverlayWidget;

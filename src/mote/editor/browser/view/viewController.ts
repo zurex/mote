@@ -21,6 +21,9 @@ import { Disposable } from 'vs/base/common/lifecycle';
 import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 import { BlockTypes } from 'mote/platform/store/common/record';
+import { IViewModel } from 'mote/editor/common/viewModel';
+import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
+import { ILogService } from 'vs/platform/log/common/log';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -36,7 +39,10 @@ export class ViewController extends Disposable {
 
 	constructor(
 		configuration: IEditorConfiguration,
-
+		private readonly viewModel: IViewModel,
+		private readonly logService: ILogService,
+		private readonly userInputEvents: ViewUserInputEvents,
+		private readonly commandDelegate: ICommandDelegate,
 		private readonly contentStore: RecordStore<string[]>,
 	) {
 		super();
@@ -55,25 +61,6 @@ export class ViewController extends Disposable {
 		}));
 
 
-	}
-
-	public setViewLayout(viewLayout: ViewLayout) {
-		this.viewLayout = viewLayout;
-		this._register(this.viewLayout.onDidScroll((e) => {
-			if (e.scrollTopChanged) {
-				//this._tokenizeViewportSoon.schedule();
-			}
-			if (e.scrollTopChanged) {
-				//this._viewportStart.invalidate();
-			}
-			this.eventDispatcher.emitSingleViewEvent(new viewEvents.ViewScrollChangedEvent(e));
-			/*
-			this.eventDispatcher.emitOutgoingEvent(new ScrollChangedEvent(
-				e.oldScrollWidth, e.oldScrollLeft, e.oldScrollHeight, e.oldScrollTop,
-				e.scrollWidth, e.scrollLeft, e.scrollHeight, e.scrollTop
-			));
-			*/
-		}));
 	}
 
 	private onConfigurationChanged(eventsCollector: ViewEventsCollector, e: ConfigurationChangedEvent): void {

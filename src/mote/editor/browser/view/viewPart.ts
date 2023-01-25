@@ -1,6 +1,6 @@
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { FastDomNode } from 'mote/base/browser/fastDomNode';
 
 export abstract class ViewPart extends ViewEventHandler {
 

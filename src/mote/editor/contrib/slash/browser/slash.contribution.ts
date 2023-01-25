@@ -1,8 +1,8 @@
 import { EditorContextKeys } from 'mote/editor/common/editorContextKeys';
 import { SlashCommand } from 'mote/editor/contrib/slash/browser/slash';
 import { KeybindingsRegistry } from 'mote/platform/keybinding/common/keybindingsRegistry';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { KeyCode } from 'mote/base/common/keyCodes';
+import { ContextKeyExpr } from 'mote/platform/contextkey/common/contextkey';
 
 export const slashTriggerId = 'editor.action.slash.trigger';
 

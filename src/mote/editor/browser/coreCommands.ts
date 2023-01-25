@@ -2,8 +2,8 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorCommand, registerEditorCommand } from 'mote/editor/browser/editorExtensions';
 import { EditorContextKeys } from 'mote/editor/common/editorContextKeys';
 import { KeybindingWeight } from 'mote/platform/keybinding/common/keybindingsRegistry';
-import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { KeyCode, KeyMod } from 'mote/base/common/keyCodes';
+import { ContextKeyExpr } from 'mote/platform/contextkey/common/contextkey';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 
 const CORE_WEIGHT = KeybindingWeight.EditorCore;
