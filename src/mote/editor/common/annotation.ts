@@ -55,6 +55,10 @@ export class CodeAnnotation extends AbstractAnnotation implements IAnnotation {
 	type = AnnotationType.Code;
 }
 
+export class UnderlineAnnotation extends AbstractAnnotation implements IAnnotation {
+	type = AnnotationType.Underline;
+}
+
 export class LinkAnnotation implements IAnnotation {
 	type = AnnotationType.Link;
 
@@ -98,6 +102,8 @@ export namespace Annotation {
 				return new CodeAnnotation();
 			case AnnotationType.Link:
 				return new LinkAnnotation(getSecondArrayInArray(annotation));
+			case AnnotationType.Underline:
+				return new UnderlineAnnotation();
 			default:
 				throw new Error();
 		}

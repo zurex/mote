@@ -3,6 +3,7 @@ import { ActivityAction, ICompositeBar, ToggleCompositePinnedAction } from 'mote
 import { IPaneCompositePart } from 'mote/workbench/browser/parts/paneCompositePart';
 import { IActivity } from 'mote/workbench/common/activity';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 
 export class ViewContainerActivityAction extends ActivityAction {
 
@@ -15,7 +16,7 @@ export class ViewContainerActivityAction extends ActivityAction {
 		private readonly paneCompositePart: IPaneCompositePart,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
 		//@ITelemetryService private readonly telemetryService: ITelemetryService,
-		//@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService private readonly configurationService: IConfigurationService
 	) {
 		super(activity);
 	}
@@ -38,7 +39,7 @@ export class ViewContainerActivityAction extends ActivityAction {
 
 		const sideBarVisible = this.layoutService.isVisible(Parts.SIDEBAR_PART);
 		const activeViewlet = this.paneCompositePart.getActivePaneComposite();
-		const focusBehavior = 'toggle';//this.configurationService.getValue<string>('workbench.activityBar.iconClickBehavior');
+		const focusBehavior = this.configurationService.getValue<string>('workbench.activityBar.iconClickBehavior');
 
 		const focus = (event && 'preserveFocus' in event) ? !event.preserveFocus : true;
 		if (sideBarVisible && activeViewlet?.getId() === this.activity.id) {
