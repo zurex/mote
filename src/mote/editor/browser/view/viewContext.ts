@@ -3,6 +3,7 @@ import RecordStore from 'mote/platform/store/common/recordStore';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
+import { IViewModel } from 'mote/editor/common/viewModel';
 
 export class ViewContext {
 
@@ -10,16 +11,17 @@ export class ViewContext {
 		public readonly configuration: IEditorConfiguration,
 		public readonly contentStore: RecordStore,
 		public readonly viewLayout: ViewLayout,
-		public readonly controller: ViewController
+		public readonly controller: ViewController,
+		public readonly viewModel: IViewModel
 	) {
 
 	}
 
 	public addEventHandler(eventHandler: ViewEventHandler): void {
-		this.controller.addViewEventHandler(eventHandler);
+		this.viewModel.addViewEventHandler(eventHandler);
 	}
 
 	public removeEventHandler(eventHandler: ViewEventHandler): void {
-		this.controller.removeViewEventHandler(eventHandler);
+		this.viewModel.removeViewEventHandler(eventHandler);
 	}
 }

@@ -200,10 +200,10 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 		const commandDelegate: ICommandDelegate = {
 			type: (text: string) => {
-				this._type('keyboard', text);
+				this._type('editable', text);
 			},
 			compositionType: (text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number) => {
-				this._compositionType('keyboard', text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
+				this._compositionType('editable', text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
 			},
 		};
 

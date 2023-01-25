@@ -1,13 +1,11 @@
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { ScrollType } from 'mote/editor/common/editorCommon';
-import { IViewLayout, Viewport } from 'mote/editor/common/viewlayout';
 import { LinesLayout } from 'mote/editor/common/viewLayout/linesLayout';
-import { IViewModel } from 'mote/editor/common/viewModel';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
-import { Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'vs/base/common/scrollable';
+import { IViewLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
+import { Event } from 'mote/base/common/event';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'mote/base/common/scrollable';
 
 class EditorScrollDimensions {
 

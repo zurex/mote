@@ -29,7 +29,7 @@ export abstract class BaseBlock extends Themable {
 		}
 		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
 
-		if (viewController.getSelection().lineNumber === lineNumber) {
+		if (viewController.getSelection().startLineNumber === lineNumber) {
 			this.editableHandler.focusEditable();
 		}
 	}

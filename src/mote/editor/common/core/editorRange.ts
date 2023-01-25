@@ -340,6 +340,20 @@ export class EditorRange {
 		return new EditorRange(range.startLineNumber, range.startColumn, range.startLineNumber, range.startColumn);
 	}
 
+	/**
+	 * Create a new empty range using this range's end position.
+	 */
+	public collapseToEnd(): EditorRange {
+		return EditorRange.collapseToEnd(this);
+	}
+
+	/**
+	 * Create a new empty range using this range's end position.
+	 */
+	public static collapseToEnd(range: IRange): EditorRange {
+		return new EditorRange(range.endLineNumber, range.endColumn, range.endLineNumber, range.endColumn);
+	}
+
 	// ---
 
 	public static fromPositions(start: IPosition, end: IPosition = start): EditorRange {

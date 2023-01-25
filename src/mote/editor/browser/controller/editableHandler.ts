@@ -1,4 +1,4 @@
-import * as browser from 'vs/base/browser/browser';
+import * as browser from 'mote/base/browser/browser';
 import * as platform from 'vs/base/common/platform';
 import { ClipboardDataToCopy, EditableInput, EditableWrapper, IEditableInputHost } from 'mote/editor/browser/controller/editableInput';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
@@ -10,7 +10,8 @@ import { KeyCode } from 'vs/base/common/keyCodes';
 import { RangeUtils, TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 
 export interface EditableHandlerOptions {
 	placeholder?: string;
@@ -20,7 +21,7 @@ export interface EditableHandlerOptions {
 export interface ICommandDelegate {
 
 	isEmpty(lineNumber: number): boolean;
-	getSelection(): TextSelection;
+	getSelection(): EditorSelection;
 	type(text: string): void;
 	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
 	select(e: TextSelection): void;
@@ -106,7 +107,7 @@ export class EditableHandler extends ViewPart {
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
 		const selection = this.command.getSelection();
-		if (this.editableInput.isFocused() && selection.startIndex > 0) {
+		if (this.editableInput.isFocused() && selection.startColumn > 0) {
 			this.ensureSelection(selection);
 		}
 	}
@@ -131,7 +132,7 @@ export class EditableHandler extends ViewPart {
 				if (_debugComposition) {
 					console.log(` => type: <<${e.type}>>`);
 				}
-				this.command.type(e.text);
+				this.command.type(e.type);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
@@ -160,7 +161,7 @@ export class EditableHandler extends ViewPart {
 				this.editable.domNode.focus();
 				const selection = this.command.getSelection();
 				// line number less than 0 means view controller not initialized yet
-				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
+				if (selection.startLineNumber >= 0 && selection.startColumn >= 0) {
 					this.ensureSelection(selection);
 				}
 			}, 10);
@@ -180,8 +181,8 @@ export class EditableHandler extends ViewPart {
 		}));
 	}
 
-	private ensureSelection(selection: TextSelection) {
-		const rangeFromElement = RangeUtils.create(this.editable.domNode, selection);
+	private ensureSelection(selection: EditorSelection) {
+		const rangeFromElement = RangeUtils.create(this.editable.domNode, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
 		const rangeFromDocument = RangeUtils.get();
 		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
 			RangeUtils.set(rangeFromElement);

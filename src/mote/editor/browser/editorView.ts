@@ -68,7 +68,7 @@ export class EditorView extends ViewEventHandler {
 
 		const contentStore = pageStore.getContentStore();
 		//viewController.setViewLayout(model.viewLayout);
-		this.context = new ViewContext(configuration, contentStore, model.viewLayout, viewController);
+		this.context = new ViewContext(configuration, contentStore, model.viewLayout, viewController, model);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);

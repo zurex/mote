@@ -2,21 +2,14 @@ import * as strings from 'mote/base/common/strings';
 import { Scrollable } from 'mote/base/common/scrollable';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { Position } from 'mote/editor/common/core/position';
-import { CursorConfiguration, CursorState, EditOperationType, ICursorSimpleModel, PartialCursorState } from 'mote/editor/common/cursorCommon';
+import { CursorConfiguration, CursorState, EditOperationType, IColumnSelectData, ICursorSimpleModel, PartialCursorState } from 'mote/editor/common/cursorCommon';
 import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
 import { ITextModel, PositionAffinity } from 'mote/editor/common/model';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { IViewLineTokens } from 'mote/editor/common/tokens/lineTokens';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { BlockType } from 'mote/platform/store/common/record';
-
-export interface IColumnSelectData {
-	isReal: boolean;
-	fromViewLineNumber: number;
-	fromViewVisualColumn: number;
-	toViewLineNumber: number;
-	toViewVisualColumn: number;
-}
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 
 export interface IPartialViewLinesViewportData {
 	/**
@@ -71,6 +64,8 @@ export interface IViewModel extends ICursorSimpleModel {
 
 	setHasFocus(hasFocus: boolean): void;
 
+	getSelection(): EditorSelection;
+
 	getPrimaryCursorState(): CursorState;
 	getCursorStates(): CursorState[];
 	setCursorStates(source: string | null | undefined, reason: CursorChangeReason, states: PartialCursorState[] | null): boolean;
@@ -106,6 +101,8 @@ export interface IViewLayout {
 
 	getScrollable(): Scrollable;
 	getLinesViewportData(): IPartialViewLinesViewportData;
+
+	deltaScrollNow(deltaScrollLeft: number, deltaScrollTop: number): void;
 
 	isAfterLines(verticalOffset: number): boolean;
 	getLineNumberAtVerticalOffset(verticalOffset: number): number;

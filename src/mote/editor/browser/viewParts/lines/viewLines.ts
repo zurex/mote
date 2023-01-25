@@ -34,6 +34,7 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-lines');
 		this.domNode.setAttribute('data-root', '');
+		this.domNode.setAttribute('contenteditable', 'true');
 		this.domNode.domNode.style.lineHeight = '1.5';
 		this.domNode.domNode.style.fontSize = '16px';
 

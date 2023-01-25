@@ -8,6 +8,7 @@ import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardE
 import { EditableState, IEditableWrapper, ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { OperatingSystem } from 'vs/base/common/platform';
 import { KeyCode } from 'vs/base/common/keyCodes';
+import { generateUuid } from 'vs/base/common/uuid';
 
 interface EditableOptions {
 	getSelection?(): TextSelection | undefined;
@@ -122,6 +123,8 @@ class CompositionContext {
 
 export class EditableInput extends Disposable {
 
+	private id: string = generateUuid();
+
 	//#region events
 
 	private _onFocus = this._register(new Emitter<void>());
@@ -186,13 +189,20 @@ export class EditableInput extends Disposable {
 				return;
 			}
 
-			const newState = EditableState.readFromEditable(this.editable);
+			const newState = EditableState.readFromEditable(this.editable, this.editableState);
 			const typeInput = EditableState.deduceInput(this.editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
 
-			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1 && strings.isHighSurrogate(typeInput.text.charCodeAt(0))) {
-				// Ignore invalid input but keep it around for next time
-				return;
+			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1) {
+				// one character was typed
+				if (
+					strings.isHighSurrogate(typeInput.text.charCodeAt(0))
+					|| typeInput.text.charCodeAt(0) === 0x7f /* Delete */
+				) {
+					// Ignore invalid input but keep it around for next time
+					return;
+				}
 			}
+
 			this.editableState = newState;
 			if (
 				typeInput.text !== ''

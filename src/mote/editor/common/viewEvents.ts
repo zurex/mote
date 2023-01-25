@@ -1,6 +1,9 @@
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
 import { ScrollEvent } from 'vs/base/common/scrollable';
+import { ScrollType } from 'mote/editor/common/editorCommon';
+import { EditorRange } from 'mote/editor/common/core/editorRange';
 
 export const enum ViewEventType {
 	ViewCompositionStart,
@@ -52,10 +55,41 @@ export class ViewCursorStateChangedEvent {
 
 	public readonly type = ViewEventType.ViewCursorStateChanged;
 
-	public readonly selections: EditorSelection[];
 
-	constructor(selections: EditorSelection[]) {
-		this.selections = selections;
+	constructor(
+		public readonly selections: EditorSelection[],
+		public readonly modelSelections: EditorSelection[],
+		public readonly reason: CursorChangeReason
+	) {
+
+	}
+}
+
+export class ViewDecorationsChangedEvent {
+
+	public readonly type = ViewEventType.ViewDecorationsChanged;
+
+	constructor() { }
+
+}
+
+export class ViewFlushedEvent {
+
+	public readonly type = ViewEventType.ViewFlushed;
+
+	constructor() {
+		// Nothing to do
+	}
+}
+
+export class ViewFocusChangedEvent {
+
+	public readonly type = ViewEventType.ViewFocusChanged;
+
+	public readonly isFocused: boolean;
+
+	constructor(isFocused: boolean) {
+		this.isFocused = isFocused;
 	}
 }
 
@@ -115,6 +149,54 @@ export class ViewLinesDeletedEvent {
 	}
 }
 
+export const enum VerticalRevealType {
+	Simple = 0,
+	Center = 1,
+	CenterIfOutsideViewport = 2,
+	Top = 3,
+	Bottom = 4,
+	NearTop = 5,
+	NearTopIfOutsideViewport = 6,
+}
+
+export class ViewRevealRangeRequestEvent {
+
+	public readonly type = ViewEventType.ViewRevealRangeRequest;
+
+
+	constructor(
+		/**
+		 * Source of the call that caused the event.
+		 */
+		public readonly source: string | null | undefined,
+		/**
+		 * Reduce the revealing to a minimum (e.g. avoid scrolling if the bounding box is visible and near the viewport edge).
+		 */
+		public readonly minimalReveal: boolean,
+		/**
+		 * Range to be reavealed.
+		 */
+		public readonly range: EditorRange | null,
+		/**
+		 * Selections to be revealed.
+		 */
+		public readonly selections: EditorSelection[] | null,
+		/**
+		 * The vertical reveal strategy.
+		 */
+		public readonly verticalType: VerticalRevealType,
+		/**
+		 * If true: there should be a horizontal & vertical revealing.
+		 * If false: there should be just a vertical revealing.
+		 */
+		public readonly revealHorizontal: boolean,
+		/**
+		 * The scroll type.
+		 */
+		public readonly scrollType: ScrollType
+	) { }
+}
+
 export class ViewScrollChangedEvent {
 
 	public readonly type = ViewEventType.ViewScrollChanged;
@@ -149,8 +231,11 @@ export type ViewEvent = (
 	| ViewCompositionEndEvent
 	| ViewConfigurationChangedEvent
 	| ViewCursorStateChangedEvent
+	| ViewFocusChangedEvent
 	| ViewLinesChangedEvent
 	| ViewLinesInsertedEvent
 	| ViewLinesDeletedEvent
+	| ViewRevealRangeRequestEvent
 	| ViewScrollChangedEvent
+	| ViewDecorationsChangedEvent
 );

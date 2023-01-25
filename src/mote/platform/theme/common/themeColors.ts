@@ -24,7 +24,7 @@ export const contrastBorder = registerColor('contrastBorder', { light: null, dar
  */
 export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hcDark: Color.white, hcLight: foreground }, nls.localize('editorForeground', "Editor default foreground color."));
 
-export const sidebarBackground = colorRegistry.registerColor('sidebarBackground', { ...ThemedStyles.sidebarBackground }, 'sidebarBackground');
+export const sidebarBackground = colorRegistry.registerColor('sidebarBackground', { light: '#f7f6f3', dark: '#252526' }, 'sidebarBackground');
 
 export const editorBackground = colorRegistry.registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hcDark: Color.black, hcLight: Color.white }, 'editor.background');
 

@@ -1,16 +1,14 @@
 import * as viewEvents from 'mote/editor/common/viewEvents';
-import { Event } from 'vs/base/common/event';
 import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
-import { OutgoingViewEvent, SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
+import { SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
-import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
@@ -18,12 +16,36 @@ import { Segment } from 'mote/editor/common/core/segment';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
-import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
+import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
 import { ILogService } from 'vs/platform/log/common/log';
+import { IMouseWheelEvent } from 'mote/base/browser/mouseEvent';
+import { IEditorMouseEvent, IPartialEditorMouseEvent } from 'mote/editor/browser/editorBrowser';
+import { Position } from 'mote/editor/common/core/position';
+import { CoreNavigationCommands, NavigationCommandRevealType } from 'mote/editor/browser/command/navigationCommands';
+
+export interface IMouseDispatchData {
+	position: Position;
+	/**
+	 * Desired mouse column (e.g. when position.column gets clamped to text length -- clicking after text on a line).
+	 */
+	mouseColumn: number;
+	revealType: NavigationCommandRevealType;
+	startedOnLineNumbers: boolean;
+
+	inSelectionMode: boolean;
+	mouseDownCount: number;
+	altKey: boolean;
+	ctrlKey: boolean;
+	metaKey: boolean;
+	shiftKey: boolean;
+
+	leftButton: boolean;
+	middleButton: boolean;
+	onInjectedText: boolean;
+}
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -31,14 +53,12 @@ export interface ICommandDelegate {
 }
 
 export class ViewController extends Disposable {
-	public readonly onEvent: Event<OutgoingViewEvent>;
 
 	private selection: TextSelection;
 	private readonly eventDispatcher: ViewEventDispatcher;
-	private viewLayout!: ViewLayout;
 
 	constructor(
-		configuration: IEditorConfiguration,
+		private readonly configuration: IEditorConfiguration,
 		private readonly viewModel: IViewModel,
 		private readonly logService: ILogService,
 		private readonly userInputEvents: ViewUserInputEvents,
@@ -49,7 +69,6 @@ export class ViewController extends Disposable {
 
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
 		this.eventDispatcher = new ViewEventDispatcher();
-		this.onEvent = this.eventDispatcher.onEvent;
 
 		this._register(configuration.onDidChangeFast((e) => {
 			try {
@@ -59,8 +78,6 @@ export class ViewController extends Disposable {
 				this.eventDispatcher.endEmitViewEvents();
 			}
 		}));
-
-
 	}
 
 	private onConfigurationChanged(eventsCollector: ViewEventsCollector, e: ConfigurationChangedEvent): void {
@@ -68,17 +85,20 @@ export class ViewController extends Disposable {
 		eventsCollector.emitViewEvent(new viewEvents.ViewConfigurationChangedEvent(e));
 	}
 
-	public addViewEventHandler(eventHandler: ViewEventHandler): void {
-		this.eventDispatcher.addViewEventHandler(eventHandler);
-	}
-
-	public removeViewEventHandler(eventHandler: ViewEventHandler): void {
-		this.eventDispatcher.removeViewEventHandler(eventHandler);
-	}
-
 	//#region command expose to editable
 
+	/**
+	 * @deprecated use {@link ViewController#moveTo} instead.
+	 * @param selection
+	 */
 	public select(selection: TextSelection): void {
+		if (selection.startIndex === selection.endIndex) {
+			const position = new Position(selection.lineNumber + 1, selection.startIndex + 1);
+			this.moveTo(position, NavigationCommandRevealType.Minimal);
+		} else {
+
+		}
+
 		this.withViewEventsCollector(eventsCollector => {
 			this.setSelection(selection);
 			eventsCollector.emitOutgoingEvent(new SelectionChangedEvent(selection));
@@ -121,6 +141,8 @@ export class ViewController extends Disposable {
 	}
 
 	public type(text: string): void {
+		this.commandDelegate.type(text);
+		return;
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
 				const titleStore = this.getTitleStore();
@@ -197,7 +219,7 @@ export class ViewController extends Disposable {
 	}
 
 	public getSelection() {
-		return this.selection;
+		return this.viewModel.getSelection();
 	}
 
 	public isEmpty(lineNumber: number) {
@@ -233,7 +255,7 @@ export class ViewController extends Disposable {
 
 	private withViewEventsCollector<T>(callback: (eventsCollector: ViewEventsCollector) => T): T {
 		try {
-			const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
+			const eventsCollector = (this.viewModel as any).eventDispatcher.beginEmitViewEvents();
 			return callback(eventsCollector);
 		} finally {
 			this.eventDispatcher.endEmitViewEvents();
@@ -435,5 +457,123 @@ export class ViewController extends Disposable {
 		}
 	}
 
+	//#endregion
+
+	//#region mouse events
+
+	public emitMouseMove(e: IEditorMouseEvent): void {
+		this.userInputEvents.emitMouseMove(e);
+	}
+
+	public emitMouseLeave(e: IPartialEditorMouseEvent): void {
+		this.userInputEvents.emitMouseLeave(e);
+	}
+
+	public emitMouseUp(e: IEditorMouseEvent): void {
+		//this.logService.debug('[ViewController] emitMouseUp', e);
+		this.userInputEvents.emitMouseUp(e);
+	}
+
+	public emitMouseDown(e: IEditorMouseEvent): void {
+		//this.logService.debug('[ViewController] emitMouseDown', e);
+		this.userInputEvents.emitMouseDown(e);
+	}
+
+	public emitMouseDrag(e: IEditorMouseEvent): void {
+		this.userInputEvents.emitMouseDrag(e);
+	}
+
+	public emitMouseDrop(e: IPartialEditorMouseEvent): void {
+		this.userInputEvents.emitMouseDrop(e);
+	}
+
+	public emitMouseDropCanceled(): void {
+		this.userInputEvents.emitMouseDropCanceled();
+	}
+
+	public emitMouseWheel(e: IMouseWheelEvent): void {
+		this.userInputEvents.emitMouseWheel(e);
+	}
+
+	private hasMulticursorModifier(data: IMouseDispatchData): boolean {
+		return false;
+	}
+
+	public dispatchMouse(data: IMouseDispatchData): void {
+		const options = this.configuration.options;
+		const selectionClipboardIsOn = false;
+		const columnSelection = options.get(EditorOption.ColumnSelection);
+
+		if (data.middleButton && !selectionClipboardIsOn) {
+
+		} else if (data.startedOnLineNumbers) {
+
+		} else if (data.mouseDownCount >= 4) {
+
+		} else if (data.mouseDownCount === 3) {
+
+		} else if (data.mouseDownCount === 2) {
+
+		} else {
+			if (this.hasMulticursorModifier(data)) {
+
+			} else {
+				if (data.inSelectionMode) {
+					if (data.altKey) {
+
+					} else {
+						if (columnSelection) {
+							this.columnSelect(data.position, data.mouseColumn, true);
+						} else {
+							this.moveToSelect(data.position, data.revealType);
+						}
+					}
+				} else {
+					this.moveTo(data.position, data.revealType);
+				}
+			}
+		}
+	}
+
+	public moveTo(viewPosition: Position, revealType: NavigationCommandRevealType): void {
+		CoreNavigationCommands.MoveTo.runCoreEditorCommand(this.viewModel, this.usualArgs(viewPosition, revealType));
+	}
+
+	private moveToSelect(viewPosition: Position, revealType: NavigationCommandRevealType): void {
+		CoreNavigationCommands.MoveToSelect.runCoreEditorCommand(this.viewModel, this.usualArgs(viewPosition, revealType));
+	}
+
+	private columnSelect(viewPosition: Position, mouseColumn: number, doColumnSelect: boolean): void {
+		viewPosition = this.validateViewColumn(viewPosition);
+		CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(this.viewModel, {
+			source: 'mouse',
+			position: this.convertViewToModelPosition(viewPosition),
+			viewPosition: viewPosition,
+			mouseColumn: mouseColumn,
+			doColumnSelect: doColumnSelect
+		});
+	}
+
+	private convertViewToModelPosition(viewPosition: Position): Position {
+		return this.viewModel.coordinatesConverter.convertViewPositionToModelPosition(viewPosition);
+	}
+
+	private usualArgs(viewPosition: Position, revealType: NavigationCommandRevealType): CoreNavigationCommands.MoveCommandOptions {
+		viewPosition = this.validateViewColumn(viewPosition);
+		return {
+			source: 'mouse',
+			position: this.convertViewToModelPosition(viewPosition),
+			viewPosition,
+			revealType
+		};
+	}
+
+	private validateViewColumn(viewPosition: Position): Position {
+		const minColumn = this.viewModel.getLineMinColumn(viewPosition.lineNumber);
+		if (viewPosition.column < minColumn) {
+			return new Position(viewPosition.lineNumber, minColumn);
+		}
+		return viewPosition;
+	}
 	//#endregion
 }
