@@ -2,7 +2,7 @@ import { IEditorConfiguration } from 'mote/editor/common/config/editorConfigurat
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { ScrollType } from 'mote/editor/common/editorCommon';
 import { LinesLayout } from 'mote/editor/common/viewLayout/linesLayout';
-import { IViewLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
+import { IPartialViewLinesViewportData, IViewLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
 import { Event } from 'mote/base/common/event';
 import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'mote/base/common/scrollable';
@@ -159,6 +159,9 @@ export class ViewLayout extends Disposable implements IViewLayout {
 
 		const options = this.configuration.options;
 		const layoutInfo = options.get(EditorOption.LayoutInfo);
+
+		this.linesLayout = new LinesLayout(viewModel, lineCount);
+
 		this.scrollable = this._register(new EditorScrollable(0, scheduleAtNextAnimationFrame));
 		this.scrollable.setScrollDimensions(new EditorScrollDimensions(
 			layoutInfo.width,
@@ -199,7 +202,8 @@ export class ViewLayout extends Disposable implements IViewLayout {
 	//#endregion
 
 	private _getContentHeight(width: number, height: number, contentWidth: number): number {
-		return 1200;
+		const result = this.linesLayout.getLinesTotalHeight();
+		return result + 200;
 	}
 
 	private updateHeight() {
@@ -289,4 +293,9 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		});
 	}
 	//#endregion
+
+	public getLinesViewportData(): IPartialViewLinesViewportData {
+		const visibleBox = this.getCurrentViewport();
+		return this.linesLayout.getLinesViewportData(visibleBox.top, visibleBox.top + visibleBox.height);
+	}
 }

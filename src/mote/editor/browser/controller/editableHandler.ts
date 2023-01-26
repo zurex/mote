@@ -12,6 +12,7 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { Color } from 'mote/base/common/color';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { ViewController } from 'mote/editor/browser/view/viewController';
 
 export interface EditableHandlerOptions {
 	placeholder?: string;
@@ -44,11 +45,12 @@ export class EditableHandler extends ViewPart {
 	constructor(
 		private readonly lineNumber: number,
 		context: ViewContext,
-		private readonly command: ICommandDelegate,
+		private readonly viewController: ViewController,
 		private readonly options: EditableHandlerOptions,
+		domNode?: HTMLDivElement,
 	) {
 		super(context);
-		this.editable = createFastDomNode(document.createElement('div'));
+		this.editable = createFastDomNode(domNode ? domNode : document.createElement('div'));
 		this.editable.setAttribute('contenteditable', '');
 
 		const editableInputHost: IEditableInputHost = {
@@ -106,14 +108,14 @@ export class EditableHandler extends ViewPart {
 
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
-		const selection = this.command.getSelection();
+		const selection = this.viewController.getSelection();
 		if (this.editableInput.isFocused() && selection.startColumn > 0) {
 			this.ensureSelection(selection);
 		}
 	}
 
 	private isEmpty() {
-		return this.command.isEmpty(this.lineNumber);
+		return this.viewController.isEmpty(this.lineNumber);
 	}
 
 	//#region view event handlers
@@ -127,12 +129,12 @@ export class EditableHandler extends ViewPart {
 				if (_debugComposition) {
 					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
-				this.command.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
+				this.viewController.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
 					console.log(` => type: <<${e.type}>>`);
 				}
-				this.command.type(e.type);
+				this.viewController.type(e.type);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
@@ -142,24 +144,23 @@ export class EditableHandler extends ViewPart {
 		this._register(this.editableInput.onKeyDown((e) => {
 			const event = e as StandardKeyboardEvent;
 			if (event.equals(KeyCode.Enter)) {
-				if (this.command.enter()) {
+				if (this.viewController.enter()) {
 					event.preventDefault();
 				}
 			}
 			if (event.equals(KeyCode.Backspace)) {
-				this.command.backspace();
+				this.viewController.backspace();
 			}
 		}));
 		this._register(this.editableInput.onSelectionChange((e) => {
-			e.lineNumber = this.lineNumber;
-			this.command.select(e);
+			this.viewController.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
 			// wait 10ms for selection change
 			setTimeout(() => {
 				// force focus to set range
 				this.editable.domNode.focus();
-				const selection = this.command.getSelection();
+				const selection = this.viewController.getSelection();
 				// line number less than 0 means view controller not initialized yet
 				if (selection.startLineNumber >= 0 && selection.startColumn >= 0) {
 					this.ensureSelection(selection);
@@ -182,6 +183,7 @@ export class EditableHandler extends ViewPart {
 	}
 
 	private ensureSelection(selection: EditorSelection) {
+		return;
 		const rangeFromElement = RangeUtils.create(this.editable.domNode, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
 		const rangeFromDocument = RangeUtils.get();
 		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {

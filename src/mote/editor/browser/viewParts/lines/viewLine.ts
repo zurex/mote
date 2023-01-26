@@ -8,6 +8,8 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { IVisibleLine } from 'mote/editor/browser/view/viewLayer';
 import { IViewLineContributionDescription, ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
+import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
+import { StringBuilder } from 'mote/editor/common/core/stringBuilder';
 
 export class EmptyViewLine extends Disposable {
 
@@ -55,25 +57,32 @@ export class ViewLine implements IVisibleLine {
 		throw new Error('Method not implemented.');
 	}
 
-	public getDomNode(): FastDomNode<HTMLElement> | null {
-		return this.domNode;
+	public getDomNode(): HTMLElement | null {
+		return this.domNode?.domNode || null;
 	}
 
-	public setDomNode(domNode: FastDomNode<HTMLElement>) {
-		this.domNode = domNode;
+	public setDomNode(domNode: HTMLElement) {
+		this.domNode = createFastDomNode(domNode);
 	}
 
-	public renderLine(lineNumber: number, store: BlockStore) {
+	public renderLine(lineNumber: number, deltaTop: number, viewportData: ViewportData, sb: StringBuilder) {
+		const lineData = viewportData.getViewLineRenderingData(lineNumber);
+		const store = lineData.store;
 		const type = store.getType() || 'text';
 		const contributions = ViewLineExtensionsRegistry.getViewLineContributions();
 		const contribution: IViewLineContributionDescription = contributions.get(type) || contributions.get('text')!;
 		const viewBlock: IViewLineContribution = this.instantiationService.createInstance(
 			contribution.ctor, lineNumber, this.viewContext, this.viewController, {});
-		viewBlock.setValue(store);
-		this.domNode = viewBlock.getDomNode();
-		this.domNode.setClassName('view-line');
-		this.domNode.setAttribute('data-index', lineNumber.toString());
-		this.domNode.setAttribute('data-block-id', store.id);
+
+		const domNode = new FastDomNode(document.createElement('div'));
+		domNode.setClassName('view-line');
+		domNode.setAttribute('data-index', lineNumber.toString());
+		domNode.setAttribute('data-block-id', store.id);
+		domNode.setTop(deltaTop);
+
+		const line = viewBlock.render(store);
+		domNode.domNode.innerHTML = line;
+		sb.appendString(domNode.domNode.outerHTML);
 		return true;
 	}
 }

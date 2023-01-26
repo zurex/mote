@@ -69,20 +69,6 @@ export class ViewController extends Disposable {
 
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
 		this.eventDispatcher = new ViewEventDispatcher();
-
-		this._register(configuration.onDidChangeFast((e) => {
-			try {
-				const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
-				this.onConfigurationChanged(eventsCollector, e);
-			} finally {
-				this.eventDispatcher.endEmitViewEvents();
-			}
-		}));
-	}
-
-	private onConfigurationChanged(eventsCollector: ViewEventsCollector, e: ConfigurationChangedEvent): void {
-		console.log('emit ViewConfigurationChangedEvent');
-		eventsCollector.emitViewEvent(new viewEvents.ViewConfigurationChangedEvent(e));
 	}
 
 	//#region command expose to editable
@@ -93,7 +79,7 @@ export class ViewController extends Disposable {
 	 */
 	public select(selection: TextSelection): void {
 		if (selection.startIndex === selection.endIndex) {
-			const position = new Position(selection.lineNumber + 1, selection.startIndex + 1);
+			const position = new Position(selection.lineNumber, selection.startIndex + 1);
 			this.moveTo(position, NavigationCommandRevealType.Minimal);
 		} else {
 

@@ -174,8 +174,12 @@ export class TextModel extends Disposable implements ITextModel {
 	}
 
 	public getLineStore(lineNumber: number): BlockStore {
-		if (lineNumber < 1 || lineNumber > this.getLineCount()) {
+		if (lineNumber < 0 || lineNumber > this.getLineCount()) {
 			throw new Error('Illegal value for lineNumber');
+		}
+		if (lineNumber === 0) {
+			// lineNumber == 0 means it's the header
+			return this.pageStore;
 		}
 		return StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore);
 	}
@@ -221,7 +225,7 @@ export class TextModel extends Disposable implements ITextModel {
 	_setTrackedRange(id: string | null, newRange: EditorRange, newStickiness: model.TrackedRangeStickiness): string;
 	_setTrackedRange(id: string | null, newRange: EditorRange | null, newStickiness: model.TrackedRangeStickiness): string | null {
 
-		console.log(newRange);
+		//console.log(newRange);
 		this._onDidChangeDecorations.fire();
 		return null;
 	}
@@ -352,8 +356,8 @@ export class TextModel extends Disposable implements ITextModel {
 				continue;
 			}
 
-			this.applyEditForEditableInput(op, transaction);
-			// this.applyEditForTextAreaInput(op, transaction)
+			//this.applyEditForEditableInput(op, transaction);
+			this.applyEditForTextAreaInput(op, transaction);
 
 			const contentChangeRange = new EditorRange(startLineNumber, startColumn, endLineNumber, endColumn);
 			contentChanges.push({
@@ -392,7 +396,7 @@ export class TextModel extends Disposable implements ITextModel {
 		const endLineNumber = rawOperation.range.endLineNumber;
 		const endColumn = rawOperation.range.endColumn;
 
-		const store = StoreUtils.createStoreForLineNumber(endLineNumber, this.contentStore);
+		const store = this.getLineStore(startLineNumber);
 		const prevRecord = store.getTitleStore().getValue();
 		const prevValue = segmentUtils.collectValueFromSegment(prevRecord);
 		const diffResult = textChange({ startIndex: startColumn - 1, endIndex: endColumn - 1, lineNumber: endLineNumber }, prevValue, rawOperation.text!);
@@ -421,7 +425,7 @@ export class TextModel extends Disposable implements ITextModel {
 
 		} else {
 			let type = 'text';
-			const lineStore = StoreUtils.createStoreForLineNumber(range.startLineNumber, this.contentStore);
+			const lineStore = this.getLineStore(range.startLineNumber);
 			if (keepLineTypes.has(lineStore.getType() || '')) {
 				// Some blocks required keep same styles in next line
 				// Just like todo, list
@@ -438,7 +442,7 @@ export class TextModel extends Disposable implements ITextModel {
 			// it means insert a new text
 			return;
 		}
-		const store = StoreUtils.createStoreForLineNumber(range.endLineNumber, this.contentStore);
+		const store = this.getLineStore(range.endLineNumber);
 		const record = store.getValue();
 		if (range.startLineNumber !== range.endLineNumber) {
 			// delete block
@@ -458,7 +462,7 @@ export class TextModel extends Disposable implements ITextModel {
 	}
 
 	private insert(range: EditorRange, text: string, transaction: Transaction) {
-		const store = StoreUtils.createStoreForLineNumber(range.startLineNumber, this.contentStore).getTitleStore();
+		const store = this.getLineStore(range.startLineNumber).getTitleStore();
 		const segment = segmentUtils.combineArray(text, []) as ISegment;
 
 		const storeValue = store.getValue();

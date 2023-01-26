@@ -22,6 +22,8 @@ import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { TemplatePicker } from 'mote/editor/browser/viewParts/templatePicker/templatePicker';
 import { IViewModel } from 'mote/editor/common/viewModel';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -32,6 +34,7 @@ export interface IOverlayWidgetData {
 export class EditorView extends ViewEventHandler {
 
 	private readonly context: ViewContext;
+	private selections: EditorSelection[];
 
 	// These are parts, but we must do some API related calls on them, so we keep a reference
 	private readonly viewParts: ViewPart[];
@@ -39,6 +42,7 @@ export class EditorView extends ViewEventHandler {
 	private readonly templatePicker: TemplatePicker;
 	private readonly viewLines: ViewLines;
 	private readonly scrollbar: EditorScrollbar;
+	private readonly editableHandler: EditableHandler;
 
 	// Dom nodes
 	public readonly domNode: FastDomNode<HTMLElement>;
@@ -54,7 +58,7 @@ export class EditorView extends ViewEventHandler {
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super();
-
+		this.selections = [new EditorSelection(1, 1, 1, 1)];
 		this.headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
 
 		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
@@ -76,6 +80,7 @@ export class EditorView extends ViewEventHandler {
 		this.viewParts = [];
 
 		this.domNode = createFastDomNode(document.createElement('div'));
+		this.domNode.setClassName('mote-editor');
 
 		this.overflowGuardContainer = createFastDomNode(document.createElement('div'));
 		PartFingerprints.write(this.overflowGuardContainer, PartFingerprint.OverflowGuard);
@@ -88,6 +93,10 @@ export class EditorView extends ViewEventHandler {
 		this.viewParts.push(this.templatePicker);
 
 		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, this.linesContent);
+
+		// Keyboard handler
+		this.editableHandler = new EditableHandler(0, this.context, viewController, {}, this.viewLines.getDomNode().domNode);
+		this.viewParts.push(this.editableHandler);
 
 		// Overlay widgets
 		this.overlayWidgets = new ViewOverlayWidgets(this.context);
@@ -110,13 +119,15 @@ export class EditorView extends ViewEventHandler {
 		this.createCover(parent);
 		const headerDomNode = createFastDomNode(dom.$('div'));
 		headerDomNode.setClassName('editor-header view-line');
+		headerDomNode.setAttribute('data-index', '0');
+		headerDomNode.setAttribute('data-block-id', this.pageStore.id);
 		const headerContainer = this.headerContainer;
 
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
 		const viewLineContrib = ViewLineExtensionsRegistry.getViewLineContribution('text')!;
-		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, -1, this.context, viewController, {
+		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, 0, this.context, viewController, {
 			placeholder: 'Untitled', forcePlaceholder: true
 		});
 		headerHandler.setValue(this.pageStore);
@@ -148,6 +159,11 @@ export class EditorView extends ViewEventHandler {
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		//this.domNode.setClassName(this._getEditorClassName());
 		this.applyLayout();
+		return false;
+	}
+
+	public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
+		this.selections = e.selections;
 		return false;
 	}
 
@@ -203,7 +219,13 @@ export class EditorView extends ViewEventHandler {
 			return;
 		}
 
-		const viewportData = new ViewportData();
+		const partialViewportData = this.context.viewLayout.getLinesViewportData();
+		const viewportData = new ViewportData(
+			this.selections,
+			partialViewportData,
+			null as any, //this.context.viewLayout.getWhitespaceViewportData(),
+			this.context.viewModel
+		);
 
 		if (this.viewLines.shouldRender()) {
 			this.viewLines.renderLines(viewportData);

@@ -4,7 +4,7 @@ import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { EndOfLinePreference } from 'mote/editor/common/model';
 
-export const _debugComposition = true;
+export const _debugComposition = false;
 
 export interface ITypeData {
 	text: string;
@@ -27,6 +27,8 @@ export interface IEditableWrapper {
 	setValue(reason: string, value: string): void;
 
 	getSelection(): TextSelection;
+	getSelectionStart(): number;
+	getSelectionEnd(): number;
 	setSelectionRange(reason: string, selectionStart: number, selectionEnd: number): void;
 }
 

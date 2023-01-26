@@ -5,18 +5,19 @@ import { IEditorConfiguration } from 'mote/editor/common/config/editorConfigurat
 import { ITextModel, PositionAffinity } from 'mote/editor/common/model';
 import { ILineBreaksComputerFactory } from 'mote/editor/common/modelLineProjectionData';
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
-import { ICoordinatesConverter, IViewModel } from 'mote/editor/common/viewModel';
+import { ICoordinatesConverter, IViewModel, ViewLineRenderingData } from 'mote/editor/common/viewModel';
 import { ViewModelEventDispatcher } from 'mote/editor/common/viewModelEventDispatcher';
 import { OutgoingViewModelEvent, ScrollChangedEvent, ViewModelEventsCollector } from 'mote/editor/common/viewModelEventsCollector';
 import { CursorsController } from 'mote/editor/common/cursor/cursorsController';
 import { CursorConfiguration, CursorState, PartialCursorState } from 'mote/editor/common/cursorCommon';
 import { Position } from 'mote/editor/common/core/position';
-import { EditorOption } from 'mote/editor/common/config/editorOptions';
+import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { IViewModelLines, ViewModelLinesFromProjectedModel } from 'mote/editor/common/viewModel/viewModelLines';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
 import { ScrollType } from 'mote/editor/common/editorCommon';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { EditorRange } from 'mote/editor/common/core/editorRange';
 
 export class ViewModel extends Disposable implements IViewModel {
 
@@ -77,6 +78,15 @@ export class ViewModel extends Disposable implements IViewModel {
 				e.scrollWidth, e.scrollLeft, e.scrollHeight, e.scrollTop
 			));
 		}));
+
+		this._register(this.configuration.onDidChangeFast((e) => {
+			try {
+				const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
+				this.onConfigurationChanged(eventsCollector, e);
+			} finally {
+				this.eventDispatcher.endEmitViewEvents();
+			}
+		}));
 	}
 
 	public addViewEventHandler(eventHandler: ViewEventHandler): void {
@@ -95,6 +105,15 @@ export class ViewModel extends Disposable implements IViewModel {
 			this.eventDispatcher.endEmitViewEvents();
 		}
 	}
+
+	//#region events handler
+
+	private onConfigurationChanged(eventsCollector: ViewModelEventsCollector, e: ConfigurationChangedEvent): void {
+		eventsCollector.emitViewEvent(new viewEvents.ViewConfigurationChangedEvent(e));
+		this.viewLayout.onConfigurationChanged(e);
+	}
+
+	//#endregion
 
 	//#region cursor operations
 
@@ -144,6 +163,36 @@ export class ViewModel extends Disposable implements IViewModel {
 
 	getLineLength(lineNumber: number): number {
 		return this.getLineContent(lineNumber).length;
+	}
+
+	public getViewportViewLineRenderingData(visibleRange: EditorRange, lineNumber: number): ViewLineRenderingData {
+		//const allInlineDecorations = this._decorations.getDecorationsViewportData(visibleRange).inlineDecorations;
+		//const inlineDecorations = allInlineDecorations[lineNumber - visibleRange.startLineNumber];
+		return this._getViewLineRenderingData(lineNumber);
+	}
+
+	private _getViewLineRenderingData(lineNumber: number): ViewLineRenderingData {
+		const mightContainRTL = false;
+		const mightContainNonBasicASCII = true;
+		const tabSize = 4;
+		const lineData = this.lines.getViewLineData(lineNumber);
+		const modelLineNumber = lineData.modelLineNumber;
+
+		const store = this.model.getLineStore(modelLineNumber);
+
+		return new ViewLineRenderingData(
+			lineData.minColumn,
+			lineData.maxColumn,
+			lineData.content,
+			lineData.continuesWithWrappedLine,
+			mightContainRTL,
+			mightContainNonBasicASCII,
+			//lineData.tokens,
+			//inlineDecorations,
+			tabSize,
+			lineData.startVisibleColumn,
+			store
+		);
 	}
 
 	public normalizePosition(position: Position, affinity: PositionAffinity): Position {

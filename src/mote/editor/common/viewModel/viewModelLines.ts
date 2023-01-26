@@ -310,6 +310,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public convertViewPositionToModelPosition(viewLineNumber: number, viewColumn: number): Position {
+		if (viewLineNumber === 0) {
+			return new Position(0, viewColumn);
+		}
 		const info = this.getViewLineInfo(viewLineNumber);
 
 		const inputColumn = this.modelLineProjections[info.modelLineNumber - 1].getModelColumnOfViewPosition(info.modelLineWrappedLineIdx, viewColumn);
@@ -324,6 +327,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public convertModelPositionToViewPosition(_modelLineNumber: number, _modelColumn: number, affinity: PositionAffinity = PositionAffinity.None): Position {
+		if (_modelLineNumber === 0) {
+			return new Position(_modelLineNumber, _modelColumn);
+		}
 
 		const validPosition = this.model.validatePosition(new Position(_modelLineNumber, _modelColumn));
 		const inputLineNumber = validPosition.lineNumber;

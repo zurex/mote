@@ -319,9 +319,5 @@ export interface IViewLineContribution {
 
 	getDomNode(): FastDomNode<HTMLElement>;
 
-	getBlockHeight(): number;
-
-	getLineHeight(): number;
-
-	getPaddingTop(): number;
+	render(store: BlockStore, lineData?: ViewLineRenderingData): string;
 }

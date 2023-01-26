@@ -159,7 +159,8 @@ export class EditableInput extends Disposable {
 	private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
-	private editableState: EditableState = EditableState.EMPTY;
+	//private editableState: EditableState = EditableState.EMPTY;
+	private editableStates: EditableState[] = [EditableState.EMPTY];
 	private selectionChangeListener: IDisposable | null = null;
 
 	private hasFocus: boolean = false;
@@ -189,8 +190,10 @@ export class EditableInput extends Disposable {
 				return;
 			}
 
-			const newState = EditableState.readFromEditable(this.editable, this.editableState);
-			const typeInput = EditableState.deduceInput(this.editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
+			const selection = this.editable.getSelection();
+			const editableState = this.editableStates[selection.lineNumber] || EditableState.EMPTY;
+			const newState = EditableState.readFromEditable(this.editable, editableState);
+			const typeInput = EditableState.deduceInput(editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
 
 			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1) {
 				// one character was typed
@@ -203,7 +206,7 @@ export class EditableInput extends Disposable {
 				}
 			}
 
-			this.editableState = newState;
+			this.editableStates[selection.lineNumber] = newState;
 			if (
 				typeInput.text !== ''
 				|| typeInput.replacePrevCharCnt !== 0
@@ -274,7 +277,21 @@ export class EditableInput extends Disposable {
 			}
 
 			const selectionWithOptions = getSelectionFromRange();
+
 			if (selectionWithOptions) {
+				const lineNumber = selectionWithOptions.selection.lineNumber;
+				const editableState = this.editableStates[lineNumber] || EditableState.EMPTY;
+				if (!editableState.value) {
+					this.editableStates[lineNumber] = EditableState.readFromEditable(this.editable, editableState);
+				}
+
+				const newSelectionStart = this.editable.getSelectionStart();
+				const newSelectionEnd = this.editable.getSelectionEnd();
+				if (editableState.selectionStart === newSelectionStart && editableState.selectionEnd === newSelectionEnd) {
+					// Nothing to do...
+					return;
+				}
+
 				this._onSelectionChange.fire(selectionWithOptions.selection);
 			}
 		});
@@ -377,6 +394,10 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 	}
 
 	getValue(): string {
+		const selection = this.getSelection();
+		if (selection.lineNumber > 0 && this._actual.childNodes.length > 0) {
+			return nodeToString(this._actual.childNodes[selection.lineNumber - 1]);
+		}
 		return nodeToString(this._actual);
 	}
 
@@ -395,6 +416,7 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 		}
 		return { startIndex: 0, endIndex: 0, lineNumber: -1 };
 	}
+
 	getSelectionStart(): number {
 		const selectionWithOptions = getSelectionFromRange();
 		if (selectionWithOptions) {
@@ -402,6 +424,7 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 		}
 		return 0;
 	}
+
 	getSelectionEnd(): number {
 		const selectionWithOptions = getSelectionFromRange();
 		if (selectionWithOptions) {
