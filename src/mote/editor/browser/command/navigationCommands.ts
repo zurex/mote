@@ -218,7 +218,7 @@ export namespace CoreNavigationCommands {
 	export interface CursorMoveCommandOptions extends BaseCommandOptions {
 		pageSize?: number;
 	}
-	/*
+
 	class CursorMoveBasedCommand extends CoreEditorCommand<CursorMoveCommandOptions> {
 
 		private readonly _staticArgs: CursorMove_.SimpleMoveArguments;
@@ -318,7 +318,7 @@ export namespace CoreNavigationCommands {
 			mac: { primary: KeyCode.DownArrow, secondary: [KeyMod.WinCtrl | KeyCode.KeyN] }
 		}
 	}));
-	*/
+
 }
 
 

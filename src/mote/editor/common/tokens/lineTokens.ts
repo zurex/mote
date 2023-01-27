@@ -1,5 +1,8 @@
 export interface IViewLineTokens {
+	getCount(): number;
 	getLineContent(): string;
+	getEndOffset(tokenIndex: number): number;
+	getClassName(tokenIndex: number): string;
 }
 
 export class LineTokens implements IViewLineTokens {

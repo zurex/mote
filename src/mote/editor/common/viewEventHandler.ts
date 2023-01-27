@@ -35,6 +35,11 @@ export class ViewEventHandler extends Disposable {
 						shouldRender = true;
 					}
 					break;
+				case viewEvents.ViewEventType.ViewFlushed:
+					if (this.onFlushed(e)) {
+						shouldRender = true;
+					}
+					break;
 				case viewEvents.ViewEventType.ViewLinesChanged:
 					if (this.onLinesChanged(e)) {
 						shouldRender = true;
@@ -87,6 +92,10 @@ export class ViewEventHandler extends Disposable {
 	}
 
 	public onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
+		return false;
+	}
+
+	public onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return false;
 	}
 

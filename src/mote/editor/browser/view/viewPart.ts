@@ -1,3 +1,4 @@
+import { RestrictedRenderingContext, ViewRenderingContext } from 'mote/editor/browser/view/renderingContext';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { FastDomNode } from 'mote/base/browser/fastDomNode';
@@ -17,8 +18,8 @@ export abstract class ViewPart extends ViewEventHandler {
 		super.dispose();
 	}
 
-	public abstract prepareRender(): void;
-	public abstract render(): void;
+	public abstract prepareRender(ctx: ViewRenderingContext): void;
+	public abstract render(ctx: RestrictedRenderingContext): void;
 
 }
 
@@ -29,6 +30,7 @@ export const enum PartFingerprint {
 	OverflowGuard,
 	OverlayWidgets,
 	ScrollableElement,
+	TextArea,
 	ViewLines,
 	Minimap
 }

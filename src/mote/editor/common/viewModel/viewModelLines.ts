@@ -11,9 +11,11 @@ import { ConstantTimePrefixSumComputer } from 'mote/editor/common/model/prefixSu
 import { createModelLineProjection, IModelLineProjection } from 'mote/editor/common/viewModel/modelLineProjection';
 
 export interface IViewModelLines extends IDisposable {
+
 	createCoordinatesConverter(): ICoordinatesConverter;
 	createLineBreaksComputer(): ILineBreaksComputer;
 
+	onModelFlushed(): void;
 	onModelLinesDeleted(versionId: number | null, fromLineNumber: number, toLineNumber: number): viewEvents.ViewLinesDeletedEvent | null;
 	onModelLinesInserted(versionId: number | null, fromLineNumber: number, toLineNumber: number, lineBreaks: (ModelLineProjectionData | null)[]): viewEvents.ViewLinesInsertedEvent | null;
 	onModelLineChanged(versionId: number | null, lineNumber: number, lineBreakData: ModelLineProjectionData | null): [boolean, viewEvents.ViewLinesChangedEvent | null, viewEvents.ViewLinesInsertedEvent | null, viewEvents.ViewLinesDeletedEvent | null];
@@ -118,6 +120,10 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	//#region Event handler
+
+	public onModelFlushed(): void {
+		this.constructLines(/*resetHiddenAreas*/true, null);
+	}
 
 	public onModelLinesDeleted(versionId: number | null, fromLineNumber: number, toLineNumber: number): viewEvents.ViewLinesDeletedEvent | null {
 		if (!versionId || versionId <= this._validModelVersionId) {

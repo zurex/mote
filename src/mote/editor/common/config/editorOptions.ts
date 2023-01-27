@@ -790,7 +790,7 @@ class EditorLayoutInfoComputer extends ComputedEditorOption<EditorOption.LayoutI
 		//const scrollbarArrowSize = scrollbar.arrowSize;
 		const horizontalScrollbarHeight = scrollbar.horizontalScrollbarSize;
 
-		const contentLeft = 0;
+		const contentLeft = 96;
 		const contentWidth = outerWidth;
 
 		let isWordWrapMinified = false;

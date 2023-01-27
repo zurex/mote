@@ -76,7 +76,7 @@ export class ViewModel extends Disposable implements IViewModel {
 		this.cursorConfig = new CursorConfiguration();
 		this.cursor = this._register(new CursorsController(model, this, this.coordinatesConverter, this.cursorConfig));
 
-		this.viewLayout = this._register(new ViewLayout(this, this.configuration, this.getLineCount(), scheduleAtNextAnimationFrame));
+		this.viewLayout = this._register(new ViewLayout(this.configuration, this.getLineCount(), scheduleAtNextAnimationFrame));
 
 		this._register(this.viewLayout.onDidScroll((e) => {
 			this.eventDispatcher.emitSingleViewEvent(new viewEvents.ViewScrollChangedEvent(e));
@@ -171,10 +171,10 @@ export class ViewModel extends Disposable implements IViewModel {
 				for (const change of changes) {
 					switch (change.changeType) {
 						case textModelEvents.RawContentChangedType.Flush: {
-							//this.lines.onModelFlushed();
+							this.lines.onModelFlushed();
 							eventsCollector.emitViewEvent(new viewEvents.ViewFlushedEvent());
 							//this._decorations.reset();
-							//this.viewLayout.onFlushed(this.getLineCount());
+							this.viewLayout.onFlushed(this.getLineCount());
 							hadOtherModelChange = true;
 							break;
 						}
@@ -372,7 +372,7 @@ export class ViewModel extends Disposable implements IViewModel {
 
 	private _getViewLineRenderingData(lineNumber: number): ViewLineRenderingData {
 		const mightContainRTL = false;
-		const mightContainNonBasicASCII = false;
+		const mightContainNonBasicASCII = true;
 		const tabSize = 4;
 		const lineData = this.lines.getViewLineData(lineNumber);
 		const modelLineNumber = lineData.modelLineNumber;
@@ -386,7 +386,7 @@ export class ViewModel extends Disposable implements IViewModel {
 			lineData.continuesWithWrappedLine,
 			mightContainRTL,
 			mightContainNonBasicASCII,
-			//lineData.tokens,
+			lineData.tokens,
 			//inlineDecorations,
 			tabSize,
 			lineData.startVisibleColumn,

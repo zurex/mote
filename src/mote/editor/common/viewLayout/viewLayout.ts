@@ -2,7 +2,7 @@ import { IEditorConfiguration } from 'mote/editor/common/config/editorConfigurat
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { ScrollType } from 'mote/editor/common/editorCommon';
 import { LinesLayout } from 'mote/editor/common/viewLayout/linesLayout';
-import { IPartialViewLinesViewportData, IViewLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
+import { IPartialViewLinesViewportData, IViewLayout, IViewLineLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
 import { Event } from 'mote/base/common/event';
 import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'mote/base/common/scrollable';
@@ -150,7 +150,6 @@ export class ViewLayout extends Disposable implements IViewLayout {
 	public readonly onDidScroll: Event<ScrollEvent>;
 
 	constructor(
-		viewModel: IViewModel,
 		private readonly configuration: IEditorConfiguration,
 		lineCount: number,
 		scheduleAtNextAnimationFrame: (callback: () => void) => IDisposable
@@ -160,7 +159,7 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		const options = this.configuration.options;
 		const layoutInfo = options.get(EditorOption.LayoutInfo);
 
-		this.linesLayout = new LinesLayout(viewModel, lineCount);
+		this.linesLayout = new LinesLayout(lineCount);
 
 		this.scrollable = this._register(new EditorScrollable(0, scheduleAtNextAnimationFrame));
 		this.scrollable.setScrollDimensions(new EditorScrollDimensions(
@@ -172,6 +171,10 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		this.onDidScroll = this.scrollable.onDidScroll;
 
 		this.updateHeight();
+	}
+
+	public setViewLineLayout(viewLineLayout: IViewLineLayout) {
+		this.linesLayout.setViewLineLayout(viewLineLayout);
 	}
 
 	getScrollable(): Scrollable {
@@ -209,6 +212,10 @@ export class ViewLayout extends Disposable implements IViewLayout {
 
 	onLinesDeleted(fromLineNumber: number, toLineNumber: number) {
 		this.linesLayout.onLinesDeleted(fromLineNumber, toLineNumber);
+	}
+
+	public onFlushed(lineCount: number): void {
+		this.linesLayout.onFlushed(lineCount);
 	}
 
 	//#endregion

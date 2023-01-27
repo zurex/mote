@@ -1,6 +1,6 @@
 
 import { Disposable } from 'mote/base/common/lifecycle';
-import { IEditorWhitespace, IPartialViewLinesViewportData, IViewModel } from 'mote/editor/common/viewModel';
+import { IEditorWhitespace, IPartialViewLinesViewportData, IViewLineLayout, IViewModel } from 'mote/editor/common/viewModel';
 
 interface IPendingChange { id: string; newAfterLineNumber: number; newHeight: number }
 interface IPendingRemove { id: string }
@@ -80,21 +80,36 @@ export class EditorWhitespace implements IEditorWhitespace {
  * This provides commodity operations for working with lines that contain whitespace that pushes lines lower (vertically).
  */
 export class LinesLayout extends Disposable {
-	private lineHeight = 30;
+	private lineHeight = 32;
 
-	private _paddingTop: number = 148;
+	private _paddingTop: number = 162;
 	private _paddingBottom: number = 200;
 
 	private readonly _pendingChanges: PendingChanges;
+	private viewLineLayout!: IViewLineLayout;
 	private _arr: EditorWhitespace[] = [];
 
 	constructor(
-		private readonly viewModel: IViewModel,
+
 		private lineCount: number,
 	) {
 		super();
 
 		this._pendingChanges = new PendingChanges();
+	}
+
+	public setViewLineLayout(viewLineLayout: IViewLineLayout) {
+		this.viewLineLayout = viewLineLayout;
+	}
+
+	/**
+	 * Set the number of lines.
+	 *
+	 * @param lineCount New number of lines.
+	 */
+	public onFlushed(lineCount: number): void {
+		this.checkPendingChanges();
+		this.lineCount = lineCount;
 	}
 
 	/**
@@ -173,8 +188,6 @@ export class LinesLayout extends Disposable {
 	 */
 	public getLineNumberAtOrAfterVerticalOffset(verticalOffset: number): number {
 
-		//const viewLines = this.viewLinesProvider();
-
 		const linesCount = this.lineCount | 0;
 		let minLineNumber = 1;
 		let maxLineNumber = linesCount;
@@ -210,6 +223,15 @@ export class LinesLayout extends Disposable {
 	 * @return The sum of heights for all objects above `lineNumber`.
 	 */
 	public getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones = false): number {
+		try {
+			const offset = this.viewLineLayout.getVerticalOffsetForLineNumber(lineNumber, includeViewZones);
+			if (offset >= 0) {
+				return offset;
+			}
+		}
+		catch (e) {
+			console.error(e);
+		}
 		lineNumber = lineNumber | 0;
 
 		let previousLinesHeight: number;

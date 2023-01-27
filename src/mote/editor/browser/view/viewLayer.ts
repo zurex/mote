@@ -241,13 +241,12 @@ export class VisibleLinesCollection<T extends IVisibleLine> {
 		return false;
 	}
 
-	/*
+
 	public onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		this._linesCollection.flush();
 		// No need to clear the dom node because a full .innerHTML will occur in ViewLayerRenderer._render
 		return true;
 	}
-	*/
 
 	public onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
 		return this._linesCollection.onLinesChanged(e.fromLineNumber, e.count);

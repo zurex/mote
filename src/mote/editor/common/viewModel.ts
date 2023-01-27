@@ -109,6 +109,10 @@ export interface IViewLayout {
 	getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones?: boolean): number;
 }
 
+export interface IViewLineLayout {
+	getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones: boolean): number;
+}
+
 export interface IEditorWhitespace {
 	readonly id: string;
 	readonly afterLineNumber: number;
@@ -234,10 +238,7 @@ export class ViewLineRenderingData {
 	 * Describes if `content` contains non basic ASCII chars.
 	 */
 	public readonly isBasicASCII: boolean;
-	/**
-	 * The tokens at this view line.
-	 */
-	//public readonly tokens: IViewLineTokens;
+
 	/**
 	 * Inline decorations at this view line.
 	 */
@@ -258,7 +259,10 @@ export class ViewLineRenderingData {
 		continuesWithWrappedLine: boolean,
 		mightContainRTL: boolean,
 		mightContainNonBasicASCII: boolean,
-		//tokens: IViewLineTokens,
+		/**
+		 * The tokens at this view line.
+		 */
+		public readonly tokens: IViewLineTokens,
 		//inlineDecorations: InlineDecoration[],
 		tabSize: number,
 		startVisibleColumn: number,

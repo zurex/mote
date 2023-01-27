@@ -78,14 +78,14 @@ export function isTextBuffNodeContain(e: Node) {
 	}
 }
 
-function getElementInParent(element: Node | null, predict: (element: Node) => boolean): Node | null {
+function getElementInParent(element: Element | null, predict: (element: Node) => boolean): Node | null {
 	for (; isNode(element) && !predict(element!);) {
-		element = element && element.parentNode;
+		element = element && element.parentElement;
 	}
 	return element;
 }
 
-export function getDataRootInParent(container: Node) {
+export function getDataRootInParent(container: Element) {
 	return getElementInParent(container, isDataRootElement);
 }
 
@@ -98,7 +98,7 @@ export function getTextEquationTokenElementInParent(e: any) {
 	return undefined;
 }
 
-export function getTextMention(container: Node) {
+export function getTextMention(container: Element) {
 	// Get TextEquationTokenElement at first
 	let element: any = getElementInParent(container, e => isTextEquationTokenElement(e as any) || isDataRootElement(e));
 	if (element && isTextMentionNode(element)) {

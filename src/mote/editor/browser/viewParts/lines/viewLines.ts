@@ -3,12 +3,18 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { IVisibleLinesHost, VisibleLinesCollection } from 'mote/editor/browser/view/viewLayer';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
-import { ViewLine, ViewLineOptions } from 'mote/editor/browser/viewParts/lines/viewLine';
+import { DomReadingContext, ViewLine, ViewLineOptions } from 'mote/editor/browser/viewParts/lines/viewLine';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
+import { Position } from 'mote/editor/common/core/position';
+import { HorizontalPosition, VisibleRanges } from 'mote/editor/browser/view/renderingContext';
+import { getDataRootInParent } from 'mote/editor/common/htmlElementUtils';
+import { IViewLineLayout } from 'mote/editor/common/viewModel';
+import { EditorOption } from 'mote/editor/common/config/editorOptions';
+import { applyFontInfo } from 'mote/editor/browser/config/domFontInfo';
 
 class LastRenderedData {
 
@@ -27,7 +33,7 @@ class LastRenderedData {
 	}
 }
 
-export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
+export class ViewLines extends ViewPart implements IViewLineLayout, IVisibleLinesHost<ViewLine> {
 
 	private domNode: FastDomNode<HTMLElement>;
 	private readonly _textRangeRestingSpot: HTMLElement;
@@ -40,6 +46,9 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	// config
 	private canUseLayerHinting: boolean = true;
 	private viewLineOptions: ViewLineOptions;
+
+	// --- width
+	private maxLineWidth: number = 0;
 
 	constructor(
 		context: ViewContext,
@@ -55,6 +64,8 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.visibleLines = new VisibleLinesCollection(this);
 
 		const conf = this.context.configuration;
+		const options = conf.options;
+		const fontInfo = options.get(EditorOption.FontInfo);
 
 		this.viewLineOptions = new ViewLineOptions(conf, this.context.theme.type);
 
@@ -68,6 +79,8 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.domNode.setTop(160);
 
 		PartFingerprints.write(this.domNode, PartFingerprint.ViewLines);
+
+		applyFontInfo(this.domNode, fontInfo);
 
 		this.lastRenderedData = new LastRenderedData();
 	}
@@ -106,6 +119,12 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
 	//#region view events handler
 
+	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
+		const shouldRender = this.visibleLines.onFlushed(e);
+		this.maxLineWidth = 0;
+		return shouldRender;
+	}
+
 	public override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
 		return this.visibleLines.onLinesInserted(e);
 	}
@@ -125,6 +144,106 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	}
 
 	//#endregion
+
+	public lineHeightForPosition(position: Position): number | null {
+		const line = this.visibleLines.getVisibleLine(position.lineNumber);
+		const lineHeight = line.getDomNode()!.clientHeight;
+		if (lineHeight > 40) {
+			return 30;
+		}
+		return lineHeight;
+	}
+
+	/**
+	 * Get the vertical offset (the sum of heights for all objects above) a certain line number.
+	 *
+	 * @param lineNumber The line number
+	 * @return The sum of heights for all objects above `lineNumber`.
+	 */
+	public getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones = false): number {
+		if (this.visibleLines.getStartLineNumber() > lineNumber) {
+			return -1;
+		}
+		if (this.visibleLines.getEndLineNumber() < lineNumber) {
+			return -1;
+		}
+		const line = this.visibleLines.getVisibleLine(lineNumber);
+		return line.getDomNode()!.getBoundingClientRect().y;
+	}
+
+	public visibleRangeForPosition(position: Position): HorizontalPosition | null {
+		const visibleRanges = this.visibleRangesForLineRange(position.lineNumber, position.column, position.column);
+		if (!visibleRanges) {
+			return null;
+		}
+
+		const lineDOM = this.visibleLines.getVisibleLine(position.lineNumber).getDomNode()!;
+		return new HorizontalPosition(visibleRanges.outsideRenderedLine, visibleRanges.ranges[0].left);
+	}
+
+	private visibleRangesForLineRange(lineNumber: number, startColumn: number, endColumn: number): VisibleRanges | null {
+		if (this.shouldRender()) {
+			// Cannot read from the DOM because it is dirty
+			// i.e. the model & the dom are out of sync, so I'd be reading something stale
+			return null;
+		}
+
+		if (lineNumber < this.visibleLines.getStartLineNumber() || lineNumber > this.visibleLines.getEndLineNumber()) {
+			return null;
+		}
+
+		return this.visibleLines.getVisibleLine(lineNumber).getVisibleRangesForRange(lineNumber, startColumn, endColumn, new DomReadingContext(this.domNode.domNode, this._textRangeRestingSpot));
+	}
+
+	public getLineWidth(lineNumber: number): number {
+		const rendStartLineNumber = this.visibleLines.getStartLineNumber();
+		const rendEndLineNumber = this.visibleLines.getEndLineNumber();
+		if (lineNumber < rendStartLineNumber || lineNumber > rendEndLineNumber) {
+			// Couldn't find line
+			return -1;
+		}
+
+		return this.visibleLines.getVisibleLine(lineNumber).getWidth();
+	}
+
+	public getPositionFromDOMInfo(spanNode: HTMLElement, offset: number): Position | null {
+		const lineNumber = this.getLineNumberFor(spanNode);
+
+		if (lineNumber === -1) {
+			// Couldn't find view line node
+			return null;
+		}
+
+		if (lineNumber < 1 || lineNumber > this.context.viewModel.getLineCount()) {
+			// lineNumber is outside range
+			return null;
+		}
+
+		if (this.context.viewModel.getLineMaxColumn(lineNumber) === 1) {
+			// Line is empty
+			return new Position(lineNumber, 1);
+		}
+
+		const rendStartLineNumber = this.visibleLines.getStartLineNumber();
+		const rendEndLineNumber = this.visibleLines.getEndLineNumber();
+		if (lineNumber < rendStartLineNumber || lineNumber > rendEndLineNumber) {
+			// Couldn't find line
+			return null;
+		}
+
+		let column = offset + 1;// TODO: this.visibleLines.getVisibleLine(lineNumber).getColumnOfNodeOffset(lineNumber, spanNode, offset);
+		const minColumn = this.context.viewModel.getLineMinColumn(lineNumber);
+		if (column < minColumn) {
+			column = minColumn;
+		}
+		return new Position(lineNumber, column);
+	}
+
+	private getLineNumberFor(domNode: HTMLElement): number {
+		domNode = getDataRootInParent(domNode)! as HTMLElement;
+		const index = domNode.getAttribute('data-index') || '-1';
+		return parseInt(index);
+	}
 
 	/**
 	 * @returns the line number of this view line dom node.

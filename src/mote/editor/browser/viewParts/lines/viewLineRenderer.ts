@@ -1,8 +1,10 @@
-import { FastDomNode } from 'mote/base/browser/fastDomNode';
+import * as strings from 'mote/base/common/strings';
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
-import { IViewLineContributionDescription, ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { StringBuilder } from 'mote/editor/common/core/stringBuilder';
+import { IViewLineTokens } from 'mote/editor/common/tokens/lineTokens';
+import { LinePart } from 'mote/editor/common/viewLayout/linePart';
 import BlockStore from 'mote/platform/store/common/blockStore';
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 
 export const enum RenderWhitespace {
 	None = 0,
@@ -42,7 +44,7 @@ export class RenderLineInput {
 	public readonly isBasicASCII: boolean;
 	public readonly containsRTL: boolean;
 	public readonly fauxIndentLength: number;
-	//public readonly lineTokens: IViewLineTokens;
+
 	//public readonly lineDecorations: LineDecoration[];
 	public readonly tabSize: number;
 	public readonly startVisibleColumn: number;
@@ -70,7 +72,7 @@ export class RenderLineInput {
 		isBasicASCII: boolean,
 		containsRTL: boolean,
 		fauxIndentLength: number,
-		//lineTokens: IViewLineTokens,
+		public readonly lineTokens: IViewLineTokens,
 		//lineDecorations: LineDecoration[],
 		tabSize: number,
 		startVisibleColumn: number,
@@ -349,7 +351,7 @@ class ResolvedRenderLineInput {
 		public readonly len: number,
 		public readonly isOverflowing: boolean,
 		public readonly overflowingCharCount: number,
-		//public readonly parts: LinePart[],
+		public readonly parts: LinePart[],
 		public readonly containsForeignElements: ForeignElementType,
 		public readonly fauxIndentLength: number,
 		public readonly tabSize: number,
@@ -381,7 +383,7 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 		len = lineContent.length;
 	}
 
-	//let tokens = transformAndRemoveOverflowing(lineContent, input.containsRTL, input.lineTokens, input.fauxIndentLength, len);
+	let tokens: any[] = [];//transformAndRemoveOverflowing(lineContent, input.containsRTL, input.lineTokens, input.fauxIndentLength, len);
 	if (input.renderControlCharacters && !input.isBasicASCII) {
 		// Calling `extractControlCharacters` before adding (possibly empty) line parts
 		// for inline decorations. `extractControlCharacters` removes empty line parts.
@@ -423,7 +425,7 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 		len,
 		isOverflowing,
 		overflowingCharCount,
-		//tokens,
+		tokens,
 		containsForeignElements,
 		input.fauxIndentLength,
 		input.tabSize,
@@ -436,18 +438,102 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 	);
 }
 
+/**
+ * In the rendering phase, characters are always looped until token.endIndex.
+ * Ensure that all tokens end before `len` and the last one ends precisely at `len`.
+ */
+function transformAndRemoveOverflowing(lineContent: string, lineContainsRTL: boolean, tokens: IViewLineTokens, fauxIndentLength: number, len: number): LinePart[] {
+	const result: LinePart[] = [];
+	let resultLen = 0;
+
+	// The faux indent part of the line should have no token type
+	if (fauxIndentLength > 0) {
+		result[resultLen++] = new LinePart(fauxIndentLength, '', 0, false);
+	}
+	let startOffset = fauxIndentLength;
+	for (let tokenIndex = 0, tokensLen = tokens.getCount(); tokenIndex < tokensLen; tokenIndex++) {
+		const endIndex = tokens.getEndOffset(tokenIndex);
+		if (endIndex <= fauxIndentLength) {
+			// The faux indent part of the line should have no token type
+			continue;
+		}
+		const type = tokens.getClassName(tokenIndex);
+		if (endIndex >= len) {
+			const tokenContainsRTL = (lineContainsRTL ? strings.containsRTL(lineContent.substring(startOffset, len)) : false);
+			result[resultLen++] = new LinePart(len, type, 0, tokenContainsRTL);
+			break;
+		}
+		const tokenContainsRTL = (lineContainsRTL ? strings.containsRTL(lineContent.substring(startOffset, endIndex)) : false);
+		result[resultLen++] = new LinePart(endIndex, type, 0, tokenContainsRTL);
+		startOffset = endIndex;
+	}
+
+	return result;
+}
+
 export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContribution, sb: StringBuilder): RenderLineOutput {
+
+	if (input.lineContent.length === 0) {
+		// completely empty line
+		sb.appendString('<span><span></span></span>');
+		return new RenderLineOutput(
+			new CharacterMapping(0, 0),
+			false,
+			ForeignElementType.None
+		);
+	}
+
 	const store = input.store;
 
 	const resolvedInput = resolveRenderLineInput(input);
 	const len = resolvedInput.len;
 	const containsRTL = resolvedInput.containsRTL;
 	const containsForeignElements = resolvedInput.containsForeignElements;
+	const lineContent = resolvedInput.lineContent;
+	const fauxIndentLength = resolvedInput.fauxIndentLength;
+	const startVisibleColumn = resolvedInput.startVisibleColumn;
 
 	const characterMapping = new CharacterMapping(len + 1, 0);
+	let lastCharacterMappingDefined = false;
+
+	let charIndex = 0;
+	let visibleColumn = startVisibleColumn;
+	let charOffsetInPart = 0; // the character offset in the current part
+	let charHorizontalOffset = 0; // the character horizontal position in terms of chars relative to line start
+
+	const partDisplacement = 0;
+	const partIndex = 0;
+
+	sb.appendString('<span>');
+
+	for (; charIndex < resolvedInput.len; charIndex++) {
+		characterMapping.setColumnInfo(charIndex + 1, partIndex - partDisplacement, charOffsetInPart, charHorizontalOffset);
+
+		const charCode = lineContent.charCodeAt(charIndex);
+
+		const producedCharacters: number = 1;
+		let charWidth: number = 1;
+
+		if (strings.isFullWidthCharacter(charCode)) {
+			charWidth++;
+		}
+
+		charOffsetInPart += producedCharacters;
+		charHorizontalOffset += charWidth;
+		if (charIndex >= fauxIndentLength) {
+			visibleColumn += charWidth;
+		}
+	}
+
+	if (charIndex >= len && !lastCharacterMappingDefined) {
+		lastCharacterMappingDefined = true;
+		characterMapping.setColumnInfo(charIndex + 1, partIndex, charOffsetInPart, charHorizontalOffset);
+	}
 
 	const line = viewBlock.render(store);
 	sb.appendString(line);
+
+	sb.appendString('</span>');
 
 	return new RenderLineOutput(characterMapping, containsRTL, containsForeignElements);
 }
