@@ -4,7 +4,7 @@ import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { EndOfLinePreference } from 'mote/editor/common/model';
 
-export const _debugComposition = false;
+export const _debugComposition = true;
 
 export interface ITypeData {
 	text: string;
@@ -23,6 +23,7 @@ export interface ISimpleModel {
 }
 
 export interface IEditableWrapper {
+	getDomNode(): HTMLElement;
 	getValue(): string;
 	setValue(reason: string, value: string): void;
 

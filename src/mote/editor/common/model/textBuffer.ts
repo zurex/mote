@@ -140,6 +140,15 @@ export class TextBuffer implements ITextBuffer {
 		return result;
 	}
 
+	public getCharacterCountInRange(range: EditorRange, eol: EndOfLinePreference): number {
+		// TODO: need handle emoji
+		return this.getValueLengthInRange(range, eol);
+	}
+
+	public getValueLengthInRange(range: EditorRange, eol: EndOfLinePreference = EndOfLinePreference.TextDefined): number {
+		return this.getValueInRange(range).length;
+	}
+
 	private get contentStore() {
 		return this.pageStore.getContentStore();
 	}

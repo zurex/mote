@@ -18,6 +18,7 @@ import { pathToEditor } from 'mote/workbench/common/editor';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { IStatusbarService } from 'mote/workbench/services/statusbar/browser/statusbar';
 
 interface IWorkbenchLayoutWindowInitializationState {
 	views: {
@@ -88,10 +89,11 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private workbenchGrid!: SerializableGrid<ISerializableView>;
 
 	private activityBarPartView!: ISerializableView;
+	private statusBarPartView!: ISerializableView;
+	private sideBarPartView!: ISerializableView;
+	private editorPartView!: ISerializableView;
 
 	protected logService!: ILogService;
-
-	private sideBarPartView!: ISerializableView;
 
 	//#region workbench services
 	private editorService!: IEditorService;
@@ -99,6 +101,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private environmentService!: IBrowserWorkbenchEnvironmentService;
 	private paneCompositeService!: IPaneCompositePartService;
 	private viewDescriptorService!: IViewDescriptorService;
+	private statusBarService!: IStatusbarService;
 
 	//#endregion
 
@@ -147,6 +150,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.editorGroupService = accessor.get(IEditorGroupsService);
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
+		this.statusBarService = accessor.get(IStatusbarService);
 
 		// State
 		this.initLayoutState(accessor.get(ILifecycleService), accessor);
@@ -213,16 +217,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBar = this.getPart(Parts.SIDEBAR_PART);
 		const editorPart = this.getPart(Parts.EDITOR_PART);
 		const activityBar = this.getPart(Parts.ACTIVITYBAR_PART);
-
-		this.activityBarPartView = activityBar;
+		const statusBar = this.getPart(Parts.STATUSBAR_PART);
 
 		// View references for all parts
 		this.sideBarPartView = sideBar;
+		this.statusBarPartView = statusBar;
+		this.activityBarPartView = activityBar;
+		this.editorPartView = editorPart;
 
-		const viewMap: { [key: string]: Part } = {
-			[Parts.ACTIVITYBAR_PART]: activityBar,
-			[Parts.SIDEBAR_PART]: sideBar,
-			[Parts.EDITOR_PART]: editorPart,
+		const viewMap = {
+			[Parts.ACTIVITYBAR_PART]: this.activityBarPartView,
+			[Parts.SIDEBAR_PART]: this.sideBarPartView,
+			[Parts.EDITOR_PART]: this.editorPartView,
+			[Parts.STATUSBAR_PART]: this.statusBarPartView,
 		};
 
 		const fromJSON = ({ type }: { type: Parts }) => viewMap[type];
@@ -342,8 +349,9 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		//const panelSize = 300;
 
 		const titleBarHeight = 0;
-		const middleSectionHeight = height - titleBarHeight;
 		const activityBarWidth = this.activityBarPartView.minimumWidth;
+		const statusBarHeight = this.statusBarPartView.minimumHeight;
+		const middleSectionHeight = height - titleBarHeight - statusBarHeight;
 
 		const activityBarNode: ISerializedLeafNode = {
 			type: 'leaf',
@@ -377,6 +385,12 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 						type: 'branch',
 						data: middleSection,
 						size: middleSectionHeight
+					},
+					{
+						type: 'leaf',
+						data: { type: Parts.STATUSBAR_PART },
+						size: statusBarHeight,
+						//visible: !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN)
 					}
 				]
 			},

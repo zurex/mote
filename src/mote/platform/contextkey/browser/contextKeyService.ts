@@ -37,7 +37,7 @@ export class Context implements IContext {
 	}
 
 	public setValue(key: string, value: any): boolean {
-		console.log('SET ' + key + ' = ' + value + ' ON ' + this._id);
+		//console.log('SET ' + key + ' = ' + value + ' ON ' + this._id);
 		if (this._value[key] !== value) {
 			this._value[key] = value;
 			return true;

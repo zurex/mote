@@ -26,6 +26,7 @@ import { Color } from 'mote/base/common/color';
 import { EDITOR_GROUP_BORDER } from 'mote/workbench/common/theme';
 import { IBoundarySashes } from 'mote/base/browser/ui/grid/gridview';
 import { CenteredViewLayout } from 'mote/base/browser/ui/centered/centeredViewLayout';
+import { DeferredPromise } from 'mote/base/common/async';
 
 interface IEditorPartUIState {
 	serializedGrid: ISerializedGrid;
@@ -157,6 +158,12 @@ export class EditorPart extends Part implements IEditorGroupsService, IEditorGro
 	get count(): number {
 		return this.groupViews.size;
 	}
+
+	private _isReady = false;
+	get isReady(): boolean { return this._isReady; }
+
+	private readonly whenReadyPromise = new DeferredPromise<void>();
+	readonly whenReady = this.whenReadyPromise.p;
 
 	private shouldRestoreFocus(target: Element | undefined): boolean {
 		if (!target) {
@@ -643,6 +650,10 @@ export class EditorPart extends Part implements IEditorGroupsService, IEditorGro
 
 		// Centered layout widget
 		this.centeredLayoutWidget = this._register(new CenteredViewLayout(this.container, this.gridWidgetView, this.profileMemento[EditorPart.EDITOR_PART_CENTERED_VIEW_STORAGE_KEY]));
+
+		// Signal ready
+		this.whenReadyPromise.complete();
+		this._isReady = true;
 
 		return this.container;
 	}

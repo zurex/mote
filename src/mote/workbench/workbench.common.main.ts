@@ -10,8 +10,10 @@ import 'mote/editor/editor.all';
 
 //#region --- workbench parts
 
+import 'mote/workbench/browser/parts/editor/editor.contribution';
 import 'mote/workbench/browser/parts/editor/editorPart';
 import 'mote/workbench/browser/parts/paneCompositePart';
+import 'mote/workbench/browser/parts/statusbar/statusbarPart';
 import 'mote/workbench/browser/parts/views/viewsService';
 
 //#endregion

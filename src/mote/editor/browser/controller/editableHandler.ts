@@ -193,12 +193,10 @@ export class EditableHandler extends ViewPart {
 		}));
 	}
 
-	private ensureSelection(selection: EditorSelection) {
-		return;
-		const rangeFromElement = RangeUtils.create(this.editable.domNode, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
-		const rangeFromDocument = RangeUtils.get();
-		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
-			RangeUtils.set(rangeFromElement);
+	public ensureSelection(selection?: EditorSelection) {
+		if (!selection) {
+			selection = this.viewController.getSelection();
 		}
+		this.editableInput.ensureSelection(selection);
 	}
 }

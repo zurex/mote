@@ -232,6 +232,8 @@ export class EditorView extends ViewEventHandler {
 			this.viewLines.renderLines(viewportData);
 			this.viewLines.onDidRender();
 
+			this.editableHandler.ensureSelection();
+
 			// Rendering of viewLines might cause scroll events to occur, so collect view parts to render again
 			viewPartsToRender = this.getViewPartsToRender();
 		}

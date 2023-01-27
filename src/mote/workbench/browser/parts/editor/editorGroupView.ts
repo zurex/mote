@@ -7,11 +7,13 @@ import { EditorActivation, IEditorOptions } from 'mote/platform/editor/common/ed
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { IEditorGroupsAccessor, IEditorGroupView, IInternalEditorCloseOptions, IInternalEditorOpenOptions, IInternalEditorTitleControlOptions } from 'mote/workbench/browser/parts/editor/editor';
 import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
-import { IVisibleEditorPane, IEditorPane, GroupIdentifier, EditorsOrder, IActiveEditorChangeEvent, SideBySideEditor, IEditorWillOpenEvent, IEditorWillMoveEvent } from 'mote/workbench/common/editor';
-import { EditorGroupModel, IEditorOpenOptions, IGroupModelChangeEvent, ISerializedEditorGroupModel, isSerializedEditorGroupModel } from 'mote/workbench/common/editorGroupModel';
+import { IVisibleEditorPane, IEditorPane, GroupIdentifier, EditorsOrder, IActiveEditorChangeEvent, SideBySideEditor, IEditorWillOpenEvent, IEditorWillMoveEvent, IEditorCloseEvent, GroupModelChangeKind, EditorCloseContext } from 'mote/workbench/common/editor';
+import { EditorGroupModel, IEditorOpenOptions, IGroupModelChangeEvent, ISerializedEditorGroupModel, isGroupEditorCloseEvent, isGroupEditorOpenEvent, isSerializedEditorGroupModel } from 'mote/workbench/common/editorGroupModel';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { GroupsOrder, ICloseEditorOptions } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { SideBySideEditorInput } from 'mote/workbench/common/sideBySideEditorInput';
+import { RunOnceWorker } from 'mote/base/common/async';
 
 export class EditorGroupView extends Themable implements IEditorGroupView {
 
@@ -51,6 +53,12 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 	private readonly _onWillMoveEditor = this._register(new Emitter<IEditorWillMoveEvent>());
 	readonly onWillMoveEditor = this._onWillMoveEditor.event;
 
+	private readonly _onWillCloseEditor = this._register(new Emitter<IEditorCloseEvent>());
+	readonly onWillCloseEditor = this._onWillCloseEditor.event;
+
+	private readonly _onDidCloseEditor = this._register(new Emitter<IEditorCloseEvent>());
+	readonly onDidCloseEditor = this._onDidCloseEditor.event;
+
 	//#endregion
 
 	private readonly model: EditorGroupModel;
@@ -64,6 +72,9 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private readonly editorContainer: HTMLElement;
 	private readonly editorPane: EditorPanes;
+
+	private readonly disposedEditorsWorker = this._register(new RunOnceWorker<EditorInput>(editors => this.handleDisposedEditors(editors), 0));
+
 
 	constructor(
 		private accessor: IEditorGroupsAccessor,
@@ -101,7 +112,159 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			this.editorPane = this._register(this.scopedInstantiationService.createInstance(EditorPanes, this.editorContainer));
 			//this._onDidChange.input = this.editorPane.onDidChangeSizeConstraints;
 		}
+
+		// Register Listeners
+		this.registerListeners();
 	}
+
+	private updateContainer(): void {
+
+	}
+
+	//#region event handling
+
+	private registerListeners(): void {
+		// Model Events
+		this._register(this.model.onDidModelChange(e => this.onDidGroupModelChange(e)));
+
+	}
+
+	private onDidGroupModelChange(e: IGroupModelChangeEvent): void {
+
+		// Re-emit to outside
+		this._onDidModelChange.fire(e);
+
+		// Handle within
+
+		if (!e.editor) {
+			return;
+		}
+
+		switch (e.kind) {
+			case GroupModelChangeKind.EDITOR_OPEN:
+				if (isGroupEditorOpenEvent(e)) {
+					this.onDidOpenEditor(e.editor, e.editorIndex);
+				}
+				break;
+			case GroupModelChangeKind.EDITOR_CLOSE:
+				if (isGroupEditorCloseEvent(e)) {
+					this.handleOnDidCloseEditor(e.editor, e.editorIndex, e.context, e.sticky);
+				}
+				break;
+			case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
+				this.onWillDisposeEditor(e.editor);
+				break;
+			case GroupModelChangeKind.EDITOR_DIRTY:
+				//this.onDidChangeEditorDirty(e.editor);
+				break;
+			case GroupModelChangeKind.EDITOR_LABEL:
+				//this.onDidChangeEditorLabel(e.editor);
+				break;
+		}
+	}
+
+	private onDidOpenEditor(editor: EditorInput, editorIndex: number): void {
+
+		/* __GDPR__
+			"editorOpened" : {
+				"owner": "bpasero",
+				"${include}": [
+					"${EditorTelemetryDescriptor}"
+				]
+			}
+		*/
+		//this.telemetryService.publicLog('editorOpened', this.toEditorTelemetryDescriptor(editor));
+
+		// Update container
+		this.updateContainer();
+	}
+
+	private handleOnDidCloseEditor(editor: EditorInput, editorIndex: number, context: EditorCloseContext, sticky: boolean): void {
+
+		// Before close
+		this._onWillCloseEditor.fire({ groupId: this.id, editor, context, index: editorIndex, sticky });
+
+		// Handle event
+		const editorsToClose: EditorInput[] = [editor];
+
+		// Include both sides of side by side editors when being closed
+		if (editor instanceof SideBySideEditorInput) {
+			editorsToClose.push(editor.primary, editor.secondary);
+		}
+
+		// For each editor to close, we call dispose() to free up any resources.
+		// However, certain editors might be shared across multiple editor groups
+		// (including being visible in side by side / diff editors) and as such we
+		// only dispose when they are not opened elsewhere.
+		for (const editor of editorsToClose) {
+			if (this.canDispose(editor)) {
+				editor.dispose();
+			}
+		}
+
+		/* __GDPR__
+			"editorClosed" : {
+				"owner": "bpasero",
+				"${include}": [
+					"${EditorTelemetryDescriptor}"
+				]
+			}
+		*/
+		//this.telemetryService.publicLog('editorClosed', this.toEditorTelemetryDescriptor(editor));
+
+		// Update container
+		this.updateContainer();
+
+		// Event
+		this._onDidCloseEditor.fire({ groupId: this.id, editor, context, index: editorIndex, sticky });
+	}
+
+	private canDispose(editor: EditorInput): boolean {
+		for (const groupView of this.accessor.groups) {
+			if (groupView instanceof EditorGroupView && groupView.model.contains(editor, {
+				strictEquals: true,						// only if this input is not shared across editor groups
+				supportSideBySide: SideBySideEditor.ANY // include any side of an opened side by side editor
+			})) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private onWillDisposeEditor(editor: EditorInput): void {
+
+		// To prevent race conditions, we handle disposed editors in our worker with a timeout
+		// because it can happen that an input is being disposed with the intent to replace
+		// it with some other input right after.
+		this.disposedEditorsWorker.work(editor);
+	}
+
+	private handleDisposedEditors(editors: EditorInput[]): void {
+
+		// Split between visible and hidden editors
+		let activeEditor: EditorInput | undefined;
+		const inactiveEditors: EditorInput[] = [];
+		for (const editor of editors) {
+			if (this.model.isActive(editor)) {
+				activeEditor = editor;
+			} else if (this.model.contains(editor)) {
+				inactiveEditors.push(editor);
+			}
+		}
+
+		// Close all inactive editors first to prevent UI flicker
+		for (const inactiveEditor of inactiveEditors) {
+			this.doCloseEditor(inactiveEditor, false);
+		}
+
+		// Close active one last
+		if (activeEditor) {
+			this.doCloseEditor(activeEditor, false);
+		}
+	}
+
+	//#endregion
 
 	setActive(isActive: boolean): void {
 

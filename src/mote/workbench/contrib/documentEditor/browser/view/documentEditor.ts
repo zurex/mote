@@ -47,6 +47,10 @@ export class DocumentEditor extends EditorPane {
 			MoteEditorWidget, parent, {}, {}));
 	}
 
+	override getControl(): IMoteEditor | undefined {
+		return this.editorControl;
+	}
+
 	createCover(parent: HTMLElement) {
 		const coverDomNode = $('');
 		coverDomNode.style.height = '100px';

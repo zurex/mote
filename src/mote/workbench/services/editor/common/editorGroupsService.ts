@@ -1,6 +1,6 @@
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
-import { EditorInputWithOptions, GroupIdentifier, IActiveEditorChangeEvent, IEditorPane, IVisibleEditorPane } from 'mote/workbench/common/editor';
+import { EditorInputWithOptions, GroupIdentifier, IActiveEditorChangeEvent, IEditorCloseEvent, IEditorPane, IVisibleEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { Event } from 'mote/base/common/event';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
@@ -71,6 +71,11 @@ export interface ICloseEditorOptions {
 
 
 export interface IEditorGroup {
+
+	/**
+	 * An event that is fired when an editor is closed.
+	 */
+	readonly onDidCloseEditor: Event<IEditorCloseEvent>;
 
 	/**
 	 * A unique identifier of this group that remains identical even if the
@@ -221,6 +226,12 @@ export interface IEditorGroupsService {
 	readonly _serviceBrand: undefined;
 
 	/**
+	 * An event for when the active editor group changes. The active editor
+	 * group is the default location for new editors to open.
+	 */
+	readonly onDidChangeActiveGroup: Event<IEditorGroup>;
+
+	/**
 	 * An event for when a new group was added.
 	 */
 	readonly onDidAddGroup: Event<IEditorGroup>;
@@ -234,6 +245,24 @@ export interface IEditorGroupsService {
 	 * An active group is the default location for new editors to open.
 	 */
 	readonly activeGroup: IEditorGroup;
+
+	/**
+	 * All groups that are currently visible in the editor area in the
+	 * order of their creation (oldest first).
+	 */
+	readonly groups: readonly IEditorGroup[];
+
+	/**
+	 * A promise that resolves when groups have been created
+	 * and are ready to be used.
+	 *
+	 * Await this promise to safely work on the editor groups model
+	 * (for example, install editor group listeners).
+	 *
+	 * Use the `whenRestored` property to await visible editors
+	 * having fully resolved.
+	 */
+	readonly whenReady: Promise<void>;
 
 	/**
 	 * Add a new group to the editor area. A new group is added by splitting a provided one in

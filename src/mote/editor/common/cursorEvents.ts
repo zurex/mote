@@ -1,3 +1,6 @@
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { Position } from 'mote/editor/common/core/position';
+
 /**
  * Describes the reason the cursor has changed its position.
  */
@@ -30,4 +33,59 @@ export const enum CursorChangeReason {
 	 * There was a Redo.
 	 */
 	Redo = 6,
+}
+
+/**
+ * An event describing that the cursor position has changed.
+ */
+export interface ICursorPositionChangedEvent {
+	/**
+	 * Primary cursor's position.
+	 */
+	readonly position: Position;
+	/**
+	 * Secondary cursors' position.
+	 */
+	readonly secondaryPositions: Position[];
+	/**
+	 * Reason.
+	 */
+	readonly reason: CursorChangeReason;
+	/**
+	 * Source of the call that caused the event.
+	 */
+	readonly source: string;
+}
+/**
+ * An event describing that the cursor selection has changed.
+ */
+export interface ICursorSelectionChangedEvent {
+	/**
+	 * The primary selection.
+	 */
+	readonly selection: EditorSelection;
+	/**
+	 * The secondary selections.
+	 */
+	readonly secondarySelections: EditorSelection[];
+	/**
+	 * The model version id.
+	 */
+	readonly modelVersionId: number;
+	/**
+	 * The old selections.
+	 */
+	readonly oldSelections: EditorSelection[] | null;
+	/**
+	 * The model version id the that `oldSelections` refer to.
+	 */
+	readonly oldModelVersionId: number;
+	/**
+	 * Source of the call that caused the event.
+	 */
+	readonly source: string;
+	/**
+	 * Reason.
+	 */
+	readonly reason: CursorChangeReason;
 }

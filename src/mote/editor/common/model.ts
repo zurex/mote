@@ -184,6 +184,12 @@ export interface ITextModel {
 	getValueInRange(range: IRange, eol?: EndOfLinePreference): string;
 
 	/**
+	 * Get the character count of text in a certain range.
+	 * @param range The range describing what text length to get.
+	 */
+	getCharacterCountInRange(range: IRange, eol?: EndOfLinePreference): number;
+
+	/**
 	 * Get the range associated with a decoration.
 	 * @param id The decoration id.
 	 * @return The decoration range or null if the decoration was not found.
@@ -427,6 +433,7 @@ export interface IReadonlyTextBuffer {
 	getLineStore(lineNumber: number): BlockStore;
 
 	getValueInRange(range: EditorRange, eol: EndOfLinePreference): string;
+	getCharacterCountInRange(range: EditorRange, eol: EndOfLinePreference): number;
 
 	getEOL(): string;
 }

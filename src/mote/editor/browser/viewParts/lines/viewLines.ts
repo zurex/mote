@@ -107,15 +107,15 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	//#region view events handler
 
 	public override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
-		return true;
+		return this.visibleLines.onLinesInserted(e);
 	}
 
 	public override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean {
-		return true;
+		return this.visibleLines.onLinesDeleted(e);
 	}
 
 	public override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
-		return true;
+		return this.visibleLines.onLinesChanged(e);
 	}
 
 	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {

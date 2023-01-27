@@ -137,7 +137,8 @@ export class Workbench extends Layout {
 		[
 			{ id: Parts.ACTIVITYBAR_PART, role: 'none', classes: ['activitybar', 'left'] },
 			{ id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'], options: {} },
-			{ id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: {} }
+			{ id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: {} },
+			{ id: Parts.STATUSBAR_PART, role: 'status', classes: ['statusbar'] }
 		].forEach(({ id, role, classes, options }) => {
 			const partContainer = this.createPart(id, role, classes);
 			this.getPart(id).create(partContainer, options);

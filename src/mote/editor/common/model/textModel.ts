@@ -170,6 +170,11 @@ export class TextModel extends Disposable implements ITextModel {
 		return this.buffer.getValueInRange(this.validateRange(rawRange), eol);
 	}
 
+	public getCharacterCountInRange(rawRange: IRange, eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined): number {
+		this.assertNotDisposed();
+		return this.buffer.getCharacterCountInRange(this.validateRange(rawRange), eol);
+	}
+
 	//#endregion
 
 	_getTrackedRange(id: string): EditorRange | null {
@@ -180,7 +185,6 @@ export class TextModel extends Disposable implements ITextModel {
 	_setTrackedRange(id: string | null, newRange: EditorRange, newStickiness: model.TrackedRangeStickiness): string;
 	_setTrackedRange(id: string | null, newRange: EditorRange | null, newStickiness: model.TrackedRangeStickiness): string | null {
 
-		console.log(newRange?.toString());
 		this._onDidChangeDecorations.fire();
 		return null;
 	}

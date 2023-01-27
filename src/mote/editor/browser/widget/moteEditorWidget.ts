@@ -31,6 +31,10 @@ import { DOMLineBreaksComputerFactory } from 'mote/editor/browser/view/domLineBr
 import { MonospaceLineBreaksComputerFactory } from 'mote/editor/common/viewModel/monospaceLineBreaksComputer';
 import { OutgoingViewModelEventKind } from 'mote/editor/common/viewModelEventDispatcher';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { IPosition, Position } from 'mote/editor/common/core/position';
+import { CursorColumns } from 'mote/editor/common/core/cursorColumns';
+import { ICursorPositionChangedEvent, ICursorSelectionChangedEvent } from 'mote/editor/common/cursorEvents';
+import { IModelContentChangedEvent } from 'mote/editor/common/textModelEvents';
 
 let EDITOR_ID = 0;
 
@@ -63,6 +67,8 @@ class ModelData implements IDisposable {
 
 export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteEditor {
 
+	//#region Eventing
+
 	private readonly _deliveryQueue = new EventDeliveryQueue();
 
 	private readonly _onDidDispose: Emitter<void> = this._register(new Emitter<void>());
@@ -78,6 +84,18 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 	private readonly _editorTextFocus: BooleanEventEmitter = this._register(new BooleanEventEmitter({ deliveryQueue: this._deliveryQueue }));
 	public readonly onDidFocusEditorText: Event<void> = this._editorTextFocus.onDidChangeToTrue;
 	public readonly onDidBlurEditorText: Event<void> = this._editorTextFocus.onDidChangeToFalse;
+
+	private readonly _onDidChangeCursorPosition: Emitter<ICursorPositionChangedEvent> = this._register(new Emitter<ICursorPositionChangedEvent>({ deliveryQueue: this._deliveryQueue }));
+	public readonly onDidChangeCursorPosition: Event<ICursorPositionChangedEvent> = this._onDidChangeCursorPosition.event;
+
+	private readonly _onDidChangeCursorSelection: Emitter<ICursorSelectionChangedEvent> = this._register(new Emitter<ICursorSelectionChangedEvent>({ deliveryQueue: this._deliveryQueue }));
+	public readonly onDidChangeCursorSelection: Event<ICursorSelectionChangedEvent> = this._onDidChangeCursorSelection.event;
+
+	private readonly _onDidChangeModelContent: Emitter<IModelContentChangedEvent> = this._register(new Emitter<IModelContentChangedEvent>({ deliveryQueue: this._deliveryQueue }));
+	public readonly onDidChangeModelContent: Event<IModelContentChangedEvent> = this._onDidChangeModelContent.event;
+
+
+	//#endregion
 
 	private readonly id: number;
 	private readonly configuration: IEditorConfiguration;
@@ -233,6 +251,33 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 				case OutgoingViewModelEventKind.FocusChanged:
 					this._editorTextFocus.setValue(e.hasFocus);
 					break;
+				case OutgoingViewModelEventKind.CursorStateChanged: {
+					const positions: Position[] = [];
+					for (let i = 0, len = e.selections.length; i < len; i++) {
+						positions[i] = e.selections[i].getPosition();
+					}
+
+					const e1: ICursorPositionChangedEvent = {
+						position: positions[0],
+						secondaryPositions: positions.slice(1),
+						reason: e.reason,
+						source: e.source
+					};
+					this._onDidChangeCursorPosition.fire(e1);
+
+					const e2: ICursorSelectionChangedEvent = {
+						selection: e.selections[0],
+						secondarySelections: e.selections.slice(1),
+						modelVersionId: e.modelVersionId,
+						oldSelections: e.oldSelections,
+						oldModelVersionId: e.oldModelVersionId,
+						source: e.source,
+						reason: e.reason
+					};
+					this._onDidChangeCursorSelection.fire(e2);
+
+					break;
+				}
 			}
 		}));
 
@@ -334,6 +379,39 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 	focus(): void {
 		throw new Error('Method not implemented.');
+	}
+
+	public getStatusbarColumn(rawPosition: IPosition): number {
+		if (!this.modelData) {
+			return rawPosition.column;
+		}
+
+		const position = this.modelData.model.validatePosition(rawPosition);
+		const tabSize = 4;//this.modelData.model.getOptions().tabSize;
+
+		return CursorColumns.toStatusbarColumn(this.modelData.model.getLineContent(position.lineNumber), position.column, tabSize);
+	}
+
+	public getPosition(): Position | null {
+		if (!this.modelData) {
+			return null;
+		}
+		return this.modelData.viewModel.getPosition();
+	}
+
+	public setPosition(position: IPosition, source: string = 'api'): void {
+		if (!this.modelData) {
+			return;
+		}
+		if (!Position.isIPosition(position)) {
+			throw new Error('Invalid arguments');
+		}
+		this.modelData.viewModel.setSelections(source, [{
+			selectionStartLineNumber: position.lineNumber,
+			selectionStartColumn: position.column,
+			positionLineNumber: position.lineNumber,
+			positionColumn: position.column
+		}]);
 	}
 
 	getSelection(): EditorSelection | null {

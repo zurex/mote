@@ -12,6 +12,7 @@ import { IEditorService } from 'mote/workbench/services/editor/common/editorServ
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Dimension, $, reset, clearNode } from 'vs/base/browser/dom';
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 class OnboardContainer extends Themable {
 	create(title: string, subTitle: string | undefined, bodyDom: HTMLElement, footerDom?: HTMLElement) {
@@ -298,8 +299,9 @@ export class OnboardWorkspacePage extends EditorPane {
 		@IWorkspaceContextService private workspaceService: IWorkspaceContextService,
 		@IUserService private userService: IUserService,
 		@IEditorService private editorService: IEditorService,
+		@IStorageService storageService: IStorageService,
 	) {
-		super(OnboardWorkspacePage.ID, themeService);
+		super(OnboardWorkspacePage.ID, themeService, storageService);
 
 		this.stage = 'workspace_plan_choose';
 
@@ -369,7 +371,7 @@ export class OnboardWorkspacePage extends EditorPane {
 		button.onDidClick(() => {
 			const userId = this.plan === 'local' ? 'local' : this.userService.currentProfile?.id;
 			this.workspaceService.createWorkspace(userId!, input.value);
-			this.editorService.closeEditor();
+			this.editorService.closeActiveEditor();
 		});
 	}
 

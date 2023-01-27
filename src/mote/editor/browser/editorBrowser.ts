@@ -1,6 +1,6 @@
 import { Event } from 'mote/base/common/event';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
-import { Position } from 'mote/editor/common/core/position';
+import { IPosition, Position } from 'mote/editor/common/core/position';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import * as editorCommon from 'mote/editor/common/editorCommon';
 import BlockStore from 'mote/platform/store/common/blockStore';
@@ -10,6 +10,8 @@ import { IMouseEvent } from 'mote/base/browser/mouseEvent';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { IViewModel, ViewLineRenderingData } from 'mote/editor/common/viewModel';
 import { ITextModel } from 'mote/editor/common/model';
+import { IModelContentChangedEvent } from 'mote/editor/common/textModelEvents';
+import { ICursorPositionChangedEvent } from 'mote/editor/common/cursorEvents';
 
 //#region MouseTarget
 
@@ -226,6 +228,18 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	readonly onDidChangeSelection: Event<TextSelection>;
 
 	/**
+	 * An event emitted when the cursor position has changed.
+	 * @event
+	 */
+	readonly onDidChangeCursorPosition: Event<ICursorPositionChangedEvent>;
+
+	/**
+	 * An event emitted when the content of the current model has changed.
+	 * @event
+	 */
+	readonly onDidChangeModelContent: Event<IModelContentChangedEvent>;
+
+	/**
 	 * @internal
 	 */
 	_getViewModel(): IViewModel | null;
@@ -248,6 +262,24 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	setStore(store: BlockStore): void;
 
 	getStore(): BlockStore | null;
+
+	/**
+	 * Given a position, returns a column number that takes tab-widths into account.
+	 * @internal
+	 */
+	getStatusbarColumn(position: IPosition): number;
+
+	/**
+	 * Returns the primary position of the cursor.
+	 */
+	getPosition(): Position | null;
+
+	/**
+	 * Set the primary position of the cursor. This will remove any secondary cursors.
+	 * @param position New primary cursor's position
+	 * @param source Source of the call that caused the position
+	 */
+	setPosition(position: IPosition, source?: string): void;
 
 	/**
 	 * Directly trigger a handler or an editor action.
@@ -313,6 +345,27 @@ export interface IActiveMoteEditor extends IMoteEditor {
 	getSelections(): EditorSelection[];
 }
 
+/**
+ *@internal
+ */
+export function isMoteEditor(thing: unknown): thing is IMoteEditor {
+	if (thing && typeof (<IMoteEditor>thing).getEditorType === 'function') {
+		return (<IMoteEditor>thing).getEditorType() === editorCommon.EditorType.IDocumentEditor;
+	} else {
+		return false;
+	}
+}
+
+/**
+ *@internal
+ */
+export function getMoteEditor(thing: unknown): IMoteEditor | null {
+	if (isMoteEditor(thing)) {
+		return thing;
+	}
+
+	return null;
+}
 
 export interface IViewLineContribution {
 	setValue(store: BlockStore, lineData?: ViewLineRenderingData): void;

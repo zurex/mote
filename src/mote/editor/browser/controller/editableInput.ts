@@ -11,6 +11,12 @@ import { KeyCode } from 'mote/base/common/keyCodes';
 import { generateUuid } from 'vs/base/common/uuid';
 import { inputLatency } from 'mote/base/browser/performance';
 import { DomEmitter } from 'mote/base/browser/event';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
+
+export interface ICompositionData {
+	data: string;
+}
 
 interface EditableOptions {
 	getSelection?(): TextSelection | undefined;
@@ -84,6 +90,10 @@ export interface ICompleteEditableWrapper extends IEditableWrapper {
 	readonly onInput: Event<InputEvent>;
 	readonly onClick: Event<MouseEvent>;
 	readonly onKeyDown: Event<KeyboardEvent>;
+	readonly onKeyUp: Event<KeyboardEvent>;
+	readonly onCompositionStart: Event<CompositionEvent>;
+	readonly onCompositionUpdate: Event<CompositionEvent>;
+	readonly onCompositionEnd: Event<CompositionEvent>;
 	readonly onFocus: Event<FocusEvent>;
 	readonly onBlur: Event<FocusEvent>;
 
@@ -153,6 +163,16 @@ export class EditableInput extends Disposable {
 	private _onClick = this._register(new Emitter<void>());
 	public readonly onClick: Event<void> = this._onClick.event;
 
+	private _onCompositionStart = this._register(new Emitter<ICompositionStartEvent>());
+	public readonly onCompositionStart: Event<ICompositionStartEvent> = this._onCompositionStart.event;
+
+	private _onCompositionUpdate = this._register(new Emitter<ICompositionData>());
+	public readonly onCompositionUpdate: Event<ICompositionData> = this._onCompositionUpdate.event;
+
+	private _onCompositionEnd = this._register(new Emitter<void>());
+	public readonly onCompositionEnd: Event<void> = this._onCompositionEnd.event;
+
+
 	private _onSelectionChange = this._register(new Emitter<TextSelection>());
 	public readonly onSelectionChange: Event<TextSelection> = this._onSelectionChange.event;
 
@@ -161,7 +181,6 @@ export class EditableInput extends Disposable {
 	private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
-	//private editableState: EditableState = EditableState.EMPTY;
 	private editableStates: EditableState[] = [EditableState.EMPTY];
 	private selectionChangeListener: IDisposable | null = null;
 
@@ -172,12 +191,22 @@ export class EditableInput extends Disposable {
 		host: IEditableInputHost,
 		private readonly editable: ICompleteEditableWrapper,
 		private readonly OS: OperatingSystem,
-		browser: IBrowser,
+		private readonly browser: IBrowser,
 		options: EditableOptions
 	) {
 		super();
 
 		this.registerListener();
+	}
+
+	get editableState(): EditableState {
+		const selection = this.editable.getSelection();
+		return this.editableStates[selection.lineNumber] || EditableState.EMPTY;
+	}
+
+	set editableState(state: EditableState) {
+		const selection = this.editable.getSelection();
+		this.editableStates[selection.lineNumber] = state;
 	}
 
 	private registerListener() {
@@ -194,10 +223,9 @@ export class EditableInput extends Disposable {
 			}
 			*/
 
-			const selection = this.editable.getSelection();
-			const editableState = this.editableStates[selection.lineNumber] || EditableState.EMPTY;
-			const newState = EditableState.readFromEditable(this.editable, editableState);
-			const typeInput = EditableState.deduceInput(editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
+
+			const newState = EditableState.readFromEditable(this.editable, this.editableState);
+			const typeInput = EditableState.deduceInput(this.editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
 
 			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1) {
 				// one character was typed
@@ -210,7 +238,7 @@ export class EditableInput extends Disposable {
 				}
 			}
 
-			this.editableStates[selection.lineNumber] = newState;
+			this.editableState = newState;
 			if (
 				typeInput.text !== ''
 				|| typeInput.replacePrevCharCnt !== 0
@@ -236,6 +264,106 @@ export class EditableInput extends Disposable {
 
 			lastKeyDown = event;
 			this._onKeyDown.fire(event);
+		}));
+
+		this._register(this.editable.onCompositionStart((e) => {
+			if (_debugComposition) {
+				console.log(`[compositionstart]`, e);
+			}
+
+			const currentComposition = new CompositionContext();
+			if (this.currentComposition) {
+				// simply reset the composition context
+				this.currentComposition = currentComposition;
+				return;
+			}
+			this.currentComposition = currentComposition;
+
+			if (
+				this.OS === OperatingSystem.Macintosh
+				&& lastKeyDown
+				&& lastKeyDown.equals(KeyCode.KEY_IN_COMPOSITION)
+				&& this.editableState.selectionStart === this.editableState.selectionEnd
+				&& this.editableState.selectionStart > 0
+				&& this.editableState.value.substr(this.editableState.selectionStart - 1, 1) === e.data
+				&& (lastKeyDown.code === 'ArrowRight' || lastKeyDown.code === 'ArrowLeft')
+			) {
+				// Handling long press case on Chromium/Safari macOS + arrow key => pretend the character was selected
+				if (_debugComposition) {
+					console.log(`[compositionstart] Handling long press case on macOS + arrow key`, e);
+				}
+				// Pretend the previous character was composed (in order to get it removed by subsequent compositionupdate events)
+				currentComposition.handleCompositionUpdate('x');
+				this._onCompositionStart.fire({ data: e.data });
+				return;
+			}
+
+			if (this.browser.isAndroid) {
+				// when tapping on the editor, Android enters composition mode to edit the current word
+				// so we cannot clear the textarea on Android and we must pretend the current word was selected
+				this._onCompositionStart.fire({ data: e.data });
+				return;
+			}
+
+			this._onCompositionStart.fire({ data: e.data });
+		}));
+
+		this._register(this.editable.onCompositionUpdate((e) => {
+			if (_debugComposition) {
+				console.log(`[compositionupdate]`, e);
+			}
+			const currentComposition = this.currentComposition;
+			if (!currentComposition) {
+				// should not be possible to receive a 'compositionupdate' without a 'compositionstart'
+				return;
+			}
+			if (this.browser.isAndroid) {
+				// On Android, the data sent with the composition update event is unusable.
+				// For example, if the cursor is in the middle of a word like Mic|osoft
+				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
+				// This is not really usable because it doesn't tell us where the edit began and where it ended.
+				const newState = EditableState.readFromEditable(this.editable, this.editableState);
+				const typeInput = EditableState.deduceAndroidCompositionInput(this.editableState, newState);
+				this.editableState = newState;
+				this._onType.fire(typeInput);
+				this._onCompositionUpdate.fire(e);
+				return;
+			}
+			const typeInput = currentComposition.handleCompositionUpdate(e.data);
+			this.editableState = EditableState.readFromEditable(this.editable, this.editableState);
+			this._onType.fire(typeInput);
+			this._onCompositionUpdate.fire(e);
+		}));
+
+		this._register(this.editable.onCompositionEnd((e) => {
+			if (_debugComposition) {
+				console.log(`[compositionend]`, e);
+			}
+			const currentComposition = this.currentComposition;
+			if (!currentComposition) {
+				// https://github.com/microsoft/monaco-editor/issues/1663
+				// On iOS 13.2, Chinese system IME randomly trigger an additional compositionend event with empty data
+				return;
+			}
+			this.currentComposition = null;
+
+			if (this.browser.isAndroid) {
+				// On Android, the data sent with the composition update event is unusable.
+				// For example, if the cursor is in the middle of a word like Mic|osoft
+				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
+				// This is not really usable because it doesn't tell us where the edit began and where it ended.
+				const newState = EditableState.readFromEditable(this.editable, this.editableState);
+				const typeInput = EditableState.deduceAndroidCompositionInput(this.editableState, newState);
+				this.editableState = newState;
+				this._onType.fire(typeInput);
+				this._onCompositionEnd.fire();
+				return;
+			}
+
+			const typeInput = currentComposition.handleCompositionUpdate(e.data);
+			this.editableState = EditableState.readFromEditable(this.editable, this.editableState);
+			this._onType.fire(typeInput);
+			this._onCompositionEnd.fire();
 		}));
 
 		this._register(this.editable.onFocus(() => {
@@ -302,17 +430,17 @@ export class EditableInput extends Disposable {
 
 			if (selectionWithOptions) {
 				const lineNumber = selectionWithOptions.selection.lineNumber;
-				const editableState = this.editableStates[lineNumber] || EditableState.EMPTY;
+				let editableState = this.editableStates[lineNumber] || EditableState.EMPTY;
 				if (!editableState.value) {
 					this.editableStates[lineNumber] = EditableState.readFromEditable(this.editable, editableState);
-				} else {
-					const newSelectionStart = this.editable.getSelectionStart();
-					const newSelectionEnd = this.editable.getSelectionEnd();
-					if (editableState.selectionStart === newSelectionStart && editableState.selectionEnd === newSelectionEnd) {
-						// Nothing to do...
-						return;
-					}
+					editableState = this.editableStates[lineNumber];
 				}
+				const newSelectionStart = this.editable.getSelectionStart();
+				const newSelectionEnd = this.editable.getSelectionEnd();
+
+				const _newSelectionStartPosition = editableState.deduceEditorPosition(newSelectionStart);
+				const _newSelectionEndPosition = editableState.deduceEditorPosition(newSelectionEnd);
+
 				this._onSelectionChange.fire(selectionWithOptions.selection);
 			}
 		});
@@ -350,6 +478,19 @@ export class EditableInput extends Disposable {
 			this._onFocus.fire();
 		} else {
 			this._onBlur.fire();
+		}
+	}
+
+	public ensureSelection(selection: EditorSelection) {
+
+		if (this.currentComposition) {
+
+		}
+		const domNode = this.editable.getDomNode().childNodes[selection.startLineNumber - 1];
+		const rangeFromElement = RangeUtils.create(domNode as any, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
+		const rangeFromDocument = RangeUtils.get();
+		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
+			RangeUtils.set(rangeFromElement);
 		}
 	}
 
@@ -412,6 +553,10 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 
 	public resetSelectionChangeTime(): void {
 		this._ignoreSelectionChangeTime = 0;
+	}
+
+	getDomNode() {
+		return this._actual;
 	}
 
 	getValue(): string {

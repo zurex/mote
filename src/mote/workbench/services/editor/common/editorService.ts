@@ -1,6 +1,8 @@
+import { Event } from 'mote/base/common/event';
 import { IEditor } from 'mote/editor/common/editorCommon';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
-import { GroupIdentifier, IEditorIdentifier, IEditorPane } from 'mote/workbench/common/editor';
+import { GroupIdentifier, IEditorIdentifier, IEditorPane, IVisibleEditorPane } from 'mote/workbench/common/editor';
+import { IGroupModelChangeEvent } from 'mote/workbench/common/editorGroupModel';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { ICloseEditorOptions, IEditorGroup, isEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
@@ -27,9 +29,42 @@ export function isPreferredGroup(obj: unknown): obj is PreferredGroup {
 	return typeof obj === 'number' || isEditorGroup(candidate);
 }
 
+export interface IEditorsChangeEvent {
+	/**
+	 * The group which had the editor change
+	 */
+	groupId: GroupIdentifier;
+	/*
+	 * The event fired from the model
+	 */
+	event: IGroupModelChangeEvent;
+}
+
 export interface IEditorService {
 
 	readonly _serviceBrand: undefined;
+
+	/**
+	 * Emitted when the currently active editor changes.
+	 *
+	 * @see {@link IEditorService.activeEditorPane}
+	 */
+	readonly onDidActiveEditorChange: Event<void>;
+
+	/**
+	 * The currently active editor pane or `undefined` if none. The editor pane is
+	 * the workbench container for editors of any kind.
+	 *
+	 * @see {@link IEditorService.activeEditor} for access to the active editor input
+	 */
+	readonly activeEditorPane: IVisibleEditorPane | undefined;
+
+	/**
+	 * The currently active editor or `undefined` if none. An editor is active when it is
+	 * located in the currently active editor group. It will be `undefined` if the active
+	 * editor group has no editors open.
+	 */
+	readonly activeEditor: EditorInput | undefined;
 
 	/**
 	 * The currently active text editor control or `undefined` if there is currently no active

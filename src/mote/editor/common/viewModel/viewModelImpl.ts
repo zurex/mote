@@ -15,7 +15,7 @@ import { IViewModelLines, ViewModelLinesFromProjectedModel } from 'mote/editor/c
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
 import { ICommand, ScrollType } from 'mote/editor/common/editorCommon';
-import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { EditorSelection, ISelection } from 'mote/editor/common/core/editorSelection';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import * as textModelEvents from 'mote/editor/common/textModelEvents';
 import { ArrayQueue } from 'mote/base/common/arrays';
@@ -271,12 +271,20 @@ export class ViewModel extends Disposable implements IViewModel {
 
 	//#region cursor operations
 
+	public getPosition(): Position {
+		return this.cursor.getPrimaryCursorState().modelState.position;
+	}
+
 	public getSelection(): EditorSelection {
 		return this.cursor.getSelection();
 	}
 
 	public getSelections(): EditorSelection[] {
 		return this.cursor.getSelections();
+	}
+
+	public setSelections(source: string | null | undefined, selections: readonly ISelection[], reason = CursorChangeReason.NotSet): void {
+		this.withViewEventsCollector(eventsCollector => this.cursor.setSelections(eventsCollector, source, selections, reason));
 	}
 
 	public getPrimaryCursorState(): CursorState {

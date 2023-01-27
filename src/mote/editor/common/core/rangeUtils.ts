@@ -94,16 +94,16 @@ export class RangeUtils {
 		const containerWithEnd = this.getContainerWithOffset(element, selection.endIndex);
 		if (containerWithStart.container) {
 			try {
-				range.setStart(containerWithStart.container, containerWithStart.offset)
+				range.setStart(containerWithStart.container, containerWithStart.offset);
 			} catch (s) {
 				console.info(s);
 			}
 		}
 		if (containerWithEnd.container) {
 			try {
-				range.setEnd(containerWithEnd.container, containerWithEnd.offset)
+				range.setEnd(containerWithEnd.container, containerWithEnd.offset);
 			} catch (s) {
-				console.info(s)
+				console.info(s);
 			}
 		}
 		return range;

@@ -175,7 +175,7 @@ class ColorRegistry implements IColorRegistry {
 
 const colorRegistry = new ColorRegistry();
 
-export function getColorRegistry(): IColorRegistry {
+export function getColorRegistry(): ColorRegistry {
 	return colorRegistry;
 }
 

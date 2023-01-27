@@ -40,6 +40,28 @@ export class CursorColumns {
 	}
 
 	/**
+	 * Returns the value to display as "Col" in the status bar.
+	 * @see {@link CursorColumns}
+	 */
+	public static toStatusbarColumn(lineContent: string, column: number, tabSize: number): number {
+		const text = lineContent.substring(0, Math.min(column - 1, lineContent.length));
+		const iterator = new strings.CodePointIterator(text);
+
+		let result = 0;
+		while (!iterator.eol()) {
+			const codePoint = iterator.nextCodePoint();
+
+			if (codePoint === CharCode.Tab) {
+				result = CursorColumns.nextRenderTabStop(result, tabSize);
+			} else {
+				result = result + 1;
+			}
+		}
+
+		return result + 1;
+	}
+
+	/**
 	 * Returns a column from a visible column.
 	 * @see {@link CursorColumns}
 	 */

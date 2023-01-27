@@ -32,8 +32,6 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 	) {
 		super(logService, contextKeyService, commandService);
 
-		this._logging = true;
-
 		this.isComposingGlobalContextKey = contextKeyService.createKey('isComposing', false);
 
 		this.cachedResolver = null;
