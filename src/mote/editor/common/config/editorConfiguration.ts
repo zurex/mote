@@ -19,4 +19,13 @@ export interface IEditorConfiguration extends IDisposable {
 	 * Recompute options with new reference element dimensions.
 	 */
 	observeContainer(dimension?: IDimension): void;
+
+	/**
+	 * Set the current model line count.
+	 */
+	setModelLineCount(modelLineCount: number): void;
+	/**
+	 * Set the current view model line count.
+	 */
+	setViewLineCount(viewLineCount: number): void;
 }

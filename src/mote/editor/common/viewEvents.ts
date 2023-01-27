@@ -232,6 +232,7 @@ export type ViewEvent = (
 	| ViewConfigurationChangedEvent
 	| ViewCursorStateChangedEvent
 	| ViewFocusChangedEvent
+	| ViewFlushedEvent
 	| ViewLinesChangedEvent
 	| ViewLinesInsertedEvent
 	| ViewLinesDeletedEvent

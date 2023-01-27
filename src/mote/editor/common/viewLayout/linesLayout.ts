@@ -1,6 +1,59 @@
-import { Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+
+import { Disposable } from 'mote/base/common/lifecycle';
 import { IEditorWhitespace, IPartialViewLinesViewportData, IViewModel } from 'mote/editor/common/viewModel';
+
+interface IPendingChange { id: string; newAfterLineNumber: number; newHeight: number }
+interface IPendingRemove { id: string }
+
+class PendingChanges {
+	private _hasPending: boolean;
+	private _inserts: EditorWhitespace[];
+	private _changes: IPendingChange[];
+	private _removes: IPendingRemove[];
+
+	constructor() {
+		this._hasPending = false;
+		this._inserts = [];
+		this._changes = [];
+		this._removes = [];
+	}
+
+	public insert(x: EditorWhitespace): void {
+		this._hasPending = true;
+		this._inserts.push(x);
+	}
+
+	public change(x: IPendingChange): void {
+		this._hasPending = true;
+		this._changes.push(x);
+	}
+
+	public remove(x: IPendingRemove): void {
+		this._hasPending = true;
+		this._removes.push(x);
+	}
+
+	public mustCommit(): boolean {
+		return this._hasPending;
+	}
+
+	public commit(linesLayout: LinesLayout): void {
+		if (!this._hasPending) {
+			return;
+		}
+
+		const inserts = this._inserts;
+		const changes = this._changes;
+		const removes = this._removes;
+
+		this._hasPending = false;
+		this._inserts = [];
+		this._changes = [];
+		this._removes = [];
+
+		linesLayout._commitPendingChanges(inserts, changes, removes);
+	}
+}
 
 export class EditorWhitespace implements IEditorWhitespace {
 	public id: string;
@@ -27,24 +80,76 @@ export class EditorWhitespace implements IEditorWhitespace {
  * This provides commodity operations for working with lines that contain whitespace that pushes lines lower (vertically).
  */
 export class LinesLayout extends Disposable {
-
 	private lineHeight = 30;
 
 	private _paddingTop: number = 148;
 	private _paddingBottom: number = 200;
+
+	private readonly _pendingChanges: PendingChanges;
+	private _arr: EditorWhitespace[] = [];
 
 	constructor(
 		private readonly viewModel: IViewModel,
 		private lineCount: number,
 	) {
 		super();
+
+		this._pendingChanges = new PendingChanges();
+	}
+
+	/**
+	 * Notify the layouter that lines have been deleted (a continuous zone of lines).
+	 *
+	 * @param fromLineNumber The line number at which the deletion started, inclusive
+	 * @param toLineNumber The line number at which the deletion ended, inclusive
+	 */
+	public onLinesDeleted(fromLineNumber: number, toLineNumber: number) {
+		this.checkPendingChanges();
+		fromLineNumber = fromLineNumber | 0;
+		toLineNumber = toLineNumber | 0;
+
+		this.lineCount -= (toLineNumber - fromLineNumber + 1);
+		for (let i = 0, len = this._arr.length; i < len; i++) {
+			const afterLineNumber = this._arr[i].afterLineNumber;
+
+			if (fromLineNumber <= afterLineNumber && afterLineNumber <= toLineNumber) {
+				// The line this whitespace was after has been deleted
+				//  => move whitespace to before first deleted line
+				this._arr[i].afterLineNumber = fromLineNumber - 1;
+			} else if (afterLineNumber > toLineNumber) {
+				// The line this whitespace was after has been moved up
+				//  => move whitespace up
+				this._arr[i].afterLineNumber -= (toLineNumber - fromLineNumber + 1);
+			}
+		}
+	}
+
+	/**
+	 * Notify the layouter that lines have been inserted (a continuous zone of lines).
+	 *
+	 * @param fromLineNumber The line number at which the insertion started, inclusive
+	 * @param toLineNumber The line number at which the insertion ended, inclusive.
+	 */
+	public onLinesInserted(fromLineNumber: number, toLineNumber: number): void {
+		this.checkPendingChanges();
+		fromLineNumber = fromLineNumber | 0;
+		toLineNumber = toLineNumber | 0;
+
+		this.lineCount += (toLineNumber - fromLineNumber + 1);
+		for (let i = 0, len = this._arr.length; i < len; i++) {
+			const afterLineNumber = this._arr[i].afterLineNumber;
+
+			if (fromLineNumber <= afterLineNumber) {
+				this._arr[i].afterLineNumber += (toLineNumber - fromLineNumber + 1);
+			}
+		}
 	}
 
 	/**
 	 * Check if `verticalOffset` is below all lines.
 	 */
 	public isAfterLines(verticalOffset: number): boolean {
-		//this._checkPendingChanges();
+		this.checkPendingChanges();
 		const totalHeight = this.getLinesTotalHeight();
 		return verticalOffset > totalHeight;
 	}
@@ -117,6 +222,18 @@ export class LinesLayout extends Disposable {
 	}
 
 	/**
+	 * Get the vertical offset (the sum of heights for all objects above) a certain line number.
+	 *
+	 * @param lineNumber The line number
+	 * @return The sum of heights for all objects above `lineNumber`.
+	 */
+	public getVerticalOffsetAfterLineNumber(lineNumber: number, includeViewZones = false): number {
+		lineNumber = lineNumber | 0;
+		const previousLinesHeight = this.lineHeight * lineNumber;
+		return previousLinesHeight + this._paddingTop;
+	}
+
+	/**
 	 * Get all the lines and their relative vertical offsets that are positioned between `verticalOffset1` and `verticalOffset2`.
 	 *
 	 * @param verticalOffset1 The beginning of the viewport.
@@ -124,6 +241,7 @@ export class LinesLayout extends Disposable {
 	 * @return A structure describing the lines positioned between `verticalOffset1` and `verticalOffset2`.
 	 */
 	public getLinesViewportData(verticalOffset1: number, verticalOffset2: number): IPartialViewLinesViewportData {
+		this.checkPendingChanges();
 		verticalOffset1 = verticalOffset1 | 0;
 		verticalOffset2 = verticalOffset2 | 0;
 		const lineHeight = this.lineHeight;
@@ -209,5 +327,14 @@ export class LinesLayout extends Disposable {
 			completelyVisibleStartLineNumber: completelyVisibleStartLineNumber,
 			completelyVisibleEndLineNumber: completelyVisibleEndLineNumber
 		};
+	}
+
+	private checkPendingChanges(): void {
+		if (this._pendingChanges.mustCommit()) {
+			this._pendingChanges.commit(this);
+		}
+	}
+
+	public _commitPendingChanges(inserts: EditorWhitespace[], changes: IPendingChange[], removes: IPendingRemove[]): void {
 	}
 }

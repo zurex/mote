@@ -37,7 +37,7 @@ export class Context implements IContext {
 	}
 
 	public setValue(key: string, value: any): boolean {
-		// console.log('SET ' + key + ' = ' + value + ' ON ' + this._id);
+		console.log('SET ' + key + ' = ' + value + ' ON ' + this._id);
 		if (this._value[key] !== value) {
 			this._value[key] = value;
 			return true;
@@ -387,15 +387,15 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
 		this._toDispose.add(myContext);
 
 		// Uncomment this to see the contexts continuously logged
-		// let lastLoggedValue: string | null = null;
-		// setInterval(() => {
-		// 	let values = Object.keys(this._contexts).map((key) => this._contexts[key]);
-		// 	let logValue = values.map(v => JSON.stringify(v._value, null, '\t')).join('\n');
-		// 	if (lastLoggedValue !== logValue) {
-		// 		lastLoggedValue = logValue;
-		// 		console.log(lastLoggedValue);
-		// 	}
-		// }, 2000);
+		let lastLoggedValue: string | null = null;
+		setInterval(() => {
+			const values = Object.keys(this._contexts).map((key) => this._contexts[key]);
+			const logValue = values.map(v => JSON.stringify(v._value, null, '\t')).join('\n');
+			if (lastLoggedValue !== logValue) {
+				lastLoggedValue = logValue;
+				console.log(lastLoggedValue);
+			}
+		}, 2000);
 	}
 
 	public dispose(): void {

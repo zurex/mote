@@ -41,10 +41,33 @@ export interface IEditorOptions {
 	columnSelection?: boolean;
 
 	/**
+	 * Disable the optimizations for monospace fonts.
+	 * Defaults to false.
+	 */
+	disableMonospaceOptimizations?: boolean;
+
+	/**
 	 * Render the editor selection with rounded borders.
 	 * Defaults to true.
 	 */
 	roundedSelection?: boolean;
+
+	/**
+	 * Enable experimental whitespace rendering.
+	 * Defaults to 'svg'.
+	 */
+	experimentalWhitespaceRendering?: 'svg' | 'font' | 'off';
+
+	/**
+	 * Enable rendering of whitespace.
+	 * Defaults to 'selection'.
+	 */
+	renderWhitespace?: 'none' | 'boundary' | 'selection' | 'trailing' | 'all';
+	/**
+	 * Enable rendering of control characters.
+	 * Defaults to true.
+	 */
+	renderControlCharacters?: boolean;
 
 	/**
 	 * Control the wrapping of the editor.
@@ -97,6 +120,13 @@ export interface IEditorOptions {
 	 * When wordBreak = 'keepAll', Word breaks should not be used for Chinese/Japanese/Korean (CJK) text. Non-CJK text behavior is the same as for normal.
 	 */
 	wordBreak?: 'normal' | 'keepAll';
+
+	/**
+	 * Performance guard: Stop rendering a line after x characters.
+	 * Defaults to 10000.
+	 * Use -1 to never stop rendering
+	 */
+	stopRenderingLineAfter?: number;
 
 	/**
 	 * Control the behavior and rendering of the scrollbars.
@@ -259,7 +289,11 @@ export const enum EditorOption {
 	CursorBlinking,
 	CursorSmoothCaretAnimation,
 	ColumnSelection,
+	DisableMonospaceOptimizations,
 	RoundedSelection,
+	RenderControlCharacters,
+	ExperimentalWhitespaceRendering,
+	RenderWhitespace,
 	WordBreak,
 	WordWrap,
 	WordWrapBreakAfterCharacters,
@@ -268,6 +302,7 @@ export const enum EditorOption {
 	WordWrapOverride1,
 	WordWrapOverride2,
 	Scrollbar,
+	StopRenderingLineAfter,
 	FontFamily,
 	FontInfo,
 	FontLigatures,
@@ -1389,9 +1424,48 @@ export const EditorOptions = {
 		EditorOption.ColumnSelection, 'columnSelection', false,
 		{ description: nls.localize('columnSelection', "Enable that the selection with the mouse and keys is doing column selection.") }
 	)),
+	disableMonospaceOptimizations: register(new EditorBooleanOption(
+		EditorOption.DisableMonospaceOptimizations, 'disableMonospaceOptimizations', false
+	)),
 	roundedSelection: register(new EditorBooleanOption(
 		EditorOption.RoundedSelection, 'roundedSelection', true,
 		{ description: nls.localize('roundedSelection', "Controls whether selections should have rounded corners.") }
+	)),
+	renderControlCharacters: register(new EditorBooleanOption(
+		EditorOption.RenderControlCharacters, 'renderControlCharacters', true,
+		{ description: nls.localize('renderControlCharacters', "Controls whether the editor should render control characters."), restricted: true }
+	)),
+	renderWhitespace: register(new EditorStringEnumOption(
+		EditorOption.RenderWhitespace, 'renderWhitespace',
+		'selection' as 'selection' | 'none' | 'boundary' | 'trailing' | 'all',
+		['none', 'boundary', 'selection', 'trailing', 'all'] as const,
+		{
+			enumDescriptions: [
+				'',
+				nls.localize('renderWhitespace.boundary', "Render whitespace characters except for single spaces between words."),
+				nls.localize('renderWhitespace.selection', "Render whitespace characters only on selected text."),
+				nls.localize('renderWhitespace.trailing', "Render only trailing whitespace characters."),
+				''
+			],
+			description: nls.localize('renderWhitespace', "Controls how the editor should render whitespace characters.")
+		}
+	)),
+	stopRenderingLineAfter: register(new EditorIntOption(
+		EditorOption.StopRenderingLineAfter, 'stopRenderingLineAfter',
+		10000, -1, Constants.MAX_SAFE_SMALL_INTEGER,
+	)),
+	experimentalWhitespaceRendering: register(new EditorStringEnumOption(
+		EditorOption.ExperimentalWhitespaceRendering, 'experimentalWhitespaceRendering',
+		'svg' as 'svg' | 'font' | 'off',
+		['svg', 'font', 'off'] as const,
+		{
+			enumDescriptions: [
+				nls.localize('experimentalWhitespaceRendering.svg', "Use a new rendering method with svgs."),
+				nls.localize('experimentalWhitespaceRendering.font', "Use a new rendering method with font characters."),
+				nls.localize('experimentalWhitespaceRendering.off', "Use the stable rendering method."),
+			],
+			description: nls.localize('experimentalWhitespaceRendering', "Controls whether whitespace is rendered with a new, experimental method.")
+		}
 	)),
 	wordBreak: register(new EditorStringEnumOption(
 		EditorOption.WordBreak, 'wordBreak',

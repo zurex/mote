@@ -21,7 +21,6 @@ import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvent
 import { ILogService } from 'vs/platform/log/common/log';
 import { ViewModel } from 'mote/editor/common/viewModel/viewModelImpl';
 import { TextModel } from 'mote/editor/common/model/textModel';
-import { OutgoingViewModelEventKind } from 'mote/editor/common/viewModelEventsCollector';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
@@ -30,6 +29,8 @@ import { withNullAsUndefined } from 'mote/base/common/types';
 import { InternalEditorAction } from 'mote/editor/common/editorAction';
 import { DOMLineBreaksComputerFactory } from 'mote/editor/browser/view/domLineBreaksComputerFactory';
 import { MonospaceLineBreaksComputerFactory } from 'mote/editor/common/viewModel/monospaceLineBreaksComputer';
+import { OutgoingViewModelEventKind } from 'mote/editor/common/viewModelEventDispatcher';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
 
 let EDITOR_ID = 0;
 
@@ -97,8 +98,9 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 		moteEditorWidgetOptions: IMoteEditorWidgetOptions,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILogService private logService: ILogService,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IMoteEditorService protected readonly moteEditorService: IMoteEditorService,
+		@IThemeService private readonly themeService: IThemeService,
 	) {
 		super();
 
@@ -200,10 +202,10 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 		const commandDelegate: ICommandDelegate = {
 			type: (text: string) => {
-				this._type('editable', text);
+				this._type('keyboard', text);
 			},
 			compositionType: (text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number) => {
-				this._compositionType('editable', text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
+				this._compositionType('keyboard', text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
 			},
 		};
 
@@ -223,9 +225,11 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 		listenersToRemove.add(viewModel.onEvent((e) => {
 			switch (e.kind) {
+				/*
 				case OutgoingViewModelEventKind.SelectionChanged:
 					this._onDidChangeSelection.fire(e.selection);
 					break;
+				*/
 				case OutgoingViewModelEventKind.FocusChanged:
 					this._editorTextFocus.setValue(e.hasFocus);
 					break;
@@ -264,7 +268,7 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 	private createView(viewController: ViewController, viewModel: IViewModel, pageStore: BlockStore): [EditorView, boolean] {
 		const editorView = this.instantiationService.createInstance(
-			EditorView, this.configuration, viewController, viewModel, pageStore);
+			EditorView, this.configuration, viewController, this.themeService.getColorTheme(), viewModel, pageStore);
 		return [editorView, true];
 	}
 

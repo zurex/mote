@@ -74,6 +74,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 	private readonly containerObserver: ElementSizeObserver;
 
 	private viewLineCount: number = 1;
+	private _lineNumbersDigitCount: number = 1;
 	private _isDominatedByLongLines: boolean = false;
 
 	/**
@@ -152,6 +153,15 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 
 	protected readFontInfo(bareFontInfo: BareFontInfo): FontInfo {
 		return FontMeasurements.readFontInfo(bareFontInfo);
+	}
+
+	public setModelLineCount(modelLineCount: number): void {
+		const lineNumbersDigitCount = digitCount(modelLineCount);
+		if (this._lineNumbersDigitCount === lineNumbersDigitCount) {
+			return;
+		}
+		this._lineNumbersDigitCount = lineNumbersDigitCount;
+		this.recomputeOptions();
 	}
 
 	public setViewLineCount(viewLineCount: number): void {
@@ -239,6 +249,15 @@ function deepCloneAndMigrateOptions(_options: Readonly<IEditorOptions>): IEditor
 	const options = objects.deepClone(_options);
 	//migrateOptions(options);
 	return options;
+}
+
+function digitCount(n: number): number {
+	let r = 0;
+	while (n) {
+		n = Math.floor(n / 10);
+		r++;
+	}
+	return r ? r : 1;
 }
 
 function getExtraEditorClassName(): string {

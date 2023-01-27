@@ -30,6 +30,7 @@ import 'mote/workbench/services/workspaces/browser/workspacesService';
 import 'mote/workbench/services/editor/browser/editorResolverService';
 import 'mote/workbench/services/editor/browser/editorService';
 import 'mote/workbench/services/editor/browser/moteEditorService';
+import 'mote/workbench/services/keybinding/browser/keybindingService';
 
 //#endregion
 

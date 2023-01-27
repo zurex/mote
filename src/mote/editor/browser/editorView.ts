@@ -18,12 +18,12 @@ import { IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/edit
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
-import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { TemplatePicker } from 'mote/editor/browser/viewParts/templatePicker/templatePicker';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
+import { IColorTheme } from 'mote/platform/theme/common/themeService';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -53,6 +53,7 @@ export class EditorView extends ViewEventHandler {
 	constructor(
 		configuration: IEditorConfiguration,
 		viewController: ViewController,
+		colorTheme: IColorTheme,
 		model: IViewModel,
 		private readonly pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
@@ -72,7 +73,7 @@ export class EditorView extends ViewEventHandler {
 
 		const contentStore = pageStore.getContentStore();
 		//viewController.setViewLayout(model.viewLayout);
-		this.context = new ViewContext(configuration, contentStore, model.viewLayout, viewController, model);
+		this.context = new ViewContext(colorTheme, configuration, contentStore, model.viewLayout, viewController, model);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);
@@ -95,7 +96,7 @@ export class EditorView extends ViewEventHandler {
 		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, this.linesContent);
 
 		// Keyboard handler
-		this.editableHandler = new EditableHandler(0, this.context, viewController, {}, this.viewLines.getDomNode().domNode);
+		this.editableHandler = new EditableHandler(0, this.context, viewController, {}, this.viewLines.getDomNode().domNode as any);
 		this.viewParts.push(this.editableHandler);
 
 		// Overlay widgets
@@ -255,6 +256,14 @@ export class EditorView extends ViewEventHandler {
 			}
 		}
 		return result;
+	}
+
+	public focus(): void {
+		this.editableHandler.focusEditable();
+	}
+
+	public isFocused(): boolean {
+		return this.editableHandler.isFocused();
 	}
 
 	getSafePaddingLeftCSS(padding: number) {

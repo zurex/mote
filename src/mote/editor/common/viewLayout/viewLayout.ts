@@ -199,6 +199,18 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		}
 	}
 
+	onHeightMaybeChanged() {
+
+	}
+
+	onLinesInserted(fromLineNumber: number, toLineNumber: number) {
+		this.linesLayout.onLinesInserted(fromLineNumber, toLineNumber);
+	}
+
+	onLinesDeleted(fromLineNumber: number, toLineNumber: number) {
+		this.linesLayout.onLinesDeleted(fromLineNumber, toLineNumber);
+	}
+
 	//#endregion
 
 	private _getContentHeight(width: number, height: number, contentWidth: number): number {
@@ -294,8 +306,28 @@ export class ViewLayout extends Disposable implements IViewLayout {
 	}
 	//#endregion
 
+	//#region lines layout
+
+	public isAfterLines(verticalOffset: number): boolean {
+		return this.linesLayout.isAfterLines(verticalOffset);
+	}
+
+	public getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones: boolean = false): number {
+		return this.linesLayout.getVerticalOffsetForLineNumber(lineNumber, includeViewZones);
+	}
+
+	public getVerticalOffsetAfterLineNumber(lineNumber: number, includeViewZones: boolean = false): number {
+		return this.linesLayout.getVerticalOffsetAfterLineNumber(lineNumber, includeViewZones);
+	}
+
+	public getLineNumberAtVerticalOffset(verticalOffset: number): number {
+		return this.linesLayout.getLineNumberAtOrAfterVerticalOffset(verticalOffset);
+	}
+
 	public getLinesViewportData(): IPartialViewLinesViewportData {
 		const visibleBox = this.getCurrentViewport();
 		return this.linesLayout.getLinesViewportData(visibleBox.top, visibleBox.top + visibleBox.height);
 	}
+
+	//#endregion
 }

@@ -3,14 +3,11 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { IVisibleLinesHost, VisibleLinesCollection } from 'mote/editor/browser/view/viewLayer';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
-import { ViewLine } from 'mote/editor/browser/viewParts/lines/viewLine';
+import { ViewLine, ViewLineOptions } from 'mote/editor/browser/viewParts/lines/viewLine';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
-import { clearNode } from 'mote/base/browser/dom';
-import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
+import { FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { StoreUtils } from 'mote/platform/store/common/storeUtils';
-import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 
 class LastRenderedData {
@@ -42,6 +39,7 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
 	// config
 	private canUseLayerHinting: boolean = true;
+	private viewLineOptions: ViewLineOptions;
 
 	constructor(
 		context: ViewContext,
@@ -55,6 +53,10 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this._textRangeRestingSpot = document.createElement('div');
 
 		this.visibleLines = new VisibleLinesCollection(this);
+
+		const conf = this.context.configuration;
+
+		this.viewLineOptions = new ViewLineOptions(conf, this.context.theme.type);
 
 		this.domNode = this.visibleLines.domNode;
 
@@ -75,7 +77,7 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	}
 
 	public createVisibleLine(): ViewLine {
-		return this.instantiationService.createInstance(ViewLine, this.context, this.viewController);
+		return this.instantiationService.createInstance(ViewLine, this.viewLineOptions, this.context, this.viewController);
 	}
 
 	public prepareRender(): void {
@@ -100,9 +102,6 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.linesContent.setContain('strict');
 		const adjustedScrollTop = this.context.viewLayout.getCurrentScrollTop();
 		this.linesContent.setTop(-adjustedScrollTop);
-
-		// TODO fixme, use it to let viewlayout know the content change
-		this.context.viewLayout.onConfigurationChanged(new ConfigurationChangedEvent([]));
 	}
 
 	//#region view events handler
@@ -126,4 +125,19 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	}
 
 	//#endregion
+
+	/**
+	 * @returns the line number of this view line dom node.
+	 */
+	private _getLineNumberFor(domNode: HTMLElement): number {
+		const startLineNumber = this.visibleLines.getStartLineNumber();
+		const endLineNumber = this.visibleLines.getEndLineNumber();
+		for (let lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++) {
+			const line = this.visibleLines.getVisibleLine(lineNumber);
+			if (domNode === line.getDomNode()) {
+				return lineNumber;
+			}
+		}
+		return -1;
+	}
 }

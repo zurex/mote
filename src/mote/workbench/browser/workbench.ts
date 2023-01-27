@@ -88,7 +88,6 @@ export class Workbench extends Layout {
 		// All Contributed Services which register by registerSingleton
 		const contributedServices = getSingletonServiceDescriptors();
 		for (const [id, descriptor] of contributedServices) {
-			this.logService.debug('[Workbench] init service:', descriptor.ctor.name);
 			serviceCollection.set(id, descriptor);
 		}
 
@@ -141,7 +140,6 @@ export class Workbench extends Layout {
 			{ id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: {} }
 		].forEach(({ id, role, classes, options }) => {
 			const partContainer = this.createPart(id, role, classes);
-			console.log(`[Workbench] create part: ${id}`);
 			this.getPart(id).create(partContainer, options);
 		});
 

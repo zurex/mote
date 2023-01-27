@@ -4,7 +4,7 @@ import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
-import { SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
+import { SelectionChangedEvent } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
@@ -16,7 +16,7 @@ import { Segment } from 'mote/editor/common/core/segment';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
+import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
@@ -25,6 +25,8 @@ import { IMouseWheelEvent } from 'mote/base/browser/mouseEvent';
 import { IEditorMouseEvent, IPartialEditorMouseEvent } from 'mote/editor/browser/editorBrowser';
 import { Position } from 'mote/editor/common/core/position';
 import { CoreNavigationCommands, NavigationCommandRevealType } from 'mote/editor/browser/command/navigationCommands';
+import { ViewModelEventDispatcher, ViewModelEventsCollector } from 'mote/editor/common/viewModelEventDispatcher';
+import { IKeyboardEvent } from 'mote/base/browser/keyboardEvent';
 
 export interface IMouseDispatchData {
 	position: Position;
@@ -55,7 +57,7 @@ export interface ICommandDelegate {
 export class ViewController extends Disposable {
 
 	private selection: TextSelection;
-	private readonly eventDispatcher: ViewEventDispatcher;
+	private readonly eventDispatcher: ViewModelEventDispatcher;
 
 	constructor(
 		private readonly configuration: IEditorConfiguration,
@@ -68,7 +70,7 @@ export class ViewController extends Disposable {
 		super();
 
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
-		this.eventDispatcher = new ViewEventDispatcher();
+		this.eventDispatcher = (viewModel as any).eventDispatcher;
 	}
 
 	//#region command expose to editable
@@ -128,22 +130,10 @@ export class ViewController extends Disposable {
 
 	public type(text: string): void {
 		this.commandDelegate.type(text);
-		return;
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const titleStore = this.getTitleStore();
-				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
-			}, this.contentStore.userId);
-		});
 	}
 
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const titleStore = this.getTitleStore();
-				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
-			}, this.contentStore.userId);
-		});
+		this.commandDelegate.compositionType(text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
 	}
 
 	public backspace() {
@@ -222,7 +212,7 @@ export class ViewController extends Disposable {
 		return value.length === 0;
 	}
 
-	private executeCursorEdit(callback: (eventsCollector: ViewEventsCollector) => void) {
+	private executeCursorEdit(callback: (eventsCollector: ViewModelEventsCollector) => void) {
 		if (this.selection === null || this.selection.lineNumber < -1) {
 			return;
 		}
@@ -239,7 +229,7 @@ export class ViewController extends Disposable {
 		this.withViewEventsCollector(callback);
 	}
 
-	private withViewEventsCollector<T>(callback: (eventsCollector: ViewEventsCollector) => T): T {
+	private withViewEventsCollector<T>(callback: (eventsCollector: ViewModelEventsCollector) => T): T {
 		try {
 			const eventsCollector = (this.viewModel as any).eventDispatcher.beginEmitViewEvents();
 			return callback(eventsCollector);
@@ -274,7 +264,7 @@ export class ViewController extends Disposable {
 	 * @param transaction
 	 * @param selection
 	 */
-	private onBackspace(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection) {
+	private onBackspace(eventsCollector: ViewModelEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection) {
 		if (0 !== selection.startIndex || 0 !== selection.endIndex) {
 			let newSelection: TextSelection;
 			if (selection.startIndex === selection.endIndex) {
@@ -312,62 +302,7 @@ export class ViewController extends Disposable {
 		}
 	}
 
-	private onType(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
-		const oldRecord = store.getValue();
-		const content = segmentUtils.collectValueFromSegment(oldRecord);
-		const diffResult = textChange(selection, content, newValue);
-
-		let needChange = false;
-		let startIndex = 0;
-		let deleteFlag = false;
-
-		for (const [op, txt] of diffResult) {
-			switch (op) {
-				case DIFF_INSERT:
-					needChange = true;
-					this._insert(
-						eventsCollector,
-						txt,
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex,
-							lineNumber: selection.lineNumber
-						},
-						TextSelectionMode.Editing
-					);
-					startIndex += txt.length;
-					break;
-				case DIFF_DELETE:
-					needChange = true;
-					deleteFlag = false;
-					this.delete(
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex + txt.length,
-							lineNumber: selection.lineNumber
-						},
-					);
-					break;
-				default:
-					if (DIFF_EQUAL === op) {
-						startIndex += txt.length;
-					}
-			}
-		}
-
-		if (needChange) {
-
-		}
-		if (deleteFlag) {
-
-		}
-	}
-
-	private _insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private _insert(eventsCollector: ViewModelEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {
 			return;
@@ -445,7 +380,15 @@ export class ViewController extends Disposable {
 
 	//#endregion
 
-	//#region mouse events
+	//#region user input event
+
+	public emitKeyDown(e: IKeyboardEvent): void {
+		this.userInputEvents.emitKeyDown(e);
+	}
+
+	public emitKeyUp(e: IKeyboardEvent): void {
+		this.userInputEvents.emitKeyUp(e);
+	}
 
 	public emitMouseMove(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseMove(e);

@@ -28,6 +28,7 @@ import 'mote/workbench/browser/web.main';
 //#region --- workbench services
 
 import 'mote/workbench/services/lifecycle/browser/lifecycleService';
+import 'mote/workbench/services/keybinding/browser/browserKeyboardLayoutService';
 
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { ILoggerService } from 'vs/platform/log/common/log';
@@ -35,11 +36,8 @@ import { FileLoggerService } from 'vs/platform/log/common/fileLog';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
 
-
 registerSingleton(ILoggerService, FileLoggerService);
 registerSingleton(IContextMenuService, BrowserContextMenuService);
-
-
 
 //#endregion
 

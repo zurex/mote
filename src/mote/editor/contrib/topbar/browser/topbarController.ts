@@ -3,6 +3,7 @@ import { registerEditorContribution } from 'mote/editor/browser/editorExtensions
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { TopbarWidget } from 'mote/editor/contrib/topbar/browser/topbarWidget';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
+import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -17,6 +18,7 @@ export class TopbarController extends Disposable implements IEditorContribution 
 		@IUserService userService: IUserService,
 		@IThemeService themeService: IThemeService,
 		@IContextViewService contextViewService: IContextViewService,
+		@IKeybindingService keybinddingService: IKeybindingService,
 	) {
 		super();
 

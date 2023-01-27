@@ -4,7 +4,7 @@ import { CursorConfiguration, CursorState, EditOperationResult, EditOperationTyp
 import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
 import { IIdentifiedSingleEditOperation, ITextModel, IValidEditOperation, TrackedRangeStickiness } from 'mote/editor/common/model';
 import * as editorCommon from 'mote/editor/common/editorCommon';
-import { CursorStateChangedEvent, ViewModelEventsCollector } from 'mote/editor/common/viewModelEventsCollector';
+import { CursorStateChangedEvent, ViewModelEventsCollector } from 'mote/editor/common/viewModelEventDispatcher';
 import { CompositionOutcome, TypeOperations } from 'mote/editor/common/cursor/cursorTypeOperations';
 import { EditorSelection, ISelection, SelectionDirection } from 'mote/editor/common/core/editorSelection';
 import { EditorRange, IRange } from 'mote/editor/common/core/editorRange';
@@ -20,6 +20,7 @@ export class CursorsController extends Disposable {
 
 	private cursors: CursorCollection;
 
+	private _hasFocus: boolean;
 	private _isHandling: boolean;
 	private _compositionState: CompositionState | null;
 	private _autoClosedActions: AutoClosedAction[];
@@ -34,6 +35,7 @@ export class CursorsController extends Disposable {
 	) {
 		super();
 
+		this._hasFocus = false;
 		this._isHandling = false;
 		this._compositionState = null;
 		this._autoClosedActions = [];
@@ -45,6 +47,10 @@ export class CursorsController extends Disposable {
 	}
 
 	//#region Setter/Getter
+
+	public setHasFocus(hasFocus: boolean): void {
+		this._hasFocus = hasFocus;
+	}
 
 	public getPrevEditOperationType(): EditOperationType {
 		return this._prevEditOperationType;
@@ -139,6 +145,33 @@ export class CursorsController extends Disposable {
 		}, eventsCollector, source);
 	}
 
+	public compositionType(eventsCollector: ViewModelEventsCollector, text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number, source?: string | null | undefined): void {
+		if (text.length === 0 && replacePrevCharCnt === 0 && replaceNextCharCnt === 0) {
+			// this edit is a no-op
+			if (positionDelta !== 0) {
+				// but it still wants to move the cursor
+				const newSelections = this.getSelections().map(selection => {
+					const position = selection.getPosition();
+					return new EditorSelection(position.lineNumber, position.column + positionDelta, position.lineNumber, position.column + positionDelta);
+				});
+				this.setSelections(eventsCollector, source, newSelections, CursorChangeReason.NotSet);
+			}
+			return;
+		}
+		this.executeEdit(() => {
+			this.executeEditOperation(TypeOperations.compositionType(this._prevEditOperationType, this.context.cursorConfig, this.model, this.getSelections(), text, replacePrevCharCnt, replaceNextCharCnt, positionDelta));
+		}, eventsCollector, source);
+	}
+
+	public executeCommands(eventsCollector: ViewModelEventsCollector, commands: editorCommon.ICommand[], source?: string | null | undefined): void {
+		this.executeEdit(() => {
+			this.executeEditOperation(new EditOperationResult(EditOperationType.Other, commands, {
+				shouldPushStackElementBefore: false,
+				shouldPushStackElementAfter: false
+			}));
+		}, eventsCollector, source);
+	}
+
 	private executeEdit(callback: () => void, eventsCollector: ViewModelEventsCollector, source: string | null | undefined, cursorChangeReason: CursorChangeReason = CursorChangeReason.NotSet): void {
 		const oldState = CursorModelState.from(this.model, this);
 		//this._cursors.stopTrackingSelections();
@@ -172,6 +205,10 @@ export class CursorsController extends Disposable {
 
 			this._prevEditOperationType = opResult.type;
 		}
+
+		if (opResult.shouldPushStackElementAfter) {
+			this.model.pushStackElement();
+		}
 	}
 
 	private _interpretCommandResult(cursorState: EditorSelection[] | null): void {
@@ -179,7 +216,7 @@ export class CursorsController extends Disposable {
 			cursorState = this.cursors.readSelectionFromMarkers();
 		}
 
-		//this._columnSelectData = null;
+		this._columnSelectData = null;
 		this.cursors.setSelections(cursorState);
 		this.cursors.normalize();
 	}

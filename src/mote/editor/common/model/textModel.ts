@@ -3,100 +3,19 @@ import { EditorRange, IRange } from 'mote/editor/common/core/editorRange';
 import { IPosition, Position } from 'mote/editor/common/core/position';
 import { ITextModel } from 'mote/editor/common/model';
 import * as model from 'mote/editor/common/model';
-import * as segmentUtils from 'mote/editor/common/segmentUtils';
 import { EditStack } from 'mote/editor/common/model/editStack';
 import { TokenizationTextModelPart } from 'mote/editor/common/model/tokenizationTextModelPart';
-import { collectValueFromSegment, ISegment } from 'mote/editor/common/segmentUtils';
 import { ITokenizationTextModelPart } from 'mote/editor/common/tokenizationTextModelPart';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import RecordStore from 'mote/platform/store/common/recordStore';
-import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { UndoRedoGroup } from 'mote/platform/undoRedo/common/undoRedo';
-import { IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent } from 'mote/editor/common/textModelEvents';
+import { IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent, ModelRawChange, ModelRawContentChangedEvent, ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from 'mote/editor/common/textModelEvents';
 import { Emitter, Event } from 'mote/base/common/event';
-import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
-import { Transaction } from 'mote/editor/common/core/transaction';
-import { BlockTypes } from 'mote/platform/store/common/record';
-import { textChange } from 'mote/editor/common/core/textChange';
-import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
-
-interface IReverseSingleEditOperation extends model.IValidEditOperation {
-	sortIndex: number;
-}
-
-export interface IValidatedEditOperation {
-	sortIndex: number;
-	identifier: model.ISingleEditOperationIdentifier | null;
-	range: EditorRange;
-	rangeOffset: number;
-	rangeLength: number;
-	text: string;
-	eolCount: number;
-	firstLineLength: number;
-	lastLineLength: number;
-	forceMoveMarkers: boolean;
-	isAutoWhitespaceEdit: boolean;
-}
+import { TextBuffer } from 'mote/editor/common/model/textBuffer';
+import { URI } from 'mote/base/common/uri';
 
 export class TextModel extends Disposable implements ITextModel {
 
-	/**
-	 * Assumes `operations` are validated and sorted ascending
-	 */
-	public static getInverseEditRanges(operations: IValidatedEditOperation[]): EditorRange[] {
-		const result: EditorRange[] = [];
-
-		let prevOpEndLineNumber: number = 0;
-		let prevOpEndColumn: number = 0;
-		let prevOp: IValidatedEditOperation | null = null;
-		for (let i = 0, len = operations.length; i < len; i++) {
-			const op = operations[i];
-
-			let startLineNumber: number;
-			let startColumn: number;
-
-			if (prevOp) {
-				if (prevOp.range.endLineNumber === op.range.startLineNumber) {
-					startLineNumber = prevOpEndLineNumber;
-					startColumn = prevOpEndColumn + (op.range.startColumn - prevOp.range.endColumn);
-				} else {
-					startLineNumber = prevOpEndLineNumber + (op.range.startLineNumber - prevOp.range.endLineNumber);
-					startColumn = op.range.startColumn;
-				}
-			} else {
-				startLineNumber = op.range.startLineNumber;
-				startColumn = op.range.startColumn;
-			}
-
-			let resultRange: EditorRange;
-
-			if (op.text!.length > 0) {
-				// the operation inserts something
-				const lineCount = op.eolCount + 1;
-
-				if (lineCount === 1) {
-					// single line insert
-					resultRange = new EditorRange(startLineNumber, startColumn, startLineNumber, startColumn + op.text.length);
-				} else {
-					// multi line insert
-					resultRange = new EditorRange(startLineNumber, startColumn, startLineNumber + lineCount - 1, op.lastLineLength + 1);
-				}
-			} else {
-				// There is nothing to insert
-				resultRange = new EditorRange(startLineNumber, startColumn, startLineNumber, startColumn);
-			}
-
-			prevOpEndLineNumber = resultRange.endLineNumber;
-			prevOpEndColumn = resultRange.endColumn;
-
-			result.push(resultRange);
-			prevOp = op;
-		}
-
-		return result;
-	}
 
 	private readonly _onDidChangeDecorations: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onDidChangeDecorations: Event<void> = this._onDidChangeDecorations.event;
@@ -113,13 +32,23 @@ export class TextModel extends Disposable implements ITextModel {
 		);
 	}
 
+	private attachedEditorCount: number;
+	private buffer: model.ITextBuffer;
+
 	private _isDisposed: boolean;
 	private __isDisposing: boolean;
 	public _isDisposing(): boolean { return this.__isDisposing; }
+	private _versionId: number = 1;
+	/**
+	 * Unlike, versionId, this can go down (via undo) or go to previous values (via redo)
+	 */
+	private _alternativeVersionId: number = 1;
 
-	private readonly contentStore: RecordStore;
-
+	//#region Editing
 	private readonly commandManager: EditStack;
+	private _isUndoing: boolean;
+	private _isRedoing: boolean;
+	//#endregion
 
 	private readonly _tokenizationTextModelPart: TokenizationTextModelPart;
 	public get tokenization(): ITokenizationTextModelPart { return this._tokenizationTextModelPart; }
@@ -130,17 +59,43 @@ export class TextModel extends Disposable implements ITextModel {
 	) {
 		super();
 
+		this.attachedEditorCount = 0;
+
 		this._isDisposed = false;
 		this.__isDisposing = false;
 
-		this.contentStore = this.pageStore.getContentStore();
+		this.buffer = new TextBuffer(pageStore);
 
 		this.commandManager = new EditStack(this);
+		this._isUndoing = false;
+		this._isRedoing = false;
 		this._tokenizationTextModelPart = new TokenizationTextModelPart(this);
 	}
 
+	get uri(): URI {
+		return null as any;
+	}
+
+	getDecorationRange(id: string): EditorRange | null {
+		throw new Error('Method not implemented.');
+	}
+
+	deltaDecorations(oldDecorations: string[], newDecorations: model.IModelDeltaDecoration[]): string[] {
+		throw new Error('Method not implemented.');
+	}
+
 	getVersionId(): number {
-		return this.pageStore.getValue().version;
+		this.assertNotDisposed();
+		return this._versionId;
+	}
+
+	private increaseVersionId(): void {
+		this._versionId = this._versionId + 1;
+		this._alternativeVersionId = this._versionId;
+	}
+
+	public _overwriteVersionId(versionId: number): void {
+		this._versionId = versionId;
 	}
 
 	validateRange(range: IRange): EditorRange {
@@ -149,6 +104,30 @@ export class TextModel extends Disposable implements ITextModel {
 
 	validatePosition(position: IPosition): Position {
 		return position as Position;
+	}
+
+	public onBeforeAttached(): void {
+		this.attachedEditorCount++;
+		if (this.attachedEditorCount === 1) {
+			//this._tokenizationTextModelPart.handleDidChangeAttached();
+			//this._onDidChangeAttached.fire(undefined);
+		}
+	}
+
+	public onBeforeDetached(): void {
+		this.attachedEditorCount--;
+		if (this.attachedEditorCount === 0) {
+			//this._tokenizationTextModelPart.handleDidChangeAttached();
+			//this._onDidChangeAttached.fire(undefined);
+		}
+	}
+
+	public isAttachedToEditor(): boolean {
+		return this.attachedEditorCount > 0;
+	}
+
+	public getAttachedEditorCount(): number {
+		return this.attachedEditorCount;
 	}
 
 	normalizePosition(position: Position, affinity: model.PositionAffinity): Position {
@@ -168,51 +147,27 @@ export class TextModel extends Disposable implements ITextModel {
 
 	public getLineLength(lineNumber: number): number {
 		this.assertNotDisposed();
-		const lineStore = this.getLineStore(lineNumber);
-		const content = collectValueFromSegment(lineStore.getTitleStore().getValue());
-		return content.length;
+		return this.buffer.getLineLength(lineNumber);
 	}
 
 	public getLineStore(lineNumber: number): BlockStore {
-		if (lineNumber < 0 || lineNumber > this.getLineCount()) {
-			throw new Error('Illegal value for lineNumber');
-		}
-		if (lineNumber === 0) {
-			// lineNumber == 0 means it's the header
-			return this.pageStore;
-		}
-		return StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore);
+		this.assertNotDisposed();
+		return this.buffer.getLineStore(lineNumber);
 	}
 
 	public getLineCount(): number {
-		const blockIds: string[] = this.contentStore.getValue() || [];
-		return blockIds.length;
+		this.assertNotDisposed();
+		return this.buffer.getLineCount();
 	}
 
 	public getLineContent(lineNumber: number): string {
-		const lineStore = this.getLineStore(lineNumber);
-		return collectValueFromSegment(lineStore.getTitleStore().getValue());
+		this.assertNotDisposed();
+		return this.buffer.getLineContent(lineNumber);
 	}
 
 	public getValueInRange(rawRange: IRange, eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined): string {
-		const range = this.validateRange(rawRange);
-		if (range.startLineNumber === range.endLineNumber) {
-			return this.getLineContent(range.startLineNumber).substring(range.startColumn - 1, range.endColumn);
-		}
-		let result = '';
-		for (let lineNumber = range.startLineNumber; lineNumber < range.endLineNumber; lineNumber++) {
-			const content = this.getLineContent(lineNumber);
-			if (lineNumber === range.startLineNumber) {
-				result += content.substring(range.startColumn - 1);
-				continue;
-			}
-			if (lineNumber === range.endLineNumber) {
-				result += content.substring(0, range.endColumn);
-				continue;
-			}
-			result += content;
-		}
-		return result;
+		this.assertNotDisposed();
+		return this.buffer.getValueInRange(this.validateRange(rawRange), eol);
 	}
 
 	//#endregion
@@ -225,7 +180,7 @@ export class TextModel extends Disposable implements ITextModel {
 	_setTrackedRange(id: string | null, newRange: EditorRange, newStickiness: model.TrackedRangeStickiness): string;
 	_setTrackedRange(id: string | null, newRange: EditorRange | null, newStickiness: model.TrackedRangeStickiness): string | null {
 
-		//console.log(newRange);
+		console.log(newRange?.toString());
 		this._onDidChangeDecorations.fire();
 		return null;
 	}
@@ -257,6 +212,7 @@ export class TextModel extends Disposable implements ITextModel {
 	pushStackElement(): void {
 
 	}
+
 	popStackElement(): void {
 
 	}
@@ -289,202 +245,109 @@ export class TextModel extends Disposable implements ITextModel {
 	}
 
 	private doApplyEdits(rawOperations: model.ValidAnnotatedEditOperation[], computeUndoEdits: boolean): void | model.IValidEditOperation[] {
-		const operations: IValidatedEditOperation[] = [];
-		for (let i = 0; i < rawOperations.length; i++) {
-			const op = rawOperations[i];
 
-			let validText = '';
-			let eolCount = 0;
-			let firstLineLength = 0;
-			let lastLineLength = 0;
-			if (op.text) {
-				validText = op.text;
-				[eolCount, firstLineLength, lastLineLength] = this.countEOL(op);
-			}
+		const oldLineCount = this.buffer.getLineCount();
+		const result = this.buffer.applyEdits(rawOperations, false, computeUndoEdits);
+		const newLineCount = this.buffer.getLineCount();
 
-			operations[i] = {
-				sortIndex: i,
-				identifier: op.identifier || null,
-				range: op.range,
-				rangeOffset: 0,
-				rangeLength: 0,
-				text: validText,
-				eolCount: eolCount,
-				firstLineLength: firstLineLength,
-				lastLineLength: lastLineLength,
-				forceMoveMarkers: false,
-				isAutoWhitespaceEdit: false,
-			};
-		}
-		// reverse
-		const reverseRanges = computeUndoEdits ? TextModel.getInverseEditRanges(operations) : [];
-		let reverseOperations: IReverseSingleEditOperation[] | null = null;
-		if (computeUndoEdits) {
+		const contentChanges = result.changes;
 
-			//let reverseRangeDeltaOffset = 0;
-			reverseOperations = [];
-			for (let i = 0; i < operations.length; i++) {
-				const op = operations[i];
-				const reverseRange = reverseRanges[i];
-				const bufferText = this.getValueInRange(op.range);
-				//const reverseRangeOffset = op.rangeOffset + reverseRangeDeltaOffset;
-				//reverseRangeDeltaOffset += (op.text.length - bufferText.length);
+		if (contentChanges.length !== 0) {
 
-				reverseOperations[i] = {
-					sortIndex: i,
-					identifier: op.identifier,
-					range: reverseRange,
-					text: bufferText,
-					textChange: null as any//new TextChange(op.rangeOffset, bufferText, reverseRangeOffset, op.text)
-				};
-			}
-		}
+			const rawContentChanges: ModelRawChange[] = [];
 
-		const transaction = Transaction.create(this.contentStore.userId);
-		const contentChanges: model.IInternalModelContentChange[] = [];
-		// operations are from bottom to top
-		for (let i = 0; i < rawOperations.length; i++) {
-			const op = rawOperations[i];
+			this.increaseVersionId();
 
-			const startLineNumber = op.range.startLineNumber;
-			const startColumn = op.range.startColumn;
-			const endLineNumber = op.range.endLineNumber;
-			const endColumn = op.range.endColumn;
+			let lineCount = oldLineCount;
+			for (let i = 0, len = contentChanges.length; i < len; i++) {
+				const change = contentChanges[i];
+				const eolCount = change.text === '\n' ? 1 : 0;
 
-			if (startLineNumber === endLineNumber && startColumn === endColumn && op.text!.length === 0) {
-				// no-op
-				continue;
-			}
+				const startLineNumber = change.range.startLineNumber;
+				const endLineNumber = change.range.endLineNumber;
 
-			//this.applyEditForEditableInput(op, transaction);
-			this.applyEditForTextAreaInput(op, transaction);
+				const deletingLinesCnt = endLineNumber - startLineNumber;
+				const insertingLinesCnt = eolCount;
+				const editingLinesCnt = Math.min(deletingLinesCnt, insertingLinesCnt);
 
-			const contentChangeRange = new EditorRange(startLineNumber, startColumn, endLineNumber, endColumn);
-			contentChanges.push({
-				range: contentChangeRange,
-				//rangeLength: op.rangeLength,
-				text: op.text!,
-				//rangeOffset: op.rangeOffset,
-				forceMoveMarkers: op.forceMoveMarkers
-			});
-		}
+				const changeLineCountDelta = (insertingLinesCnt - deletingLinesCnt);
 
-		transaction.commit();
+				const currentEditStartLineNumber = newLineCount - lineCount - changeLineCountDelta + startLineNumber;
 
-		return reverseOperations === null ? undefined : reverseOperations;
-	}
 
-	private applyEditForTextAreaInput(op: model.ValidAnnotatedEditOperation, transaction: Transaction) {
-		if (op.text) {
-			if (op.text === '\n') {
-				// insert new line
-				this.enter(op.range, transaction);
-			} else {
-				// replacement
-				this.delete(op.range, transaction);
-				this.insert(op.range, op.text, transaction);
-			}
-		} else {
-			// deletion
-			this.delete(op.range, transaction);
-		}
-	}
+				for (let j = editingLinesCnt; j >= 0; j--) {
+					const editLineNumber = startLineNumber + j;
+					const currentEditLineNumber = currentEditStartLineNumber + j;
 
-	private applyEditForEditableInput(rawOperation: model.ValidAnnotatedEditOperation, transaction: Transaction) {
-		const startLineNumber = rawOperation.range.startLineNumber;
-		const startColumn = rawOperation.range.startColumn;
-		const endLineNumber = rawOperation.range.endLineNumber;
-		const endColumn = rawOperation.range.endColumn;
+					//injectedTextInEditedRangeQueue.takeFromEndWhile(r => r.lineNumber > currentEditLineNumber);
+					//const decorationsInCurrentLine = injectedTextInEditedRangeQueue.takeFromEndWhile(r => r.lineNumber === currentEditLineNumber);
 
-		const store = this.getLineStore(startLineNumber);
-		const prevRecord = store.getTitleStore().getValue();
-		const prevValue = segmentUtils.collectValueFromSegment(prevRecord);
-		const diffResult = textChange({ startIndex: startColumn - 1, endIndex: endColumn - 1, lineNumber: endLineNumber }, prevValue, rawOperation.text!);
+					rawContentChanges.push(
+						new ModelRawLineChanged(
+							editLineNumber,
+							this.getLineContent(currentEditLineNumber),
+							[]
+						));
+				}
 
-		let startIndex = 0;
-		for (const [op, txt] of diffResult) {
-			switch (op) {
-				case DIFF_INSERT:
-					this.insert(new EditorRange(startLineNumber, startIndex + 1, endLineNumber, startIndex + 1), txt, transaction);
-					startIndex += txt.length;
-					break;
-				case DIFF_DELETE:
-					this.delete(new EditorRange(startLineNumber, startIndex + 1, endLineNumber, startIndex + txt.length + 1), transaction);
-					break;
-				default:
-					if (DIFF_EQUAL === op) {
-						startIndex += txt.length;
+				if (editingLinesCnt < deletingLinesCnt) {
+					// Must delete some lines
+					const spliceStartLineNumber = startLineNumber + editingLinesCnt;
+					rawContentChanges.push(new ModelRawLinesDeleted(spliceStartLineNumber + 1, endLineNumber));
+				}
+
+				if (editingLinesCnt < insertingLinesCnt) {
+					// Must insert some lines
+					const spliceLineNumber = startLineNumber + editingLinesCnt;
+					const cnt = insertingLinesCnt - editingLinesCnt;
+					const fromLineNumber = newLineCount - lineCount - cnt + spliceLineNumber + 1;
+					const newLines: string[] = [];
+					for (let i = 0; i < cnt; i++) {
+						const lineNumber = fromLineNumber + i;
+						newLines[i] = this.getLineContent(lineNumber);
 					}
+
+					rawContentChanges.push(
+						new ModelRawLinesInserted(
+							spliceLineNumber + 1,
+							startLineNumber + insertingLinesCnt,
+							newLines,
+							[]
+						)
+					);
+				}
+
+				lineCount += changeLineCountDelta;
 			}
+
+			this.emitContentChangedEvent(
+				new ModelRawContentChangedEvent(
+					rawContentChanges,
+					this.getVersionId(),
+					this._isUndoing,
+					this._isRedoing
+				),
+				{
+					changes: contentChanges,
+					eol: this.buffer.getEOL(),
+					versionId: this.getVersionId(),
+					isUndoing: this._isUndoing,
+					isRedoing: this._isRedoing,
+					isFlush: false
+				}
+			);
 		}
+		return (result.reverseEdits === null ? undefined : result.reverseEdits);
 	}
 
-	private enter(range: EditorRange, transaction: Transaction) {
-		if (range.startLineNumber === 0) {
-			// special case for header
-
-		} else {
-			let type = 'text';
-			const lineStore = this.getLineStore(range.startLineNumber);
-			if (keepLineTypes.has(lineStore.getType() || '')) {
-				// Some blocks required keep same styles in next line
-				// Just like todo, list
-				type = lineStore.getType()!;
-			}
-			const child: BlockStore = EditOperation.createBlockStore(type, transaction, this.contentStore);
-			EditOperation.insertChildAfterTarget(
-				this.contentStore, child, lineStore, transaction);
-		}
-	}
-
-	private delete(range: EditorRange, transaction: Transaction) {
-		if (range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn) {
-			// it means insert a new text
+	private emitContentChangedEvent(rawChange: ModelRawContentChangedEvent, change: IModelContentChangedEvent): void {
+		if (this.__isDisposing) {
+			// Do not confuse listeners by emitting any event after disposing
 			return;
 		}
-		const store = this.getLineStore(range.endLineNumber);
-		const record = store.getValue();
-		if (range.startLineNumber !== range.endLineNumber) {
-			// delete block
-			if (textBasedTypes.has(record.type)) {
-				// turnInto text for rich type
-				EditOperation.turnInto(store, BlockTypes.text as any, transaction);
-			} else {
-				EditOperation.removeChild(this.contentStore, store, transaction);
-			}
-		} else {
-			// delete current block content
-			const titleStore = store.getTitleStore();
-			const storeValue = titleStore.getValue();
-			const newRecord = segmentUtils.remove(storeValue, range.startColumn - 1, range.endColumn - 1);
-			EditOperation.addSetOperationForStore(titleStore, newRecord, transaction);
-		}
-	}
-
-	private insert(range: EditorRange, text: string, transaction: Transaction) {
-		const store = this.getLineStore(range.startLineNumber).getTitleStore();
-		const segment = segmentUtils.combineArray(text, []) as ISegment;
-
-		const storeValue = store.getValue();
-
-		EditOperation.addSetOperationForStore(
-			store,
-			segmentUtils.merge(storeValue, [segment], range.startColumn - 1),
-			transaction
-		);
-
-	}
-
-	countEOL(operation: model.ValidAnnotatedEditOperation) {
-		let eolCount = 0;
-		const startColumn = operation.range.startColumn;
-
-		const firstLineLength = startColumn + operation.text!.length;
-		const lastLineLength = 0;
-		if ('\n' === operation.text![operation.text!.length - 1]) {
-			eolCount += 1;
-		}
-		return [eolCount, firstLineLength, lastLineLength];
+		//this._tokenizationTextModelPart.handleDidChangeContent(change);
+		//this._bracketPairs.handleDidChangeContent(change);
+		this.eventEmitter.fire(new InternalModelContentChangeEvent(rawChange, change));
 	}
 
 	//#endregion

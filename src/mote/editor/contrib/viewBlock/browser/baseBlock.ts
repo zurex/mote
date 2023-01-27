@@ -10,17 +10,20 @@ import { IThemeService, Themable } from 'mote/platform/theme/common/themeService
 import { FastDomNode } from 'vs/base/browser/fastDomNode';
 
 export abstract class BaseBlock extends Themable {
-	protected editableHandler: EditableHandler;
+	protected editableHandler!: EditableHandler;
 
 	constructor(
-		lineNumber: number,
-		viewContext: ViewContext,
-		viewController: ViewController,
+		private lineNumber: number,
+		private viewContext: ViewContext,
+		private viewController: ViewController,
 		protected readonly options: EditableHandlerOptions,
 		@IThemeService themeService: IThemeService,
 	) {
 		super(themeService);
-		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
+	}
+
+	private init() {
+		this.editableHandler = this.renderPersisted(this.lineNumber, this.viewContext, this.viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
 
 		const style = this.getStyle();
@@ -29,9 +32,9 @@ export abstract class BaseBlock extends Themable {
 		}
 		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
 
-		if (viewController.getSelection().startLineNumber === lineNumber) {
-			this.editableHandler.focusEditable();
-		}
+		//if (viewController.getSelection().startLineNumber === lineNumber) {
+		//this.editableHandler.focusEditable();
+		//}
 	}
 
 	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;
@@ -43,6 +46,9 @@ export abstract class BaseBlock extends Themable {
 	setValue(store: BlockStore) {
 		const segments = store.getTitleStore().getValue() || [];
 		const html = renderSegments(segments.map(Segment.from)).join('');
+		if (!this.editableHandler) {
+			this.init();
+		}
 		this.editableHandler.setValue(html);
 		this.editableHandler.setEnabled(store.canEdit());
 	}

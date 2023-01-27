@@ -247,6 +247,12 @@ export interface ITextModel {
 	_setTrackedRange(id: string | null, newRange: EditorRange, newStickiness: TrackedRangeStickiness): string;
 
 	/**
+	 * Returns the count of editors this model is attached to.
+	 * @internal
+	 */
+	getAttachedEditorCount(): number;
+
+	/**
 	 * Among all positions that are projected to the same position in the underlying text model as
 	 * the given position, select a unique position as indicated by the affinity.
 	 *
@@ -405,6 +411,45 @@ export interface ITextModelCreationOptions {
 export interface BracketPairColorizationOptions {
 	enabled: boolean;
 	independentColorPoolPerBracketType: boolean;
+}
+
+/**
+ * @internal
+ *
+ * `lineNumber` is 1 based.
+ */
+export interface IReadonlyTextBuffer {
+
+	getLineCount(): number;
+	getLineLength(lineNumber: number): number;
+	getLineContent(lineNumber: number): string;
+
+	getLineStore(lineNumber: number): BlockStore;
+
+	getValueInRange(range: EditorRange, eol: EndOfLinePreference): string;
+
+	getEOL(): string;
+}
+
+/**
+ * @internal
+ */
+export interface ITextBuffer extends IReadonlyTextBuffer {
+
+	applyEdits(rawOperations: ValidAnnotatedEditOperation[], recordTrimAutoWhitespace: boolean, computeUndoEdits: boolean): ApplyEditsResult;
+}
+
+/**
+ * @internal
+ */
+export class ApplyEditsResult {
+
+	constructor(
+		public readonly reverseEdits: IValidEditOperation[] | null,
+		public readonly changes: IInternalModelContentChange[],
+		public readonly trimAutoWhitespaceLineNumbers: number[] | null
+	) { }
+
 }
 
 /**

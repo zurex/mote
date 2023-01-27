@@ -19,6 +19,7 @@ import { MoteEditorWidget } from 'mote/editor/browser/widget/moteEditorWidget';
 import { assertIsDefined } from 'vs/base/common/types';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 
 export class DocumentEditor extends EditorPane {
@@ -34,8 +35,9 @@ export class DocumentEditor extends EditorPane {
 		@IInstantiationService private instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IQuickMenuService private quickMenuService: IQuickMenuService,
+		@IStorageService storageService: IStorageService,
 	) {
-		super(DocumentEditor.ID, themeService);
+		super(DocumentEditor.ID, themeService, storageService);
 	}
 
 	protected createEditor(parent: HTMLElement): void {
@@ -65,7 +67,7 @@ export class DocumentEditor extends EditorPane {
 			this.onChangeListener.dispose();
 		}
 
-		this.onChangeListener = this._register(control.onDidChangeSelection((e) => this.showQuickMenu(e, input.pageStore.getContentStore())));
+		//this.onChangeListener = this._register(control.onDidChangeSelection((e) => this.showQuickMenu(e, input.pageStore.getContentStore())));
 	}
 
 	private showQuickMenu(e: TextSelection, contentStore: RecordStore) {

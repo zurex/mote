@@ -1,14 +1,16 @@
-import * as dom from 'vs/base/browser/dom';
-import * as strings from 'vs/base/common/strings';
-import { nodeToString } from 'mote/editor/common/textSerialize';
-import { Emitter, Event } from 'vs/base/common/event';
+import * as dom from 'mote/base/browser/dom';
+import * as strings from 'mote/base/common/strings';
+import { serializeNode } from 'mote/editor/common/textSerialize';
+import { Emitter, Event } from 'mote/base/common/event';
 import { getSelectionFromRange, TextSelection } from 'mote/editor/common/core/selectionUtils';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+import { IKeyboardEvent, StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
 import { EditableState, IEditableWrapper, ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
-import { OperatingSystem } from 'vs/base/common/platform';
-import { KeyCode } from 'vs/base/common/keyCodes';
+import { OperatingSystem } from 'mote/base/common/platform';
+import { KeyCode } from 'mote/base/common/keyCodes';
 import { generateUuid } from 'vs/base/common/uuid';
+import { inputLatency } from 'mote/base/browser/performance';
+import { DomEmitter } from 'mote/base/browser/event';
 
 interface EditableOptions {
 	getSelection?(): TextSelection | undefined;
@@ -186,9 +188,11 @@ export class EditableInput extends Disposable {
 				console.log(`[input]`, e);
 			}
 
+			/*
 			if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') {
 				return;
 			}
+			*/
 
 			const selection = this.editable.getSelection();
 			const editableState = this.editableStates[selection.lineNumber] || EditableState.EMPTY;
@@ -250,10 +254,28 @@ export class EditableInput extends Disposable {
 	}
 
 	private installSelectionChangeListener(): IDisposable {
+		// See https://github.com/microsoft/vscode/issues/27216 and https://github.com/microsoft/vscode/issues/98256
+		// When using a Braille display, it is possible for users to reposition the
+		// system caret. This is reflected in Chrome as a `selectionchange` event.
+		//
+		// The `selectionchange` event appears to be emitted under numerous other circumstances,
+		// so it is quite a challenge to distinguish a `selectionchange` coming in from a user
+		// using a Braille display from all the other cases.
+		//
+		// The problems with the `selectionchange` event are:
+		//  * the event is emitted when the textarea is focused programmatically -- textarea.focus()
+		//  * the event is emitted when the selection is changed in the textarea programmatically -- textarea.setSelectionRange(...)
+		//  * the event is emitted when the value of the textarea is changed programmatically -- textarea.value = '...'
+		//  * the event is emitted when tabbing into the textarea
+		//  * the event is emitted asynchronously (sometimes with a delay as high as a few tens of ms)
+		//  * the event sometimes comes in bursts for a single logical textarea operation
+
 		// `selectionchange` events often come multiple times for a single logical change
 		// so throttle multiple `selectionchange` events that burst in a short period of time.
 		let previousSelectionChangeEventTime = 0;
 		return dom.addDisposableListener(document, 'selectionchange', (e) => {
+			inputLatency.onSelectionChange();
+
 			if (!this.hasFocus) {
 				return;
 			}
@@ -283,15 +305,14 @@ export class EditableInput extends Disposable {
 				const editableState = this.editableStates[lineNumber] || EditableState.EMPTY;
 				if (!editableState.value) {
 					this.editableStates[lineNumber] = EditableState.readFromEditable(this.editable, editableState);
+				} else {
+					const newSelectionStart = this.editable.getSelectionStart();
+					const newSelectionEnd = this.editable.getSelectionEnd();
+					if (editableState.selectionStart === newSelectionStart && editableState.selectionEnd === newSelectionEnd) {
+						// Nothing to do...
+						return;
+					}
 				}
-
-				const newSelectionStart = this.editable.getSelectionStart();
-				const newSelectionEnd = this.editable.getSelectionEnd();
-				if (editableState.selectionStart === newSelectionStart && editableState.selectionEnd === newSelectionEnd) {
-					// Nothing to do...
-					return;
-				}
-
 				this._onSelectionChange.fire(selectionWithOptions.selection);
 			}
 		});
@@ -345,20 +366,20 @@ export class EditableInput extends Disposable {
 export class EditableWrapper extends Disposable implements ICompleteEditableWrapper {
 	//#region events
 
-	public readonly onKeyDown = this._register(dom.createEventEmitter(this._actual, 'keydown')).event;
-	public readonly onKeyPress = this._register(dom.createEventEmitter(this._actual, 'keypress')).event;
-	public readonly onKeyUp = this._register(dom.createEventEmitter(this._actual, 'keyup')).event;
-	public readonly onCompositionStart = this._register(dom.createEventEmitter(this._actual, 'compositionstart')).event;
-	public readonly onCompositionUpdate = this._register(dom.createEventEmitter(this._actual, 'compositionupdate')).event;
-	public readonly onCompositionEnd = this._register(dom.createEventEmitter(this._actual, 'compositionend')).event;
-	public readonly onBeforeInput = this._register(dom.createEventEmitter(this._actual, 'beforeinput')).event;
-	public readonly onInput = <Event<InputEvent>>this._register(dom.createEventEmitter(this._actual, 'input')).event;
-	public readonly onCut = this._register(dom.createEventEmitter(this._actual, 'cut')).event;
-	public readonly onCopy = this._register(dom.createEventEmitter(this._actual, 'copy')).event;
-	public readonly onPaste = this._register(dom.createEventEmitter(this._actual, 'paste')).event;
-	public readonly onFocus = this._register(dom.createEventEmitter(this._actual, 'focus')).event;
-	public readonly onBlur = this._register(dom.createEventEmitter(this._actual, 'blur')).event;
-	public readonly onClick = this._register(dom.createEventEmitter(this._actual, 'click')).event;
+	public readonly onKeyDown = this._register(new DomEmitter(this._actual, 'keydown')).event;
+	public readonly onKeyPress = this._register(new DomEmitter(this._actual, 'keypress')).event;
+	public readonly onKeyUp = this._register(new DomEmitter(this._actual, 'keyup')).event;
+	public readonly onCompositionStart = this._register(new DomEmitter(this._actual, 'compositionstart')).event;
+	public readonly onCompositionUpdate = this._register(new DomEmitter(this._actual, 'compositionupdate')).event;
+	public readonly onCompositionEnd = this._register(new DomEmitter(this._actual, 'compositionend')).event;
+	public readonly onBeforeInput = this._register(new DomEmitter(this._actual, 'beforeinput')).event;
+	public readonly onInput = <Event<InputEvent>>this._register(new DomEmitter(this._actual, 'input')).event;
+	public readonly onCut = this._register(new DomEmitter(this._actual, 'cut')).event;
+	public readonly onCopy = this._register(new DomEmitter(this._actual, 'copy')).event;
+	public readonly onPaste = this._register(new DomEmitter(this._actual, 'paste')).event;
+	public readonly onFocus = this._register(new DomEmitter(this._actual, 'focus')).event;
+	public readonly onBlur = this._register(new DomEmitter(this._actual, 'blur')).event;
+	public readonly onClick = this._register(new DomEmitter(this._actual, 'click')).event;
 
 	//#endregion
 
@@ -396,9 +417,9 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 	getValue(): string {
 		const selection = this.getSelection();
 		if (selection.lineNumber > 0 && this._actual.childNodes.length > 0) {
-			return nodeToString(this._actual.childNodes[selection.lineNumber - 1]);
+			return serializeNode(this._actual.childNodes[selection.lineNumber - 1]);
 		}
-		return nodeToString(this._actual);
+		return serializeNode(this._actual);
 	}
 
 	setValue(reason: string, value: string): void {

@@ -29,6 +29,17 @@ export class TypeOperations {
 		ch: string
 	): EditOperationResult {
 
+		if (!isDoingComposition && ch === '\n') {
+			const commands: ICommand[] = [];
+			for (let i = 0, len = selections.length; i < len; i++) {
+				commands[i] = TypeOperations.enter(config, model, false, selections[i]);
+			}
+			return new EditOperationResult(EditOperationType.TypingOther, commands, {
+				shouldPushStackElementBefore: true,
+				shouldPushStackElementAfter: false,
+			});
+		}
+
 		// A simple character type
 		const commands: ICommand[] = [];
 		for (let i = 0, len = selections.length; i < len; i++) {

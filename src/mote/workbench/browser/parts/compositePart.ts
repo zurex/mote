@@ -256,7 +256,6 @@ export abstract class CompositePart<T extends Composite> extends Part {
 	}
 
 	protected showComposite(composite: Composite): void {
-		this.logService.debug('showComposite:', composite);
 		// Remember Composite
 		this.activeComposite = composite;
 
