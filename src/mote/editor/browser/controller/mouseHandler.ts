@@ -146,6 +146,13 @@ export class MouseHandler extends ViewEventHandler {
 		return this.mouseTargetFactory.getMouseColumn(e.relativePos);
 	}
 
+	protected _onContextMenu(e: EditorMouseEvent, testEventTarget: boolean): void {
+		this.viewController.emitContextMenu({
+			event: e,
+			target: this._createMouseTarget(e, testEventTarget)
+		});
+	}
+
 	protected _onMouseMove(e: EditorMouseEvent): void {
 		const targetIsWidget = false;
 		if (!targetIsWidget) {

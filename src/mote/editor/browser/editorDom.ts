@@ -179,6 +179,41 @@ export class EditorMouseEventFactory {
 	}
 }
 
+export class EditorPointerEventFactory {
+
+	private readonly _editorViewDomNode: HTMLElement;
+
+	constructor(editorViewDomNode: HTMLElement) {
+		this._editorViewDomNode = editorViewDomNode;
+	}
+
+	private _create(e: MouseEvent): EditorMouseEvent {
+		return new EditorMouseEvent(e, false, this._editorViewDomNode);
+	}
+
+	public onPointerUp(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, 'pointerup', (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onPointerDown(target: HTMLElement, callback: (e: EditorMouseEvent, pointerId: number) => void): IDisposable {
+		return dom.addDisposableListener(target, dom.EventType.POINTER_DOWN, (e: PointerEvent) => {
+			callback(this._create(e), e.pointerId);
+		});
+	}
+
+	public onPointerLeave(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, dom.EventType.POINTER_LEAVE, (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onPointerMove(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, 'pointermove', (e) => callback(this._create(e)));
+	}
+}
+
 export class GlobalEditorPointerMoveMonitor extends Disposable {
 
 	private readonly _editorViewDomNode: HTMLElement;

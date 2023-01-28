@@ -390,6 +390,10 @@ export class ViewController extends Disposable {
 		this.userInputEvents.emitKeyUp(e);
 	}
 
+	public emitContextMenu(e: IEditorMouseEvent): void {
+		this.userInputEvents.emitContextMenu(e);
+	}
+
 	public emitMouseMove(e: IEditorMouseEvent): void {
 		this.userInputEvents.emitMouseMove(e);
 	}
