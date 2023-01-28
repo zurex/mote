@@ -134,7 +134,6 @@ export class EditorView extends ViewEventHandler {
 
 		// Pointer handler
 		this._pointerHandler = this._register(new PointerHandler(this.context, viewController, this._createPointerHandlerHelper()));
-
 	}
 
 	private _createPointerHandlerHelper(): IPointerHandlerHelper {
