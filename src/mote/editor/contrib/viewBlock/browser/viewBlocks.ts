@@ -62,11 +62,23 @@ class HeaderBlock extends ViewBlock {
 	override getPlaceholder() {
 		return 'Heading 1';
 	}
+
+	override render(store: BlockStore): string {
+		this.init();
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
+	}
 }
 
 class Heading2Block extends ViewBlock {
 
 	public static override readonly ID = BlockTypes.heading2;
+
+	override render(store: BlockStore): string {
+		this.init();
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
+	}
 
 	override getStyle(): CSSProperties {
 		return Object.assign({
@@ -176,6 +188,12 @@ class TodoBlock extends ViewBlock {
 			return this.options.placeholder ?? 'Todo';
 		}
 		return 'Todo';
+	}
+
+	override render(store: BlockStore): string {
+		this.init();
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
 	}
 
 	override setValue(store: BlockStore): void {

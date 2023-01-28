@@ -7,7 +7,7 @@ import { Segment } from 'mote/editor/common/segment';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { lightTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { FastDomNode } from 'mote/base/browser/fastDomNode';
 
 export abstract class BaseBlock extends Themable {
 	protected editableHandler!: EditableHandler;
@@ -22,7 +22,7 @@ export abstract class BaseBlock extends Themable {
 		super(themeService);
 	}
 
-	private init() {
+	protected init() {
 		this.editableHandler = this.renderPersisted(this.lineNumber, this.viewContext, this.viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
 

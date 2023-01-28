@@ -67,16 +67,16 @@ suite('viewLineRenderer.renderLine', () => {
 
 		const html = sb.build();
 
-		assert.strictEqual(html, expected);
+		assert.strictEqual(html, '<span>' + expected + '</span>');
 		assertCharacterMapping3(_actual.characterMapping, info);
 	}
 
 	test('empty line', () => {
-		assertParts('', 4, [], '', []);
+		assertParts('', 4, [], '<span></span>', []);
 	});
 
 	test('alpha line', () => {
-		assertParts('a', 4, [], 'a', [[0, [0, 0]], [1, [0, 1]]]);
+		assertParts('a', 4, [], '<span>a</span>', [[0, [0, 0]], [1, [0, 1]]]);
 	});
 
 	type CharacterMappingInfo = [number, [number, number]];

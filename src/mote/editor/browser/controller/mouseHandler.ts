@@ -189,7 +189,6 @@ export class MouseHandler extends ViewEventHandler {
 
 	protected _onMouseDown(e: EditorMouseEvent, pointerId: number): void {
 		const t = this._createMouseTarget(e, true);
-		//console.log(t);
 
 		const targetIsContent = (t.type === MouseTargetType.CONTENT_TEXT || t.type === MouseTargetType.CONTENT_EMPTY);
 		const targetIsLineNumbers = false;

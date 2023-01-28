@@ -177,7 +177,6 @@ export class ViewLines extends ViewPart implements IViewLineLayout, IVisibleLine
 			return null;
 		}
 
-		const lineDOM = this.visibleLines.getVisibleLine(position.lineNumber).getDomNode()!;
 		return new HorizontalPosition(visibleRanges.outsideRenderedLine, visibleRanges.ranges[0].left);
 	}
 

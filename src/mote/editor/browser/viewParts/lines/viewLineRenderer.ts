@@ -48,7 +48,6 @@ export class RenderLineInput {
 	//public readonly lineDecorations: LineDecoration[];
 	public readonly tabSize: number;
 	public readonly startVisibleColumn: number;
-	public readonly spaceWidth: number;
 	public readonly renderSpaceWidth: number;
 	public readonly renderSpaceCharCode: number;
 	public readonly stopRenderingLineAfter: number;
@@ -76,7 +75,7 @@ export class RenderLineInput {
 		//lineDecorations: LineDecoration[],
 		tabSize: number,
 		startVisibleColumn: number,
-		spaceWidth: number,
+		public readonly spaceWidth: number,
 		middotWidth: number,
 		wsmiddotWidth: number,
 		stopRenderingLineAfter: number,

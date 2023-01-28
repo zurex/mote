@@ -128,7 +128,15 @@ export class CodeBlock extends BaseBlock implements IThemable {
 		};
 	}
 
+	override render(store: BlockStore): string {
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
+	}
+
 	override setValue(store: BlockStore) {
+		if (!this.editableHandler) {
+			this.init();
+		}
 		const code = collectValueFromSegment(store.getTitleStore().getValue());
 		const highlightHtml = Prism.highlight(code, Prism.languages['javascript'], 'javascript');
 		const flattenHtml = this.flattenHtml(highlightHtml);

@@ -169,6 +169,7 @@ export class ViewLine implements IVisibleLine {
 	public static readonly CLASS_NAME = 'view-line';
 
 	private _isMaybeInvalid: boolean = true;
+	private _lineContent: string | null = null;
 	private _renderedViewLine: IRenderedViewLine | null = null;
 
 	constructor(
@@ -215,6 +216,7 @@ export class ViewLine implements IVisibleLine {
 		this._isMaybeInvalid = false;
 
 		const lineData = viewportData.getViewLineRenderingData(lineNumber);
+		this._lineContent = lineData.content;
 
 		const renderLineInput = new RenderLineInput(
 			lineData.store,
@@ -267,6 +269,7 @@ export class ViewLine implements IVisibleLine {
 		sb.appendString('</div>');
 
 		let renderedViewLine: IRenderedViewLine | null = null;
+		/*
 		if (monospaceAssumptionsAreValid && canUseFastRenderedViewLine && lineData.isBasicASCII && this.options.useMonospaceOptimizations && output.containsForeignElements === ForeignElementType.None) {
 			renderedViewLine = new FastRenderedViewLine(
 				this._renderedViewLine ? this._renderedViewLine.domNode : null,
@@ -274,6 +277,7 @@ export class ViewLine implements IVisibleLine {
 				output.characterMapping
 			);
 		}
+		*/
 
 		if (!renderedViewLine) {
 			renderedViewLine = createRenderedLine(
@@ -322,8 +326,8 @@ export class ViewLine implements IVisibleLine {
 
 		const horizontalRanges = this._renderedViewLine.getVisibleRangesForRange(lineNumber, startColumn, endColumn, context);
 		if (horizontalRanges && horizontalRanges.length > 0) {
-			if (this._renderedViewLine instanceof FastRenderedViewLine) {
-				// horizontalRanges in fast way need add offset
+			if (!this._lineContent) {
+				// if we hit a empty line, we need add dom offsetLeft
 				horizontalRanges[0].left += this.getDomNode()!.offsetLeft;
 			}
 			return new VisibleRanges(false, horizontalRanges);

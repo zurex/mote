@@ -149,7 +149,7 @@ export class ViewCursor {
 
 			const top = ctx.getVerticalOffsetForLineNumber(position.lineNumber) - ctx.bigNumbersDelta;
 			const lineHeight = ctx.lineHeightForPosition(position);
-			console.log(top, lineHeight);
+			//console.log(top, lineHeight);
 			return new ViewCursorRenderData(top, left, paddingLeft, width, lineHeight!, textContent, textContentClassName);
 		}
 
