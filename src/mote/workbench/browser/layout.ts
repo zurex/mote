@@ -1,15 +1,15 @@
 /* eslint-disable code-no-unexternalized-strings */
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { IWorkbenchLayoutService, Parts, Position } from "mote/workbench/services/layout/browser/layoutService";
-import { Dimension, getClientArea, IDimension, isAncestorUsingFlowTo, position, size } from "vs/base/browser/dom";
+import { Disposable, DisposableStore } from 'mote/base/common/lifecycle';
+import { IWorkbenchLayoutService, Parts, Position } from 'mote/workbench/services/layout/browser/layoutService';
+import { Dimension, getClientArea, IDimension, isAncestorUsingFlowTo, position, size } from 'mote/base/browser/dom';
 import { Part } from "./part";
-import { Emitter } from "vs/base/common/event";
+import { Emitter } from "mote/base/common/event";
 import { ILogService } from "vs/platform/log/common/log";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { IPaneCompositePartService } from "../services/panecomposite/browser/panecomposite";
+import { IPaneCompositePartService } from 'mote/workbench/services/panecomposite/browser/panecomposite';
 import { DeferredPromise, Promises } from "vs/base/common/async";
-import { IViewDescriptorService, ViewContainerLocation } from "../common/views";
-import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
+import { IViewDescriptorService, ViewContainerLocation } from 'mote/workbench/common/views';
+import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from 'mote/base/browser/ui/grid/grid';
 import { mark } from "vs/base/common/performance";
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
@@ -17,6 +17,8 @@ import { IPath } from 'vs/platform/window/common/window';
 import { pathToEditor } from 'mote/workbench/common/editor';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { IStatusbarService } from 'mote/workbench/services/statusbar/browser/statusbar';
 
 interface IWorkbenchLayoutWindowInitializationState {
 	views: {
@@ -87,16 +89,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private workbenchGrid!: SerializableGrid<ISerializableView>;
 
 	private activityBarPartView!: ISerializableView;
+	private statusBarPartView!: ISerializableView;
+	private sideBarPartView!: ISerializableView;
+	private editorPartView!: ISerializableView;
 
 	protected logService!: ILogService;
 
-	private sideBarPartView!: ISerializableView;
-
 	//#region workbench services
 	private editorService!: IEditorService;
+	private editorGroupService!: IEditorGroupsService;
 	private environmentService!: IBrowserWorkbenchEnvironmentService;
 	private paneCompositeService!: IPaneCompositePartService;
 	private viewDescriptorService!: IViewDescriptorService;
+	private statusBarService!: IStatusbarService;
 
 	//#endregion
 
@@ -142,8 +147,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		// Parts
 		this.editorService = accessor.get(IEditorService);
+		this.editorGroupService = accessor.get(IEditorGroupsService);
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
+		this.statusBarService = accessor.get(IStatusbarService);
 
 		// State
 		this.initLayoutState(accessor.get(ILifecycleService), accessor);
@@ -210,16 +217,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBar = this.getPart(Parts.SIDEBAR_PART);
 		const editorPart = this.getPart(Parts.EDITOR_PART);
 		const activityBar = this.getPart(Parts.ACTIVITYBAR_PART);
-
-		this.activityBarPartView = activityBar;
+		const statusBar = this.getPart(Parts.STATUSBAR_PART);
 
 		// View references for all parts
 		this.sideBarPartView = sideBar;
+		this.statusBarPartView = statusBar;
+		this.activityBarPartView = activityBar;
+		this.editorPartView = editorPart;
 
-		const viewMap: { [key: string]: Part } = {
-			[Parts.ACTIVITYBAR_PART]: activityBar,
-			[Parts.SIDEBAR_PART]: sideBar,
-			[Parts.EDITOR_PART]: editorPart,
+		const viewMap = {
+			[Parts.ACTIVITYBAR_PART]: this.activityBarPartView,
+			[Parts.SIDEBAR_PART]: this.sideBarPartView,
+			[Parts.EDITOR_PART]: this.editorPartView,
+			[Parts.STATUSBAR_PART]: this.statusBarPartView,
 		};
 
 		const fromJSON = ({ type }: { type: Parts }) => viewMap[type];
@@ -231,7 +241,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		this.container.prepend(workbenchGrid.element);
 		this.container.setAttribute('role', 'application');
-		this.container.classList.add('workbench');
+		this.container.classList.add('mote-workbench');
 		this.workbenchGrid = workbenchGrid;
 	}
 
@@ -339,8 +349,9 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		//const panelSize = 300;
 
 		const titleBarHeight = 0;
-		const middleSectionHeight = height - titleBarHeight;
 		const activityBarWidth = this.activityBarPartView.minimumWidth;
+		const statusBarHeight = this.statusBarPartView.minimumHeight;
+		const middleSectionHeight = height - titleBarHeight - statusBarHeight;
 
 		const activityBarNode: ISerializedLeafNode = {
 			type: 'leaf',
@@ -374,6 +385,12 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 						type: 'branch',
 						data: middleSection,
 						size: middleSectionHeight
+					},
+					{
+						type: 'leaf',
+						data: { type: Parts.STATUSBAR_PART },
+						size: statusBarHeight,
+						//visible: !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN)
 					}
 				]
 			},

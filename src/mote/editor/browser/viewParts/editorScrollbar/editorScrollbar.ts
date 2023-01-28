@@ -2,7 +2,7 @@ import * as dom from 'vs/base/browser/dom';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IOverviewRulerLayoutInfo, SmoothScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
 import { INewScrollPosition, ScrollbarVisibility } from 'vs/base/common/scrollable';
 import { ScrollableElementCreationOptions } from 'vs/base/browser/ui/scrollbar/scrollableElementOptions';

@@ -1,3 +1,4 @@
+import { IMarkdownString } from 'mote/base/common/htmlContent';
 import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
@@ -57,12 +58,12 @@ export interface IHoverWidget extends IDisposable {
 }
 
 export interface IHoverOptions {
-    actions?: IHoverAction[];
+	actions?: IHoverAction[];
 	/**
 	 * The content to display in the primary section of the hover. The type of text determines the
 	 * default `hideOnHover` behavior.
 	 */
-	content: string | HTMLElement;
+	content: IMarkdownString | string | HTMLElement;
 
 	/**
 	 * The target for the hover. This determines the position of the hover and it will only be

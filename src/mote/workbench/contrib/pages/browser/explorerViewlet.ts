@@ -1,15 +1,15 @@
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
-import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
+import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
 
 import { localize } from 'vs/nls';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ILogService } from 'vs/platform/log/common/log';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { FILES_VIEWLET_ID } from '../common/files';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { IWorkbenchContribution } from 'mote/workbench/common/contributions';
 import { EmptyView } from './views/emptyView';
 import { ExplorerView } from './views/explorerView';
@@ -55,6 +55,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 
 	constructor(
 		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IViewsService viewsService: IViewsService,
 	) {
 		super();
 		this.registerView();
@@ -102,7 +103,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		return {
 			id: EmptyView.ID,
 			name: EmptyView.NAME,
-			//containerIcon: explorerViewIcon,
+			containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(EmptyView),
 			order: 1,
 			canToggleVisibility: true,
@@ -113,7 +114,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		return {
 			id: ExplorerView.ID,
 			name: localize('folders', "Folders"),
-			//containerIcon: explorerViewIcon,
+			containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(ExplorerView),
 			order: 1,
 			canToggleVisibility: false,

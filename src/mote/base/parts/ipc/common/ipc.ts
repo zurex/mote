@@ -9,10 +9,10 @@ import { VSBuffer } from 'vs/base/common/buffer';
 import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
 import { memoize } from 'vs/base/common/decorators';
 import * as errors from 'vs/base/common/errors';
-import { Emitter, Event, EventMultiplexer, Relay } from 'vs/base/common/event';
-import { combinedDisposable, DisposableStore, dispose, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { Emitter, Event, EventMultiplexer, Relay } from 'mote/base/common/event';
+import { combinedDisposable, DisposableStore, dispose, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
 import { revive } from 'vs/base/common/marshalling';
-import * as strings from 'vs/base/common/strings';
+import * as strings from 'mote/base/common/strings';
 import { isFunction, isUndefinedOrNull } from 'vs/base/common/types';
 
 /**
@@ -610,7 +610,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
 		let uninitializedPromise: CancelablePromise<void> | null = null;
 
 		const emitter = new Emitter<any>({
-			onFirstListenerAdd: () => {
+			onWillAddFirstListener: () => {
 				uninitializedPromise = createCancelablePromise(_ => this.whenInitialized());
 				uninitializedPromise.then(() => {
 					uninitializedPromise = null;
@@ -618,7 +618,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
 					this.sendRequest(request);
 				});
 			},
-			onLastListenerRemove: () => {
+			onDidRemoveLastListener: () => {
 				if (uninitializedPromise) {
 					uninitializedPromise.cancel();
 					uninitializedPromise = null;
@@ -846,7 +846,7 @@ export class IPCServer<TContext = string> implements IChannelServer<TContext>, I
 		// disconnects from all clients as soon as the last listener
 		// is removed.
 		const emitter = new Emitter<T>({
-			onFirstListenerAdd: () => {
+			onWillAddFirstListener: () => {
 				disposables = new DisposableStore();
 
 				// The event multiplexer is useful since the active
@@ -881,7 +881,7 @@ export class IPCServer<TContext = string> implements IChannelServer<TContext>, I
 
 				disposables.add(eventMultiplexer);
 			},
-			onLastListenerRemove: () => {
+			onDidRemoveLastListener: () => {
 				disposables.dispose();
 			}
 		});

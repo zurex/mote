@@ -1,0 +1,9 @@
+.mote-editor .overflow-guard {
+	position: relative;
+	overflow: hidden;
+}
+
+.mote-editor .view-overlays {
+	position: absolute;
+	top: 0;
+}

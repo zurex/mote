@@ -1,11 +1,19 @@
-import { Event } from 'vs/base/common/event';
+import { Event } from 'mote/base/common/event';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
-import { Position } from 'mote/editor/common/core/position';
+import { IPosition, Position } from 'mote/editor/common/core/position';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import * as editorCommon from 'mote/editor/common/editorCommon';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { FastDomNode } from 'mote/base/browser/fastDomNode';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { IMouseEvent } from 'mote/base/browser/mouseEvent';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { IViewModel, ViewLineRenderingData } from 'mote/editor/common/viewModel';
+import { ITextModel } from 'mote/editor/common/model';
+import { IModelContentChangedEvent } from 'mote/editor/common/textModelEvents';
+import { ICursorPositionChangedEvent } from 'mote/editor/common/cursorEvents';
+
+//#region MouseTarget
 
 /**
  * Type of hit element with the mouse in the editor.
@@ -15,6 +23,10 @@ export const enum MouseTargetType {
 	 * Mouse is on top of an unknown element.
 	 */
 	UNKNOWN,
+	/**
+	 * Mouse is on top of the textarea used for input.
+	 */
+	TEXTAREA,
 	/**
 	 * Mouse is on top of the glyph margin
 	 */
@@ -88,6 +100,12 @@ export interface IMouseTargetUnknown extends IBaseMouseTarget {
 	readonly type: MouseTargetType.UNKNOWN;
 }
 
+export interface IMouseTargetTextarea extends IBaseMouseTarget {
+	readonly type: MouseTargetType.TEXTAREA;
+	readonly position: null;
+	readonly range: null;
+}
+
 export interface IMouseTargetContentTextData {
 	readonly mightBeForeignElement: boolean;
 	/**
@@ -103,13 +121,56 @@ export interface IMouseTargetContentText extends IBaseMouseTarget {
 	readonly detail: IMouseTargetContentTextData;
 }
 
+export interface IMouseTargetContentEmptyData {
+	readonly isAfterLines: boolean;
+	readonly horizontalDistanceToText?: number;
+}
+
+export interface IMouseTargetContentEmpty extends IBaseMouseTarget {
+	readonly type: MouseTargetType.CONTENT_EMPTY;
+	readonly position: Position;
+	readonly range: EditorRange;
+	readonly detail: IMouseTargetContentEmptyData;
+}
+
+export interface IMouseTargetOverlayWidget extends IBaseMouseTarget {
+	readonly type: MouseTargetType.OVERLAY_WIDGET;
+	readonly position: null;
+	readonly range: null;
+	readonly detail: string;
+}
+
+export interface IMouseTargetOutsideEditor extends IBaseMouseTarget {
+	readonly type: MouseTargetType.OUTSIDE_EDITOR;
+	readonly outsidePosition: 'above' | 'below' | 'left' | 'right';
+	readonly outsideDistance: number;
+}
+
 /**
  * Target hit with the mouse in the editor.
  */
 export type IMouseTarget = (
 	IMouseTargetUnknown
+	| IMouseTargetTextarea
 	| IMouseTargetContentText
+	| IMouseTargetContentEmpty
+	| IMouseTargetOutsideEditor
+	| IMouseTargetOverlayWidget
 );
+
+/**
+ * A mouse event originating from the editor.
+ */
+export interface IEditorMouseEvent {
+	readonly event: IMouseEvent;
+	readonly target: IMouseTarget;
+}
+export interface IPartialEditorMouseEvent {
+	readonly event: IMouseEvent;
+	readonly target: IMouseTarget | null;
+}
+
+//#endregion
 
 /**
  * A positioning preference for rendering overlay widgets.
@@ -167,6 +228,33 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	readonly onDidChangeSelection: Event<TextSelection>;
 
 	/**
+	 * An event emitted when the cursor position has changed.
+	 * @event
+	 */
+	readonly onDidChangeCursorPosition: Event<ICursorPositionChangedEvent>;
+
+	/**
+	 * An event emitted when the content of the current model has changed.
+	 * @event
+	 */
+	readonly onDidChangeModelContent: Event<IModelContentChangedEvent>;
+
+	/**
+	 * @internal
+	 */
+	_getViewModel(): IViewModel | null;
+
+	/**
+	 * Returns true if the text inside this editor is focused (i.e. cursor is blinking).
+	 */
+	hasTextFocus(): boolean;
+
+	/**
+	 * Returns true if the text inside this editor or an editor widget has focus.
+	 */
+	hasWidgetFocus(): boolean;
+
+	/**
 	 * Add an overlay widget. Widgets must have unique ids, otherwise they will be overwritten.
 	 */
 	addOverlayWidget(widget: IOverlayWidget): void;
@@ -174,6 +262,24 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	setStore(store: BlockStore): void;
 
 	getStore(): BlockStore | null;
+
+	/**
+	 * Given a position, returns a column number that takes tab-widths into account.
+	 * @internal
+	 */
+	getStatusbarColumn(position: IPosition): number;
+
+	/**
+	 * Returns the primary position of the cursor.
+	 */
+	getPosition(): Position | null;
+
+	/**
+	 * Set the primary position of the cursor. This will remove any secondary cursors.
+	 * @param position New primary cursor's position
+	 * @param source Source of the call that caused the position
+	 */
+	setPosition(position: IPosition, source?: string): void;
 
 	/**
 	 * Directly trigger a handler or an editor action.
@@ -195,10 +301,76 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	 * @internal
 	 */
 	invokeWithinContext<T>(fn: (accessor: ServicesAccessor) => T): T;
+
+	/**
+	 * Create an "undo stop" in the undo-redo stack.
+	 */
+	pushUndoStop(): boolean;
+
+	/**
+	 * Remove the "undo stop" in the undo-redo stack.
+	 */
+	popUndoStop(): boolean;
+
+	/**
+	 * Type the getModel() of IEditor.
+	 */
+	getModel(): ITextModel | null;
+
+	/**
+	 * Execute multiple (concomitant) commands on the editor.
+	 * @param source The source of the call.
+	 * @param command The commands to execute
+	 */
+	executeCommands(source: string | null | undefined, commands: (editorCommon.ICommand | null)[]): void;
 }
 
+/**
+ * @internal
+ */
+export interface IActiveMoteEditor extends IMoteEditor {
+	/**
+	 * Returns the primary position of the cursor.
+	 */
+	getPosition(): Position;
+
+	/**
+	 * Returns the primary selection of the editor.
+	 */
+	getSelection(): EditorSelection;
+
+	/**
+	 * Returns all the selections of the editor.
+	 */
+	getSelections(): EditorSelection[];
+}
+
+/**
+ *@internal
+ */
+export function isMoteEditor(thing: unknown): thing is IMoteEditor {
+	if (thing && typeof (<IMoteEditor>thing).getEditorType === 'function') {
+		return (<IMoteEditor>thing).getEditorType() === editorCommon.EditorType.IDocumentEditor;
+	} else {
+		return false;
+	}
+}
+
+/**
+ *@internal
+ */
+export function getMoteEditor(thing: unknown): IMoteEditor | null {
+	if (isMoteEditor(thing)) {
+		return thing;
+	}
+
+	return null;
+}
 
 export interface IViewLineContribution {
-	setValue(store: BlockStore): void;
+	setValue(store: BlockStore, lineData?: ViewLineRenderingData): void;
+
 	getDomNode(): FastDomNode<HTMLElement>;
+
+	render(store: BlockStore, lineData?: ViewLineRenderingData): string;
 }

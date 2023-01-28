@@ -6,6 +6,7 @@
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorAction, EditorCommand, registerEditorAction, registerEditorContribution } from 'mote/editor/browser/editorExtensions';
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
+import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
 
 export class SlashController implements IEditorContribution {
@@ -18,7 +19,8 @@ export class SlashController implements IEditorContribution {
 
 	constructor(
 		public readonly editor: IMoteEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IKeybindingService keybinddingService: IKeybindingService
 	) {
 
 	}
@@ -35,11 +37,16 @@ export class SlashController implements IEditorContribution {
 
 
 export class SlashAction extends EditorAction {
+	public run(accessor: ServicesAccessor, editor: IMoteEditor, args: any): void | Promise<void> {
+		throw new Error('Method not implemented.');
+	}
 
 	constructor() {
 		super({
 			id: 'editor.action.slash',
 			precondition: undefined,
+			label: '',
+			alias: ''
 		});
 	}
 
@@ -47,7 +54,7 @@ export class SlashAction extends EditorAction {
 		throw new Error('Method not implemented.');
 	}
 
-	public runEditorCommand(accessor: ServicesAccessor | null, editor: IMoteEditor, args: any): void | Promise<void> {
+	public override runEditorCommand(accessor: ServicesAccessor | null, editor: IMoteEditor, args: any): void | Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 }

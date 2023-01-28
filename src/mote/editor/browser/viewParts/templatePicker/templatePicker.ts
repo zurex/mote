@@ -5,8 +5,8 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { buttonHoverBuleBackground, mediumIconColor, mediumTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { clearNode } from 'vs/base/browser/dom';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { clearNode } from 'mote/base/browser/dom';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 interface Template {

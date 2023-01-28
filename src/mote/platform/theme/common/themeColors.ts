@@ -1,32 +1,43 @@
 import * as nls from 'vs/nls';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { ColorDefaults, ColorExtensions, ColorIdentifier, IColorRegistry, transparent } from 'mote/platform/theme/common/colorRegistry';
+import { ColorDefaults, ColorIdentifier, getColorRegistry, transparent } from 'mote/platform/theme/common/colorRegistry';
 import { ThemedColors, ThemedStyles } from 'mote/base/common/themes';
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
 
-const colorRegistry = Registry.as<IColorRegistry>(ColorExtensions.ColorContribution);
+const colorRegistry = getColorRegistry();
 
-export function registerColor(id: string, defaults: ColorDefaults | null, description: string): ColorIdentifier {
-	return colorRegistry.registerColor(id, migrateColorDefaults(defaults)!, description);
+export function registerColor(id: string, defaults: ColorDefaults | null, description: string, needsTransparency?: boolean, deprecationMessage?: string): ColorIdentifier {
+	return colorRegistry.registerColor(id, migrateColorDefaults(defaults)!, description, needsTransparency, deprecationMessage);
 }
 
 export const foreground = colorRegistry.registerColor('foreground', { dark: '#CCCCCC', light: '#616161', hcDark: '#FFFFFF', hcLight: '#292929' }, 'Overall foreground color. This color is only used if not overridden by a component.');
 export const disabledForeground = registerColor('disabledForeground', { dark: '#CCCCCC80', light: '#61616180', hcDark: '#A5A5A5', hcLight: '#7F7F7F' }, nls.localize('disabledForeground', "Overall foreground for disabled elements. This color is only used if not overridden by a component."));
+export const errorForeground = registerColor('errorForeground', { dark: '#F48771', light: '#A1260D', hcDark: '#F48771', hcLight: '#B5200D' }, nls.localize('errorForeground', "Overall foreground color for error messages. This color is only used if not overridden by a component."));
+
 export const regularTextColor = colorRegistry.registerColor('text.regular.color', { dark: '#ffffffcf', light: '#37352f' }, 'regularTextColor');
 export const mediumTextColor = colorRegistry.registerColor('text.medium.color', { dark: '#ffffffa6', light: '#37352f80' }, 'mediumTextColor');
 export const lightTextColor = colorRegistry.registerColor('text.light.color', { dark: '#ffffff26', light: '#37352f26' }, '');
+
 export const regularDividerColor = colorRegistry.registerColor('divider.regular.color', { light: '', dark: '' }, '');
 export const darkDividerColor = colorRegistry.registerColor('divider.dark.color', { light: '', dark: '' }, '');
+
+export const focusBorder = registerColor('focusBorder', { dark: '#007FD4', light: '#0090F1', hcDark: '#F38518', hcLight: '#006BBD' }, nls.localize('focusBorder', "Overall border color for focused elements. This color is only used if not overridden by a component."));
+
 export const contrastBorder = registerColor('contrastBorder', { light: null, dark: null, hcDark: '#6FC3DF', hcLight: '#0F4A85' }, nls.localize('contrastBorder', "An extra border around elements to separate them from others for greater contrast."));
+export const activeContrastBorder = registerColor('contrastActiveBorder', { light: null, dark: null, hcDark: focusBorder, hcLight: focusBorder }, nls.localize('activeContrastBorder', "An extra border around active elements to separate them from others for greater contrast."));
 
 /**
  * Editor foreground color.
  */
 export const editorForeground = registerColor('editor.foreground', { light: '#333333', dark: '#BBBBBB', hcDark: Color.white, hcLight: foreground }, nls.localize('editorForeground', "Editor default foreground color."));
 
-export const sidebarBackground = colorRegistry.registerColor('sidebarBackground', { ...ThemedStyles.sidebarBackground }, 'sidebarBackground');
+export const sidebarBackground = colorRegistry.registerColor('sidebarBackground', { light: '#f7f6f3', dark: '#252526' }, 'sidebarBackground');
 
 export const editorBackground = colorRegistry.registerColor('editor.background', { light: '#fffffe', dark: '#1E1E1E', hcDark: Color.black, hcLight: Color.white }, 'editor.background');
+
+export const editorWarningBackground = registerColor('editorWarning.background', { dark: null, light: null, hcDark: null, hcLight: null }, nls.localize('editorWarning.background', 'Background color of warning text in the editor. The color must not be opaque so as not to hide underlying decorations.'), true);
+export const editorWarningForeground = registerColor('editorWarning.foreground', { dark: '#CCA700', light: '#BF8803', hcDark: '#FFD37', hcLight: '#895503' }, nls.localize('editorWarning.foreground', 'Foreground color of warning squigglies in the editor.'));
+export const editorWarningBorder = registerColor('editorWarning.border', { dark: null, light: null, hcDark: Color.fromHex('#FFCC00').transparent(0.8), hcLight: '#' }, nls.localize('warningBorder', 'Border color of warning boxes in the editor.'));
+
 
 export const contextViewBackground = colorRegistry.registerColor('contextview.background', { light: '#ffffff', dark: '#303031' }, '');
 

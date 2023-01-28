@@ -1,16 +1,16 @@
-import { Event } from 'vs/base/common/event';
+import { Event } from 'mote/base/common/event';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from 'mote/workbench/browser/panecomposite';
 import { CompositePart } from 'mote/workbench/browser/parts/compositePart';
 import { IPaneCompositePart } from 'mote/workbench/browser/parts/paneCompositePart';
 import { IPaneComposite } from 'mote/workbench/common/panecomposite';
 import { SIDE_BAR_BACKGROUND } from 'mote/workbench/common/theme';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
-import { assertIsDefined } from 'vs/base/common/types';
+import { assertIsDefined } from 'mote/base/common/types';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ILogService } from 'vs/platform/log/common/log';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCompositePart {
 
@@ -35,12 +35,13 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService,
+		@IStorageService storageService: IStorageService,
 	) {
 		super(
 			logService,
 			layoutService,
 			themeService,
+			storageService,
 			instantiationService,
 			Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
 			'sideBar',

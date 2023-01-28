@@ -1,18 +1,19 @@
 import 'vs/css!./media/compositepart';
 
-import { IThemeService } from "mote/platform/theme/common/themeService";
-import { Composite, CompositeRegistry } from "mote/workbench/browser/composite";
-import { IPartOptions, Part } from "mote/workbench/browser/part";
-import { IComposite } from "mote/workbench/common/composite";
-import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import { Dimension, hide, show, $, append } from "vs/base/browser/dom";
-import { Emitter } from "vs/base/common/event";
-import { defaultGenerator } from "vs/base/common/idGenerator";
-import { DisposableStore, dispose, IDisposable } from "vs/base/common/lifecycle";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { ILogService } from "vs/platform/log/common/log";
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { Composite, CompositeRegistry } from 'mote/workbench/browser/composite';
+import { IPartOptions, Part } from 'mote/workbench/browser/part';
+import { IComposite } from 'mote/workbench/common/composite';
+import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
+import { Dimension, hide, show, $, append } from 'mote/base/browser/dom';
+import { Emitter } from 'mote/base/common/event';
+import { defaultGenerator } from 'mote/base/common/idGenerator';
+import { DisposableStore, dispose, IDisposable } from 'mote/base/common/lifecycle';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
+import { ILogService } from 'vs/platform/log/common/log';
 import { localize } from 'vs/nls';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export interface ICompositeTitleLabel {
 
@@ -57,13 +58,14 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		protected readonly logService: ILogService,
 		layoutService: IWorkbenchLayoutService,
 		themeService: IThemeService,
+		protected readonly storageService: IStorageService,
 		protected readonly instantiationService: IInstantiationService,
 		protected readonly registry: CompositeRegistry<T>,
 		private readonly defaultCompositeId: string,
 		id: string,
 		options: IPartOptions
 	) {
-		super(id, options, themeService, layoutService);
+		super(id, options, themeService, storageService, layoutService);
 		this.lastActiveCompositeId = defaultCompositeId;
 	}
 
@@ -254,7 +256,6 @@ export abstract class CompositePart<T extends Composite> extends Part {
 	}
 
 	protected showComposite(composite: Composite): void {
-		this.logService.debug('showComposite:', composite);
 		// Remember Composite
 		this.activeComposite = composite;
 

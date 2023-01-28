@@ -1,4 +1,4 @@
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
 import SVGData from './svgdata';
 
 export interface ISVGIconStyles {

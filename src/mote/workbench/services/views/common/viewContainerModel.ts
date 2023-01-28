@@ -6,7 +6,7 @@ import { Disposable } from "vs/base/common/lifecycle";
 import { isEqual } from 'vs/base/common/resources';
 import { URI } from 'vs/base/common/uri';
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 interface IViewDescriptorState {
 	visibleGlobal: boolean | undefined;
@@ -93,6 +93,10 @@ export class ViewContainerModel extends Disposable implements IViewContainerMode
 		if (!this.isEqualIcon(icon)) {
 			this._icon = icon;
 			iconChanged = true;
+		}
+
+		if (titleChanged || iconChanged) {
+
 		}
 	}
 

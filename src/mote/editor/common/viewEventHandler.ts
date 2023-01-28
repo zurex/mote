@@ -1,4 +1,4 @@
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 
 
@@ -30,6 +30,16 @@ export class ViewEventHandler extends Disposable {
 			const e = events[i];
 
 			switch (e.type) {
+				case viewEvents.ViewEventType.ViewFocusChanged:
+					if (this.onFocusChanged(e)) {
+						shouldRender = true;
+					}
+					break;
+				case viewEvents.ViewEventType.ViewFlushed:
+					if (this.onFlushed(e)) {
+						shouldRender = true;
+					}
+					break;
 				case viewEvents.ViewEventType.ViewLinesChanged:
 					if (this.onLinesChanged(e)) {
 						shouldRender = true;
@@ -50,6 +60,16 @@ export class ViewEventHandler extends Disposable {
 						shouldRender = true;
 					}
 					break;
+				case viewEvents.ViewEventType.ViewCursorStateChanged:
+					if (this.onCursorStateChanged(e)) {
+						shouldRender = true;
+					}
+					break;
+				case viewEvents.ViewEventType.ViewDecorationsChanged:
+					if (this.onDecorationsChanged(e)) {
+						shouldRender = true;
+					}
+					break;
 				case viewEvents.ViewEventType.ViewLinesDeleted:
 					if (this.onLinesDeleted(e)) {
 						shouldRender = true;
@@ -64,6 +84,22 @@ export class ViewEventHandler extends Disposable {
 	}
 
 	public onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
+		return false;
+	}
+
+	public onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
+		return false;
+	}
+
+	public onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
+		return false;
+	}
+
+	public onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
+		return false;
+	}
+
+	public onFocusChanged(e: viewEvents.ViewFocusChangedEvent): boolean {
 		return false;
 	}
 

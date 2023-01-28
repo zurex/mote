@@ -1,9 +1,9 @@
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { IColorTheme, IProductIconTheme, IThemeService } from 'mote/platform/theme/common/themeService';
-import { Event, Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Event, Emitter } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
-import { createStyleSheet } from 'vs/base/browser/dom';
+import { createStyleSheet } from 'mote/base/browser/dom';
 import { getIconsStyleSheet } from 'mote/platform/theme/browser/iconsStyleSheet';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { IconTheme } from 'mote/platform/theme/common/iconTheme';

@@ -1,11 +1,11 @@
-import { Event } from 'vs/base/common/event';
+import { Event } from 'mote/base/common/event';
 import { AnchorAlignment, AnchorAxisAlignment, AnchorPosition, IAnchor, IContextViewProvider } from 'mote/base/browser/ui/contextview/contextview';
 import { attachMenuStyler } from 'mote/platform/theme/common/styler';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { IThemable } from 'vs/base/common/styler';
+import { DisposableStore } from 'mote/base/common/lifecycle';
+import { IThemable } from 'mote/base/common/styler';
 import { addDisposableListener, EventType } from 'vs/base/browser/dom';
-import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
+import { StandardMouseEvent } from 'mote/base/browser/mouseEvent';
 
 export interface IDelegate {
 	getAnchor(): HTMLElement | IAnchor;

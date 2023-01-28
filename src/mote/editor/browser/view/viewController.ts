@@ -1,16 +1,14 @@
 import * as viewEvents from 'mote/editor/common/viewEvents';
-import { Event } from 'vs/base/common/event';
 import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
-import { OutgoingViewEvent, SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
+import { SelectionChangedEvent } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
-import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
@@ -18,9 +16,38 @@ import { Segment } from 'mote/editor/common/core/segment';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
-import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
+import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { BlockTypes } from 'mote/platform/store/common/record';
+import { IViewModel } from 'mote/editor/common/viewModel';
+import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IMouseWheelEvent } from 'mote/base/browser/mouseEvent';
+import { IEditorMouseEvent, IPartialEditorMouseEvent } from 'mote/editor/browser/editorBrowser';
+import { Position } from 'mote/editor/common/core/position';
+import { CoreNavigationCommands, NavigationCommandRevealType } from 'mote/editor/browser/command/navigationCommands';
+import { ViewModelEventDispatcher, ViewModelEventsCollector } from 'mote/editor/common/viewModelEventDispatcher';
+import { IKeyboardEvent } from 'mote/base/browser/keyboardEvent';
+
+export interface IMouseDispatchData {
+	position: Position;
+	/**
+	 * Desired mouse column (e.g. when position.column gets clamped to text length -- clicking after text on a line).
+	 */
+	mouseColumn: number;
+	revealType: NavigationCommandRevealType;
+	startedOnLineNumbers: boolean;
+
+	inSelectionMode: boolean;
+	mouseDownCount: number;
+	altKey: boolean;
+	ctrlKey: boolean;
+	metaKey: boolean;
+	shiftKey: boolean;
+
+	leftButton: boolean;
+	middleButton: boolean;
+	onInjectedText: boolean;
+}
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -28,70 +55,38 @@ export interface ICommandDelegate {
 }
 
 export class ViewController extends Disposable {
-	public readonly onEvent: Event<OutgoingViewEvent>;
 
 	private selection: TextSelection;
-	private readonly eventDispatcher: ViewEventDispatcher;
-	private viewLayout!: ViewLayout;
+	private readonly eventDispatcher: ViewModelEventDispatcher;
 
 	constructor(
-		configuration: IEditorConfiguration,
-
+		private readonly configuration: IEditorConfiguration,
+		private readonly viewModel: IViewModel,
+		private readonly logService: ILogService,
+		private readonly userInputEvents: ViewUserInputEvents,
+		private readonly commandDelegate: ICommandDelegate,
 		private readonly contentStore: RecordStore<string[]>,
 	) {
 		super();
 
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
-		this.eventDispatcher = new ViewEventDispatcher();
-		this.onEvent = this.eventDispatcher.onEvent;
-
-		this._register(configuration.onDidChangeFast((e) => {
-			try {
-				const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
-				this.onConfigurationChanged(eventsCollector, e);
-			} finally {
-				this.eventDispatcher.endEmitViewEvents();
-			}
-		}));
-
-
-	}
-
-	public setViewLayout(viewLayout: ViewLayout) {
-		this.viewLayout = viewLayout;
-		this._register(this.viewLayout.onDidScroll((e) => {
-			if (e.scrollTopChanged) {
-				//this._tokenizeViewportSoon.schedule();
-			}
-			if (e.scrollTopChanged) {
-				//this._viewportStart.invalidate();
-			}
-			this.eventDispatcher.emitSingleViewEvent(new viewEvents.ViewScrollChangedEvent(e));
-			/*
-			this.eventDispatcher.emitOutgoingEvent(new ScrollChangedEvent(
-				e.oldScrollWidth, e.oldScrollLeft, e.oldScrollHeight, e.oldScrollTop,
-				e.scrollWidth, e.scrollLeft, e.scrollHeight, e.scrollTop
-			));
-			*/
-		}));
-	}
-
-	private onConfigurationChanged(eventsCollector: ViewEventsCollector, e: ConfigurationChangedEvent): void {
-		console.log('emit ViewConfigurationChangedEvent');
-		eventsCollector.emitViewEvent(new viewEvents.ViewConfigurationChangedEvent(e));
-	}
-
-	public addViewEventHandler(eventHandler: ViewEventHandler): void {
-		this.eventDispatcher.addViewEventHandler(eventHandler);
-	}
-
-	public removeViewEventHandler(eventHandler: ViewEventHandler): void {
-		this.eventDispatcher.removeViewEventHandler(eventHandler);
+		this.eventDispatcher = (viewModel as any).eventDispatcher;
 	}
 
 	//#region command expose to editable
 
+	/**
+	 * @deprecated use {@link ViewController#moveTo} instead.
+	 * @param selection
+	 */
 	public select(selection: TextSelection): void {
+		if (selection.startIndex === selection.endIndex) {
+			const position = new Position(selection.lineNumber, selection.startIndex + 1);
+			this.moveTo(position, NavigationCommandRevealType.Minimal);
+		} else {
+
+		}
+
 		this.withViewEventsCollector(eventsCollector => {
 			this.setSelection(selection);
 			eventsCollector.emitOutgoingEvent(new SelectionChangedEvent(selection));
@@ -134,21 +129,11 @@ export class ViewController extends Disposable {
 	}
 
 	public type(text: string): void {
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const titleStore = this.getTitleStore();
-				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
-			}, this.contentStore.userId);
-		});
+		this.commandDelegate.type(text);
 	}
 
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const titleStore = this.getTitleStore();
-				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
-			}, this.contentStore.userId);
-		});
+		this.commandDelegate.compositionType(text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
 	}
 
 	public backspace() {
@@ -210,7 +195,7 @@ export class ViewController extends Disposable {
 	}
 
 	public getSelection() {
-		return this.selection;
+		return this.viewModel.getSelection();
 	}
 
 	public isEmpty(lineNumber: number) {
@@ -227,7 +212,7 @@ export class ViewController extends Disposable {
 		return value.length === 0;
 	}
 
-	private executeCursorEdit(callback: (eventsCollector: ViewEventsCollector) => void) {
+	private executeCursorEdit(callback: (eventsCollector: ViewModelEventsCollector) => void) {
 		if (this.selection === null || this.selection.lineNumber < -1) {
 			return;
 		}
@@ -244,9 +229,9 @@ export class ViewController extends Disposable {
 		this.withViewEventsCollector(callback);
 	}
 
-	private withViewEventsCollector<T>(callback: (eventsCollector: ViewEventsCollector) => T): T {
+	private withViewEventsCollector<T>(callback: (eventsCollector: ViewModelEventsCollector) => T): T {
 		try {
-			const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
+			const eventsCollector = (this.viewModel as any).eventDispatcher.beginEmitViewEvents();
 			return callback(eventsCollector);
 		} finally {
 			this.eventDispatcher.endEmitViewEvents();
@@ -279,7 +264,7 @@ export class ViewController extends Disposable {
 	 * @param transaction
 	 * @param selection
 	 */
-	private onBackspace(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection) {
+	private onBackspace(eventsCollector: ViewModelEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection) {
 		if (0 !== selection.startIndex || 0 !== selection.endIndex) {
 			let newSelection: TextSelection;
 			if (selection.startIndex === selection.endIndex) {
@@ -317,62 +302,7 @@ export class ViewController extends Disposable {
 		}
 	}
 
-	private onType(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
-		const oldRecord = store.getValue();
-		const content = segmentUtils.collectValueFromSegment(oldRecord);
-		const diffResult = textChange(selection, content, newValue);
-
-		let needChange = false;
-		let startIndex = 0;
-		let deleteFlag = false;
-
-		for (const [op, txt] of diffResult) {
-			switch (op) {
-				case DIFF_INSERT:
-					needChange = true;
-					this._insert(
-						eventsCollector,
-						txt,
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex,
-							lineNumber: selection.lineNumber
-						},
-						TextSelectionMode.Editing
-					);
-					startIndex += txt.length;
-					break;
-				case DIFF_DELETE:
-					needChange = true;
-					deleteFlag = false;
-					this.delete(
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex + txt.length,
-							lineNumber: selection.lineNumber
-						},
-					);
-					break;
-				default:
-					if (DIFF_EQUAL === op) {
-						startIndex += txt.length;
-					}
-			}
-		}
-
-		if (needChange) {
-
-		}
-		if (deleteFlag) {
-
-		}
-	}
-
-	private _insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private _insert(eventsCollector: ViewModelEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {
 			return;
@@ -448,5 +378,131 @@ export class ViewController extends Disposable {
 		}
 	}
 
+	//#endregion
+
+	//#region user input event
+
+	public emitKeyDown(e: IKeyboardEvent): void {
+		this.userInputEvents.emitKeyDown(e);
+	}
+
+	public emitKeyUp(e: IKeyboardEvent): void {
+		this.userInputEvents.emitKeyUp(e);
+	}
+
+	public emitMouseMove(e: IEditorMouseEvent): void {
+		this.userInputEvents.emitMouseMove(e);
+	}
+
+	public emitMouseLeave(e: IPartialEditorMouseEvent): void {
+		this.userInputEvents.emitMouseLeave(e);
+	}
+
+	public emitMouseUp(e: IEditorMouseEvent): void {
+		//this.logService.debug('[ViewController] emitMouseUp', e);
+		this.userInputEvents.emitMouseUp(e);
+	}
+
+	public emitMouseDown(e: IEditorMouseEvent): void {
+		//this.logService.debug('[ViewController] emitMouseDown', e);
+		this.userInputEvents.emitMouseDown(e);
+	}
+
+	public emitMouseDrag(e: IEditorMouseEvent): void {
+		this.userInputEvents.emitMouseDrag(e);
+	}
+
+	public emitMouseDrop(e: IPartialEditorMouseEvent): void {
+		this.userInputEvents.emitMouseDrop(e);
+	}
+
+	public emitMouseDropCanceled(): void {
+		this.userInputEvents.emitMouseDropCanceled();
+	}
+
+	public emitMouseWheel(e: IMouseWheelEvent): void {
+		this.userInputEvents.emitMouseWheel(e);
+	}
+
+	private hasMulticursorModifier(data: IMouseDispatchData): boolean {
+		return false;
+	}
+
+	public dispatchMouse(data: IMouseDispatchData): void {
+		const options = this.configuration.options;
+		const selectionClipboardIsOn = false;
+		const columnSelection = options.get(EditorOption.ColumnSelection);
+
+		if (data.middleButton && !selectionClipboardIsOn) {
+
+		} else if (data.startedOnLineNumbers) {
+
+		} else if (data.mouseDownCount >= 4) {
+
+		} else if (data.mouseDownCount === 3) {
+
+		} else if (data.mouseDownCount === 2) {
+
+		} else {
+			if (this.hasMulticursorModifier(data)) {
+
+			} else {
+				if (data.inSelectionMode) {
+					if (data.altKey) {
+
+					} else {
+						if (columnSelection) {
+							this.columnSelect(data.position, data.mouseColumn, true);
+						} else {
+							this.moveToSelect(data.position, data.revealType);
+						}
+					}
+				} else {
+					this.moveTo(data.position, data.revealType);
+				}
+			}
+		}
+	}
+
+	public moveTo(viewPosition: Position, revealType: NavigationCommandRevealType): void {
+		CoreNavigationCommands.MoveTo.runCoreEditorCommand(this.viewModel, this.usualArgs(viewPosition, revealType));
+	}
+
+	private moveToSelect(viewPosition: Position, revealType: NavigationCommandRevealType): void {
+		CoreNavigationCommands.MoveToSelect.runCoreEditorCommand(this.viewModel, this.usualArgs(viewPosition, revealType));
+	}
+
+	private columnSelect(viewPosition: Position, mouseColumn: number, doColumnSelect: boolean): void {
+		viewPosition = this.validateViewColumn(viewPosition);
+		CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(this.viewModel, {
+			source: 'mouse',
+			position: this.convertViewToModelPosition(viewPosition),
+			viewPosition: viewPosition,
+			mouseColumn: mouseColumn,
+			doColumnSelect: doColumnSelect
+		});
+	}
+
+	private convertViewToModelPosition(viewPosition: Position): Position {
+		return this.viewModel.coordinatesConverter.convertViewPositionToModelPosition(viewPosition);
+	}
+
+	private usualArgs(viewPosition: Position, revealType: NavigationCommandRevealType): CoreNavigationCommands.MoveCommandOptions {
+		viewPosition = this.validateViewColumn(viewPosition);
+		return {
+			source: 'mouse',
+			position: this.convertViewToModelPosition(viewPosition),
+			viewPosition,
+			revealType
+		};
+	}
+
+	private validateViewColumn(viewPosition: Position): Position {
+		const minColumn = this.viewModel.getLineMinColumn(viewPosition.lineNumber);
+		if (viewPosition.column < minColumn) {
+			return new Position(viewPosition.lineNumber, minColumn);
+		}
+		return viewPosition;
+	}
 	//#endregion
 }

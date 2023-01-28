@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isStandalone } from 'vs/base/browser/browser';
+import { isStandalone } from 'mote/base/browser/browser';
 import { parse } from 'vs/base/common/marshalling';
-import { Emitter } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { Emitter } from 'mote/base/common/event';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 import { Schemas } from 'vs/base/common/network';
 import { isEqual } from 'vs/base/common/resources';
-import { URI, UriComponents } from 'vs/base/common/uri';
+import { URI, UriComponents } from 'mote/base/common/uri';
 import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/window/common/window';
 import { create, IURLCallbackProvider, IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'mote/workbench/workbench.web.main';
-import { posix } from 'vs/base/common/path';
+import { posix } from 'mote/base/common/path';
 import { ltrim } from 'vs/base/common/strings';
 
 class LocalStorageURLCallbackProvider extends Disposable implements IURLCallbackProvider {

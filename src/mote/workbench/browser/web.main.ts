@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { domContentLoaded, detectFullscreen, getCookieValue } from 'vs/base/browser/dom';
+import { domContentLoaded, detectFullscreen, getCookieValue } from 'mote/base/browser/dom';
 import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
 import { ILogService, ConsoleLogger, MultiplexLogService, LogLevel } from 'vs/platform/log/common/log';
 import { ConsoleLogInAutomationLogger } from 'vs/platform/log/browser/log';
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
+import { Disposable, DisposableStore, toDisposable } from 'mote/base/common/lifecycle';
 import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
 import { Workbench } from 'mote/workbench/browser/workbench';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
@@ -50,6 +50,8 @@ import { UserService } from 'mote/workbench/services/user/common/userService';
 import { RemoteService } from 'mote/workbench/services/remote/browser/remoteService';
 import { IRemoteService } from 'mote/platform/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
+import { IWorkbenchConfigurationService } from 'mote/workbench/services/configuration/common/workbenchConfiguration';
+import { WorkbenchConfigurationService } from 'mote/workbench/services/configuration/browser/workbenchConfigurationService';
 
 export class BrowserMain extends Disposable {
 
@@ -210,6 +212,7 @@ export class BrowserMain extends Disposable {
 		//const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
 		//serviceCollection.set(IWorkspaceContextService, workspaceService);
 
+		serviceCollection.set(IWorkbenchConfigurationService, new WorkbenchConfigurationService());
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//

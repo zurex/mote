@@ -65,7 +65,9 @@ export function renderSegments(segments: Segment[]) {
 		const annotations = segment.annotations;
 
 		if (annotations.length === 0) {
-			return text;
+			const node = document.createElement('span');
+			node.appendChild(createTextNode(text));
+			return node.outerHTML;
 		}
 
 		const inlineStyle = buildStyles(annotations);

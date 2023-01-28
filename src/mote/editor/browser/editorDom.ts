@@ -1,4 +1,10 @@
-import * as dom from 'vs/base/browser/dom';
+import * as dom from 'mote/base/browser/dom';
+import { GlobalPointerMoveMonitor } from 'mote/base/browser/globalPointerMoveMonitor';
+import { StandardMouseEvent } from 'mote/base/browser/mouseEvent';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+
+//#region Coordinates
+
 /**
  * Coordinates relative to the whole document (e.g. mouse event's pageX and pageY)
  */
@@ -63,4 +69,163 @@ export class CoordinatesRelativeToEditor {
 		public readonly x: number,
 		public readonly y: number
 	) { }
+}
+
+export function createEditorPagePosition(editorViewDomNode: HTMLElement): EditorPagePosition {
+	const editorPos = dom.getDomNodePagePosition(editorViewDomNode);
+	return new EditorPagePosition(editorPos.left, editorPos.top, editorPos.width, editorPos.height);
+}
+
+export function createCoordinatesRelativeToEditor(editorViewDomNode: HTMLElement, editorPagePosition: EditorPagePosition, pos: PageCoordinates) {
+	// The editor's page position is read from the DOM using getBoundingClientRect().
+	//
+	// getBoundingClientRect() returns the actual dimensions, while offsetWidth and offsetHeight
+	// reflect the unscaled size. We can use this difference to detect a transform:scale()
+	// and we will apply the transformation in inverse to get mouse coordinates that make sense inside the editor.
+	//
+	// This could be expanded to cover rotation as well maybe by walking the DOM up from `editorViewDomNode`
+	// and computing the effective transformation matrix using getComputedStyle(element).transform.
+	//
+	const scaleX = editorPagePosition.width / editorViewDomNode.offsetWidth;
+	const scaleY = editorPagePosition.height / editorViewDomNode.offsetHeight;
+
+	// Adjust mouse offsets if editor appears to be scaled via transforms
+	const relativeX = (pos.x - editorPagePosition.x) / scaleX;
+	const relativeY = (pos.y - editorPagePosition.y) / scaleY;
+	return new CoordinatesRelativeToEditor(relativeX, relativeY);
+}
+
+//#endregion
+
+export class EditorMouseEvent extends StandardMouseEvent {
+	_editorMouseEventBrand: void = undefined;
+
+	/**
+	 * If the event is a result of using `setPointerCapture`, the `event.target`
+	 * does not necessarily reflect the position in the editor.
+	 */
+	public readonly isFromPointerCapture: boolean;
+
+	/**
+	 * Coordinates relative to the whole document.
+	 */
+	public readonly pos: PageCoordinates;
+
+	/**
+	 * Editor's coordinates relative to the whole document.
+	 */
+	public readonly editorPos: EditorPagePosition;
+
+	/**
+	 * Coordinates relative to the (top;left) of the editor.
+	 * *NOTE*: These coordinates are preferred because they take into account transformations applied to the editor.
+	 * *NOTE*: These coordinates could be negative if the mouse position is outside the editor.
+	 */
+	public readonly relativePos: CoordinatesRelativeToEditor;
+
+	constructor(e: MouseEvent, isFromPointerCapture: boolean, editorViewDomNode: HTMLElement) {
+		super(e);
+		this.isFromPointerCapture = isFromPointerCapture;
+		this.pos = new PageCoordinates(this.posx, this.posy);
+		this.editorPos = createEditorPagePosition(editorViewDomNode);
+		this.relativePos = createCoordinatesRelativeToEditor(editorViewDomNode, this.editorPos, this.pos);
+	}
+}
+
+export class EditorMouseEventFactory {
+
+	private readonly _editorViewDomNode: HTMLElement;
+
+	constructor(editorViewDomNode: HTMLElement) {
+		this._editorViewDomNode = editorViewDomNode;
+	}
+
+	private _create(e: MouseEvent): EditorMouseEvent {
+		return new EditorMouseEvent(e, false, this._editorViewDomNode);
+	}
+
+	public onContextMenu(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, 'contextmenu', (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onMouseUp(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, 'mouseup', (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onMouseDown(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, dom.EventType.MOUSE_DOWN, (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onPointerDown(target: HTMLElement, callback: (e: EditorMouseEvent, pointerId: number) => void): IDisposable {
+		return dom.addDisposableListener(target, dom.EventType.POINTER_DOWN, (e: PointerEvent) => {
+			callback(this._create(e), e.pointerId);
+		});
+	}
+
+	public onMouseLeave(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, dom.EventType.MOUSE_LEAVE, (e: MouseEvent) => {
+			callback(this._create(e));
+		});
+	}
+
+	public onMouseMove(target: HTMLElement, callback: (e: EditorMouseEvent) => void): IDisposable {
+		return dom.addDisposableListener(target, 'mousemove', (e) => callback(this._create(e)));
+	}
+}
+
+export class GlobalEditorPointerMoveMonitor extends Disposable {
+
+	private readonly _editorViewDomNode: HTMLElement;
+	private readonly _globalPointerMoveMonitor: GlobalPointerMoveMonitor;
+	private _keydownListener: IDisposable | null;
+
+	constructor(editorViewDomNode: HTMLElement) {
+		super();
+		this._editorViewDomNode = editorViewDomNode;
+		this._globalPointerMoveMonitor = this._register(new GlobalPointerMoveMonitor());
+		this._keydownListener = null;
+	}
+
+	public startMonitoring(
+		initialElement: Element,
+		pointerId: number,
+		initialButtons: number,
+		pointerMoveCallback: (e: EditorMouseEvent) => void,
+		onStopCallback: (browserEvent?: PointerEvent | KeyboardEvent) => void
+	): void {
+
+		// Add a <<capture>> keydown event listener that will cancel the monitoring
+		// if something other than a modifier key is pressed
+		this._keydownListener = dom.addStandardDisposableListener(<any>document, 'keydown', (e) => {
+			const kb = e.toKeybinding();
+			if (kb.isModifierKey()) {
+				// Allow modifier keys
+				return;
+			}
+			this._globalPointerMoveMonitor.stopMonitoring(true, e.browserEvent);
+		}, true);
+
+		this._globalPointerMoveMonitor.startMonitoring(
+			initialElement,
+			pointerId,
+			initialButtons,
+			(e) => {
+				pointerMoveCallback(new EditorMouseEvent(e, true, this._editorViewDomNode));
+			},
+			(e) => {
+				this._keydownListener!.dispose();
+				onStopCallback(e);
+			}
+		);
+	}
+
+	public stopMonitoring(): void {
+		this._globalPointerMoveMonitor.stopMonitoring(true);
+	}
 }

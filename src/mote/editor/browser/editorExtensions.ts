@@ -2,13 +2,13 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { CommandsRegistry, ICommandHandlerDescription } from 'mote/platform/commands/common/commands';
-import { IKeybindings } from 'mote/platform/keybinding/common/keybindingsRegistry';
+import { IKeybindings, KeybindingsRegistry } from 'mote/platform/keybinding/common/keybindingsRegistry';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { MenuId } from 'vs/platform/actions/common/actions';
-import { ContextKeyExpression, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 import { BrandedService, IConstructorSignature, ServicesAccessor as InstantiationServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 export type ServicesAccessor = InstantiationServicesAccessor;
 export type IEditorContributionCtor = IConstructorSignature<IEditorContribution, [IMoteEditor]>;
@@ -50,18 +50,47 @@ export abstract class Command {
 
 	public readonly id: string;
 	public readonly precondition: ContextKeyExpression | undefined;
-
+	private readonly kbOpts: ICommandKeybindingsOptions | ICommandKeybindingsOptions[] | undefined;
 	//private readonly menuOpts: ICommandMenuOptions | ICommandMenuOptions[] | undefined;
 	private readonly description: ICommandHandlerDescription | undefined;
 
 	constructor(opts: ICommandOptions) {
 		this.id = opts.id;
 		this.precondition = opts.precondition;
+		this.kbOpts = opts.kbOpts;
 		//this.menuOpts = opts.menuOpts;
 		this.description = opts.description;
 	}
 
 	public register(): void {
+		if (this.kbOpts) {
+			const kbOptsArr = Array.isArray(this.kbOpts) ? this.kbOpts : [this.kbOpts];
+			for (const kbOpts of kbOptsArr) {
+				let kbWhen = kbOpts.kbExpr;
+				if (this.precondition) {
+					if (kbWhen) {
+						kbWhen = ContextKeyExpr.and(kbWhen, this.precondition);
+					} else {
+						kbWhen = this.precondition;
+					}
+				}
+
+				const desc = {
+					id: this.id,
+					weight: kbOpts.weight,
+					args: kbOpts.args,
+					when: kbWhen,
+					primary: kbOpts.primary,
+					secondary: kbOpts.secondary,
+					win: kbOpts.win,
+					linux: kbOpts.linux,
+					mac: kbOpts.mac,
+				};
+
+				KeybindingsRegistry.registerKeybindingRule(desc);
+			}
+		}
+
 		CommandsRegistry.registerCommand({
 			id: this.id,
 			handler: (accessor, args) => this.runCommand(accessor, args),
@@ -108,11 +137,16 @@ export abstract class EditorCommand extends Command {
 		};
 	}
 
-	public runCommand(accessor: ServicesAccessor, args: any): void | Promise<void> {
+	public static runEditorCommand(
+		accessor: ServicesAccessor,
+		args: any,
+		precondition: ContextKeyExpression | undefined,
+		runner: (accessor: ServicesAccessor | null, editor: IMoteEditor, args: any) => void | Promise<void>
+	): void | Promise<void> {
 		const moteEditorService = accessor.get(IMoteEditorService);
 
 		// Find the editor with text focus or active
-		const editor = moteEditorService.getFocusedCodeEditor() || moteEditorService.getActiveCodeEditor();
+		const editor = moteEditorService.getFocusedMoteEditor() || moteEditorService.getActiveMoteEditor();
 		if (!editor) {
 			// well, at least we tried...
 			return;
@@ -120,13 +154,17 @@ export abstract class EditorCommand extends Command {
 
 		return editor.invokeWithinContext((editorAccessor) => {
 			const kbService = editorAccessor.get(IContextKeyService);
-			if (!kbService.contextMatchesRules(withNullAsUndefined(this.precondition))) {
+			if (!kbService.contextMatchesRules(withNullAsUndefined(precondition))) {
 				// precondition does not hold
 				return;
 			}
 
-			return this.runEditorCommand(editorAccessor, editor!, args);
+			return runner(editorAccessor, editor, args);
 		});
+	}
+
+	public runCommand(accessor: ServicesAccessor, args: any): void | Promise<void> {
+		return EditorCommand.runEditorCommand(accessor, args, this.precondition, (accessor, editor, args) => this.runEditorCommand(accessor, editor, args));
 	}
 
 	public abstract runEditorCommand(accessor: ServicesAccessor | null, editor: IMoteEditor, args: any): void | Promise<void>;
@@ -136,8 +174,67 @@ export abstract class EditorCommand extends Command {
 
 //#region EditorAction
 
-export abstract class EditorAction extends EditorCommand {
+export interface IEditorActionContextMenuOptions {
+	group: string;
+	order: number;
+	when?: ContextKeyExpression;
+	menuId?: MenuId;
+}
 
+export interface IActionOptions extends ICommandOptions {
+	label: string;
+	alias: string;
+	contextMenuOpts?: IEditorActionContextMenuOptions | IEditorActionContextMenuOptions[];
+}
+
+export abstract class EditorAction extends EditorCommand {
+	public readonly label: string;
+	public readonly alias: string;
+
+	constructor(opts: IActionOptions) {
+		super(EditorAction.convertOptions(opts));
+		this.label = opts.label;
+		this.alias = opts.alias;
+	}
+
+	public runEditorCommand(accessor: ServicesAccessor, editor: IMoteEditor, args: any): void | Promise<void> {
+		//this.reportTelemetry(accessor, editor);
+		return this.run(accessor, editor, args || {});
+	}
+
+	public abstract run(accessor: ServicesAccessor, editor: IMoteEditor, args: any): void | Promise<void>;
+
+	private static convertOptions(opts: IActionOptions): ICommandOptions {
+
+		let menuOpts: ICommandMenuOptions[];
+		if (Array.isArray(opts.menuOpts)) {
+			menuOpts = opts.menuOpts;
+		} else if (opts.menuOpts) {
+			menuOpts = [opts.menuOpts];
+		} else {
+			menuOpts = [];
+		}
+
+		function withDefaults(item: Partial<ICommandMenuOptions>): ICommandMenuOptions {
+			if (!item.menuId) {
+				item.menuId = MenuId.EditorContext;
+			}
+			if (!item.title) {
+				item.title = opts.label;
+			}
+			item.when = ContextKeyExpr.and(opts.precondition, item.when);
+			return <ICommandMenuOptions>item;
+		}
+
+		if (Array.isArray(opts.contextMenuOpts)) {
+			menuOpts.push(...opts.contextMenuOpts.map(withDefaults));
+		} else if (opts.contextMenuOpts) {
+			menuOpts.push(withDefaults(opts.contextMenuOpts));
+		}
+
+		opts.menuOpts = menuOpts;
+		return <ICommandOptions>opts;
+	}
 }
 
 //#endregion

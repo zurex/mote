@@ -6,7 +6,7 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { IThemeService, Themable, ThemeIcon } from 'mote/platform/theme/common/themeService';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { SVGIcon } from 'mote/base/browser/ui/icon/svgicon';
 import { buttonHoverBackground, imageBlockBackground, mediumIconColor, mediumTextColor, outlineButtonBorder } from 'mote/platform/theme/common/themeColors';
 import { Button } from 'mote/base/browser/ui/button/button';
@@ -20,6 +20,7 @@ import { Codicon } from 'vs/base/common/codicons';
 import { IAction } from 'vs/base/common/actions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { isLocalUser } from 'mote/platform/user/common/user';
+import { ViewLineRenderingData } from 'mote/editor/common/viewModel';
 
 const menuIcon = registerIcon('menu-icon', Codicon.kebabHorizontal, '');
 
@@ -54,6 +55,11 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 		this.createPlaceholder(this.domNode.domNode);
 
 		this.contextViewHelper = new ContextViewHelper(contextViewService, themeService);
+	}
+
+	render(store: BlockStore, lineData?: ViewLineRenderingData | undefined): string {
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
 	}
 
 	setValue(store: BlockStore): void {

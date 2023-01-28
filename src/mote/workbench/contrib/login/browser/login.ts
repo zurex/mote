@@ -9,6 +9,7 @@ import { IUserProfile } from 'mote/platform/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { CaffeineError } from 'mote/base/common/errors';
 import { IntlProvider } from 'mote/base/common/i18n';
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export class LoginPage extends EditorPane {
 	public static readonly ID = 'loginPage';
@@ -25,8 +26,9 @@ export class LoginPage extends EditorPane {
 		@IThemeService themeService: IThemeService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IUserService private readonly userService: IUserService,
+		@IStorageService storageService: IStorageService,
 	) {
-		super(LoginPage.ID, themeService);
+		super(LoginPage.ID, themeService, storageService);
 
 		const container = $('.login');
 		const error = $('.error');
@@ -95,7 +97,7 @@ export class LoginPage extends EditorPane {
 
 			userProfile.then((user) => {
 				this.error.innerText = '';
-				this.editorService.closeEditor();
+				this.editorService.closeActiveEditor();
 			}).catch((err) => {
 				if (err instanceof CaffeineError) {
 					this.error.innerText = err.message;

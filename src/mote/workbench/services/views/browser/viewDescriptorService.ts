@@ -4,10 +4,10 @@ import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { generateUuid } from 'vs/base/common/uuid';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { registerSingleton } from "vs/platform/instantiation/common/extensions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { Registry } from "vs/platform/registry/common/platform";
-import { ViewContainerModel } from "../common/viewContainerModel";
+import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { Registry } from 'mote/platform/registry/common/platform';
+import { ViewContainerModel } from 'mote/workbench/services/views/common/viewContainerModel';
 
 interface ICachedViewContainerInfo {
 	containerId: string;

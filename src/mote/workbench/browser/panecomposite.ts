@@ -1,13 +1,14 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { IThemeService } from "mote/platform/theme/common/themeService";
-import { Dimension } from "vs/base/browser/dom";
-import { URI } from "vs/base/common/uri";
+import { Dimension } from 'mote/base/browser/dom';
+import { URI } from 'mote/base/common/uri';
 import { BrandedService, IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
-import { Registry } from "vs/platform/registry/common/platform";
-import { IPaneComposite } from "../common/panecomposite";
+import { Registry } from 'mote/platform/registry/common/platform';
+import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { Composite, CompositeDescriptor, CompositeRegistry } from "./composite";
-import { ViewPaneContainer } from "./parts/views/viewPaneContainer";
+import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneContainer";
+import { IStorageService } from 'vs/platform/storage/common/storage';
 
 export abstract class PaneComposite extends Composite implements IPaneComposite {
 
@@ -18,8 +19,9 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		@ILogService protected logService: ILogService,
 		@IInstantiationService protected instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
+		@IStorageService storageService: IStorageService,
 	) {
-		super(id, themeService);
+		super(id, themeService, storageService);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -44,8 +46,8 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 	getOptimalWidth(): number | undefined {
 		throw new Error('Method not implemented.');
 	}
-	saveState(): void {
-		throw new Error("Method not implemented.");
+	override saveState(): void {
+
 	}
 
 	protected abstract createViewPaneContainer(parent: HTMLElement): ViewPaneContainer;

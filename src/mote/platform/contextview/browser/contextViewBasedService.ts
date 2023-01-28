@@ -3,12 +3,12 @@ import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { attachMenuStyler } from 'mote/platform/theme/common/styler';
 import { contextViewBackground, regularTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
-import { $, addDisposableListener, EventType, isHTMLElement } from 'vs/base/browser/dom';
-import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
+import { $, addDisposableListener, EventType, isHTMLElement } from 'mote/base/browser/dom';
+import { StandardMouseEvent } from 'mote/base/browser/mouseEvent';
 import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
 import { ActionRunner, IAction, IRunEvent } from 'vs/base/common/actions';
 import { Emitter } from 'vs/base/common/event';
-import { combinedDisposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { combinedDisposable, DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
 import { IContextMenuService, IContextViewService } from './contextView';
 
 export interface IContextViewHandlerOptions {

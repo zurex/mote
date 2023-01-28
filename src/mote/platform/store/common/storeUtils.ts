@@ -38,10 +38,10 @@ export class StoreUtils {
 
 	static getPageId(lineNumber: number, contentStore: RecordStore) {
 		const pageIds: string[] = contentStore.getValue() || [];
-		if (lineNumber >= pageIds.length) {
+		if (lineNumber > pageIds.length) {
 			throw new BugIndicatingError(`content length = ${pageIds.length}, less than ${lineNumber}`);
 		}
-		return pageIds[lineNumber];
+		return pageIds[lineNumber - 1];
 	}
 
 	static createStoreForPageId = (id: string, contentStore: RecordStore) => {
@@ -55,7 +55,7 @@ export class StoreUtils {
 		userId: string, pointer: Pointer,
 		recordWithRole: RecordWithRole,
 		cacheStore: RecordCacheStore,
-		persistedStore: IStorageService,
+		persistedStore?: IStorageService,
 		force?: boolean,
 	) {
 		const key = RecordCacheStore.generateCacheKey({ userId, pointer });
@@ -80,6 +80,7 @@ export class StoreUtils {
 			|| cachedRole !== recordWithRole.role
 		) {
 			cacheStore.setRecord({ userId, pointer }, recordWithRole);
+			cacheStore.fire(key);
 
 			if (recordWithRole) {
 				if (pointer.table === BLOCK_TABLE_NAME && recordWithRole.value) {
@@ -89,11 +90,11 @@ export class StoreUtils {
 					}
 				}
 
-				persistedStore.store(key, JSON.stringify(recordWithRole), StorageScope.WORKSPACE, StorageTarget.MACHINE);
+				persistedStore?.store(key, JSON.stringify(recordWithRole), StorageScope.WORKSPACE, StorageTarget.MACHINE);
 			}
 		}
 		if (!recordWithRole) {
-			persistedStore.remove(key, StorageScope.WORKSPACE);
+			persistedStore?.remove(key, StorageScope.WORKSPACE);
 		}
 	}
 }

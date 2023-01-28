@@ -7,20 +7,23 @@ import { Segment } from 'mote/editor/common/segment';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { lightTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { FastDomNode } from 'mote/base/browser/fastDomNode';
 
 export abstract class BaseBlock extends Themable {
-	protected editableHandler: EditableHandler;
+	protected editableHandler!: EditableHandler;
 
 	constructor(
-		lineNumber: number,
-		viewContext: ViewContext,
-		viewController: ViewController,
+		private lineNumber: number,
+		private viewContext: ViewContext,
+		private viewController: ViewController,
 		protected readonly options: EditableHandlerOptions,
 		@IThemeService themeService: IThemeService,
 	) {
 		super(themeService);
-		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
+	}
+
+	protected init() {
+		this.editableHandler = this.renderPersisted(this.lineNumber, this.viewContext, this.viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
 
 		const style = this.getStyle();
@@ -29,9 +32,9 @@ export abstract class BaseBlock extends Themable {
 		}
 		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
 
-		if (viewController.getSelection().lineNumber === lineNumber) {
-			this.editableHandler.focusEditable();
-		}
+		//if (viewController.getSelection().startLineNumber === lineNumber) {
+		//this.editableHandler.focusEditable();
+		//}
 	}
 
 	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;
@@ -43,8 +46,16 @@ export abstract class BaseBlock extends Themable {
 	setValue(store: BlockStore) {
 		const segments = store.getTitleStore().getValue() || [];
 		const html = renderSegments(segments.map(Segment.from)).join('');
+		if (!this.editableHandler) {
+			this.init();
+		}
 		this.editableHandler.setValue(html);
 		this.editableHandler.setEnabled(store.canEdit());
+	}
+
+	render(store: BlockStore) {
+		const segments = store.getTitleStore().getValue() || [];
+		return renderSegments(segments.map(Segment.from)).join('');
 	}
 
 	getDomNode(): FastDomNode<HTMLElement> {

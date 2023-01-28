@@ -96,6 +96,8 @@ export function getIndex(container: Node, offset: number) {
 export function getSelectionFromRange(range?: globalThis.Range) {
 	range = range || RangeUtils.get();
 	if (range) {
+		const dataRoot = getDataRootInParent(range.startContainer) as HTMLElement;
+		const lineNumber = dataRoot.getAttribute('data-index') || '-1';
 		const startIndex = getIndex(range.startContainer, range.startOffset);
 		const endIndex = getIndex(range.endContainer, range.endOffset);
 		const textMentionNode = getTextMention(range.startContainer) || getTextMention(range.endContainer);
@@ -103,7 +105,7 @@ export function getSelectionFromRange(range?: globalThis.Range) {
 			selection: {
 				startIndex: startIndex,
 				endIndex: endIndex,
-				lineNumber: -1,
+				lineNumber: parseInt(lineNumber),
 			},
 			forceEmitSelectionStore: Boolean(textMentionNode)
 		};

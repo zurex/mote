@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color } from 'vs/base/common/color';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { IThemable, styleFn } from 'vs/base/common/styler';
+import { Color } from 'mote/base/common/color';
+import { IDisposable } from 'mote/base/common/lifecycle';
+import { IThemable, styleFn } from 'mote/base/common/styler';
 import * as themeColors from 'mote/platform/theme/common/themeColors';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';

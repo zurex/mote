@@ -1,6 +1,82 @@
+import { IRange } from 'mote/editor/common/core/editorRange';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { ITextModel, IValidEditOperation } from 'mote/editor/common/model';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IDimension } from 'vs/editor/common/core/dimension';
+
+/**
+ * A builder and helper for edit operations for a command.
+ */
+export interface IEditOperationBuilder {
+	/**
+	 * Add a new edit operation (a replace operation).
+	 * @param range The range to replace (delete). May be empty to represent a simple insert.
+	 * @param text The text to replace with. May be null to represent a simple delete.
+	 */
+	addEditOperation(range: IRange, text: string | null, forceMoveMarkers?: boolean): void;
+
+	/**
+	 * Add a new edit operation (a replace operation).
+	 * The inverse edits will be accessible in `ICursorStateComputerData.getInverseEditOperations()`
+	 * @param range The range to replace (delete). May be empty to represent a simple insert.
+	 * @param text The text to replace with. May be null to represent a simple delete.
+	 */
+	addTrackedEditOperation(range: IRange, text: string | null, forceMoveMarkers?: boolean): void;
+
+	/**
+	 * Track `selection` when applying edit operations.
+	 * A best effort will be made to not grow/expand the selection.
+	 * An empty selection will clamp to a nearby character.
+	 * @param selection The selection to track.
+	 * @param trackPreviousOnEmpty If set, and the selection is empty, indicates whether the selection
+	 *           should clamp to the previous or the next character.
+	 * @return A unique identifier.
+	 */
+	trackSelection(selection: EditorSelection, trackPreviousOnEmpty?: boolean): string;
+}
+
+/**
+ * A helper for computing cursor state after a command.
+ */
+export interface ICursorStateComputerData {
+	/**
+	 * Get the inverse edit operations of the added edit operations.
+	 */
+	getInverseEditOperations(): IValidEditOperation[];
+	/**
+	 * Get a previously tracked selection.
+	 * @param id The unique identifier returned by `trackSelection`.
+	 * @return The selection.
+	 */
+	getTrackedSelection(id: string): EditorSelection;
+}
+
+/**
+ * A command that modifies text / cursor state on a model.
+ */
+export interface ICommand {
+
+	/**
+	 * Signal that this command is inserting automatic whitespace that should be trimmed if possible.
+	 * @internal
+	 */
+	readonly insertsAutoWhitespace?: boolean;
+
+	/**
+	 * Get the edit operations needed to execute this command.
+	 * @param model The model the command will execute on.
+	 * @param builder A helper to collect the needed edit operations and to track selections.
+	 */
+	getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void;
+
+	/**
+	 * Compute the cursor state after the edit operations were applied.
+	 * @param model The model the command has executed on.
+	 * @param helper A helper to get inverse edit operations and to get previously tracked selections.
+	 * @return The cursor state after the command executed.
+	 */
+	computeCursorState(model: ITextModel, helper: ICursorStateComputerData): EditorSelection;
+}
 
 /**
  * An editor contribution that gets created every time a new editor gets created and gets disposed when the editor gets disposed.
@@ -18,6 +94,14 @@ export interface IEditorContribution {
 	 * Restore view state.
 	 */
 	//restoreViewState?(state: any): void;
+}
+
+export interface IEditorAction {
+	readonly id: string;
+	readonly label: string;
+	readonly alias: string;
+	isSupported(): boolean;
+	run(): Promise<void>;
 }
 
 export const enum ScrollType {
@@ -74,6 +158,11 @@ export interface IEditor {
 	 * Returns the primary selection of the editor.
 	 */
 	getSelection(): EditorSelection | null;
+
+	/**
+	 * Returns all the selections of the editor.
+	 */
+	getSelections(): EditorSelection[] | null;
 
 	/**
 	 * Directly trigger a handler or an editor action.

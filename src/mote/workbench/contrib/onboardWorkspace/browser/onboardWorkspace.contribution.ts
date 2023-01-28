@@ -4,7 +4,7 @@ import { OnboardWorkspacePage } from 'mote/workbench/contrib/onboardWorkspace/br
 import { OnboardWorkspaceInput } from 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspaceInput';
 import { localize } from 'vs/nls';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
 	EditorPaneDescriptor.create(

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { createKeybinding, Keybinding, SimpleKeybinding, ScanCodeBinding } from 'vs/base/common/keybindings';
-import { OperatingSystem, OS } from 'vs/base/common/platform';
+import { KeyCode } from 'mote/base/common/keyCodes';
+import { createKeybinding, Keybinding, SimpleKeybinding, ScanCodeBinding } from 'mote/base/common/keybindings';
+import { OperatingSystem, OS } from 'mote/base/common/platform';
 import { CommandsRegistry, ICommandHandler, ICommandHandlerDescription } from 'mote/platform/commands/common/commands';
-import { ContextKeyExpression } from 'vs/platform/contextkey/common/contextkey';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { ContextKeyExpression } from 'mote/platform/contextkey/common/contextkey';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 export interface IKeybindingItem {
 	keybinding: (SimpleKeybinding | ScanCodeBinding)[];

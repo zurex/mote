@@ -1,7 +1,7 @@
 import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
-import { runWhenIdle } from 'vs/base/common/async';
+import { runWhenIdle } from 'mote/base/common/async';
 import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 
 export namespace WorkbenchExtensions {
 	export const Workbench = 'workbench.contributions.kind';

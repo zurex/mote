@@ -1,14 +1,14 @@
-import * as dom from 'vs/base/browser/dom';
+import * as dom from 'mote/base/browser/dom';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
 import { ViewLines } from 'mote/editor/browser/viewParts/lines/viewLines';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { onUnexpectedError } from 'vs/base/common/errors';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'mote/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
@@ -18,9 +18,18 @@ import { IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/edit
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
-import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { TemplatePicker } from 'mote/editor/browser/viewParts/templatePicker/templatePicker';
+import { IViewModel } from 'mote/editor/common/viewModel';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { IColorTheme } from 'mote/platform/theme/common/themeService';
+import { TextAreaHandler } from 'mote/editor/browser/controller/textAreaHandler';
+import { PointerHandler } from 'mote/editor/browser/controller/pointerHandler';
+import { PointerHandlerLastRenderData } from 'mote/editor/browser/controller/mouseTarget';
+import { IPointerHandlerHelper } from 'mote/editor/browser/controller/mouseHandler';
+import { ViewRenderingContext } from 'mote/editor/browser/view/renderingContext';
+import { ViewCursors } from 'mote/editor/browser/viewParts/viewCursors/viewCursors';
+import { Position } from 'mote/editor/common/core/position';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -31,13 +40,19 @@ export interface IOverlayWidgetData {
 export class EditorView extends ViewEventHandler {
 
 	private readonly context: ViewContext;
+	private selections: EditorSelection[];
 
 	// These are parts, but we must do some API related calls on them, so we keep a reference
 	private readonly viewParts: ViewPart[];
+	private readonly _viewCursors: ViewCursors;
 	private readonly overlayWidgets: ViewOverlayWidgets;
 	private readonly templatePicker: TemplatePicker;
 	private readonly viewLines: ViewLines;
 	private readonly scrollbar: EditorScrollbar;
+	//private readonly editableHandler: EditableHandler;
+
+	private readonly _textAreaHandler: TextAreaHandler;
+	private readonly _pointerHandler: PointerHandler;
 
 	// Dom nodes
 	public readonly domNode: FastDomNode<HTMLElement>;
@@ -48,11 +63,13 @@ export class EditorView extends ViewEventHandler {
 	constructor(
 		configuration: IEditorConfiguration,
 		viewController: ViewController,
+		colorTheme: IColorTheme,
+		model: IViewModel,
 		private readonly pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super();
-
+		this.selections = [new EditorSelection(1, 1, 1, 1)];
 		this.headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
 
 		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
@@ -61,20 +78,24 @@ export class EditorView extends ViewEventHandler {
 		// Make sure content is in the center
 		this.linesContent.domNode.style.display = 'flex';
 		this.linesContent.domNode.style.flexDirection = 'column';
-		this.linesContent.domNode.style.alignItems = 'center';
+		//this.linesContent.domNode.style.alignItems = 'center';
 		this.linesContent.domNode.style.position = 'relative';
 
 		const contentStore = pageStore.getContentStore();
-		const viewLayout = this._register(this.createViewLayout(configuration, 0));
-		viewController.setViewLayout(viewLayout);
-		this.context = new ViewContext(configuration, contentStore, viewLayout, viewController);
+		//viewController.setViewLayout(model.viewLayout);
+		this.context = new ViewContext(colorTheme, configuration, contentStore, model.viewLayout, viewController, model);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);
 
 		this.viewParts = [];
 
+		// Keyboard handler
+		this._textAreaHandler = new TextAreaHandler(this.context, viewController);
+		this.viewParts.push(this._textAreaHandler);
+
 		this.domNode = createFastDomNode(document.createElement('div'));
+		this.domNode.setClassName('mote-editor');
 
 		this.overflowGuardContainer = createFastDomNode(document.createElement('div'));
 		PartFingerprints.write(this.overflowGuardContainer, PartFingerprint.OverflowGuard);
@@ -87,6 +108,10 @@ export class EditorView extends ViewEventHandler {
 		this.viewParts.push(this.templatePicker);
 
 		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, this.linesContent);
+		(model as any).viewLayout.setViewLineLayout(this.viewLines);
+
+		this._viewCursors = new ViewCursors(this.context);
+		this.viewParts.push(this._viewCursors);
 
 		// Overlay widgets
 		this.overlayWidgets = new ViewOverlayWidgets(this.context);
@@ -95,27 +120,76 @@ export class EditorView extends ViewEventHandler {
 		// -------------- Wire dom nodes up
 		this.createHeader(this.linesContent, viewController);
 		this.linesContent.appendChild(this.templatePicker.getDomNode());
+		this.linesContent.appendChild(this._viewCursors.getDomNode());
 		this.linesContent.appendChild(this.viewLines.getDomNode());
 
 		this.overflowGuardContainer.appendChild(this.scrollbar.getDomNode());
+		this.overflowGuardContainer.appendChild(this._textAreaHandler.textArea);
+		this.overflowGuardContainer.appendChild(this._textAreaHandler.textAreaCover);
 		this.overflowGuardContainer.appendChild(this.overlayWidgets.getDomNode());
 
 		this.domNode.appendChild(this.overflowGuardContainer);
 
 		this.applyLayout();
+
+		// Pointer handler
+		this._pointerHandler = this._register(new PointerHandler(this.context, viewController, this._createPointerHandlerHelper()));
+
+	}
+
+	private _createPointerHandlerHelper(): IPointerHandlerHelper {
+		return {
+			viewDomNode: this.domNode.domNode,
+			linesContentDomNode: this.linesContent.domNode,
+			viewLinesDomNode: this.viewLines.getDomNode().domNode,
+
+			focusTextArea: () => {
+				this.focus();
+			},
+
+			dispatchTextAreaEvent: (event: CustomEvent) => {
+				this._textAreaHandler.textArea.domNode.dispatchEvent(event);
+			},
+
+			getLastRenderData: (): PointerHandlerLastRenderData => {
+				const lastViewCursorsRenderData = this._viewCursors.getLastRenderData() || [];
+				const lastTextareaPosition = this._textAreaHandler.getLastRenderData();
+				return new PointerHandlerLastRenderData(lastViewCursorsRenderData, lastTextareaPosition);
+			},
+			renderNow: (): void => {
+				this.render(true, false);
+			},
+
+			getPositionFromDOMInfo: (spanNode: HTMLElement, offset: number) => {
+				this.flushAccumulatedAndRenderNow();
+				return this.viewLines.getPositionFromDOMInfo(spanNode, offset);
+			},
+
+			visibleRangeForPosition: (lineNumber: number, column: number) => {
+				this.flushAccumulatedAndRenderNow();
+				return this.viewLines.visibleRangeForPosition(new Position(lineNumber, column));
+			},
+
+			getLineWidth: (lineNumber: number) => {
+				this.flushAccumulatedAndRenderNow();
+				return this.viewLines.getLineWidth(lineNumber);
+			}
+		} as any;
 	}
 
 	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
 		this.createCover(parent);
 		const headerDomNode = createFastDomNode(dom.$('div'));
 		headerDomNode.setClassName('editor-header view-line');
+		headerDomNode.setAttribute('data-index', '0');
+		headerDomNode.setAttribute('data-block-id', this.pageStore.id);
 		const headerContainer = this.headerContainer;
 
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
 		const viewLineContrib = ViewLineExtensionsRegistry.getViewLineContribution('text')!;
-		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, -1, this.context, viewController, {
+		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, 0, this.context, viewController, {
 			placeholder: 'Untitled', forcePlaceholder: true
 		});
 		headerHandler.setValue(this.pageStore);
@@ -147,6 +221,11 @@ export class EditorView extends ViewEventHandler {
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		//this.domNode.setClassName(this._getEditorClassName());
 		this.applyLayout();
+		return false;
+	}
+
+	public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
+		this.selections = e.selections;
 		return false;
 	}
 
@@ -202,7 +281,13 @@ export class EditorView extends ViewEventHandler {
 			return;
 		}
 
-		const viewportData = new ViewportData();
+		const partialViewportData = this.context.viewLayout.getLinesViewportData();
+		const viewportData = new ViewportData(
+			this.selections,
+			partialViewportData,
+			null as any, //this.context.viewLayout.getWhitespaceViewportData(),
+			this.context.viewModel
+		);
 
 		if (this.viewLines.shouldRender()) {
 			this.viewLines.renderLines(viewportData);
@@ -212,13 +297,15 @@ export class EditorView extends ViewEventHandler {
 			viewPartsToRender = this.getViewPartsToRender();
 		}
 
+		const renderingContext = new ViewRenderingContext(this.context.viewLayout, viewportData, this.viewLines);
+
 		// Render the rest of the parts
 		for (const viewPart of viewPartsToRender) {
-			viewPart.prepareRender();
+			viewPart.prepareRender(renderingContext);
 		}
 
 		for (const viewPart of viewPartsToRender) {
-			viewPart.render();
+			viewPart.render(renderingContext);
 			viewPart.onDidRender();
 		}
 	}
@@ -232,6 +319,14 @@ export class EditorView extends ViewEventHandler {
 			}
 		}
 		return result;
+	}
+
+	public focus(): void {
+		this._textAreaHandler.focusTextArea();
+	}
+
+	public isFocused(): boolean {
+		return this._textAreaHandler.isFocused();
 	}
 
 	getSafePaddingLeftCSS(padding: number) {
@@ -307,10 +402,6 @@ export class EditorView extends ViewEventHandler {
 		this.templatePicker.getDomNode().setWidth(width);
 		this.viewLines.getDomNode().setWidth(width);
 
-	}
-
-	private createViewLayout(configuration: IEditorConfiguration, lineCount: number) {
-		return new ViewLayout(configuration, () => this.viewLines && this.viewLines.getDomNode(), dom.scheduleAtNextAnimationFrame);
 	}
 }
 

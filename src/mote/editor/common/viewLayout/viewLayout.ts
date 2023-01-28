@@ -1,12 +1,11 @@
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { ScrollType } from 'mote/editor/common/editorCommon';
-import { IViewLayout, Viewport } from 'mote/editor/common/viewlayout';
 import { LinesLayout } from 'mote/editor/common/viewLayout/linesLayout';
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
-import { Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'vs/base/common/scrollable';
+import { IPartialViewLinesViewportData, IViewLayout, IViewLineLayout, IViewModel, Viewport } from 'mote/editor/common/viewModel';
+import { Event } from 'mote/base/common/event';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+import { INewScrollPosition, IScrollPosition, Scrollable, ScrollEvent } from 'mote/base/common/scrollable';
 
 class EditorScrollDimensions {
 
@@ -152,13 +151,16 @@ export class ViewLayout extends Disposable implements IViewLayout {
 
 	constructor(
 		private readonly configuration: IEditorConfiguration,
-		private readonly viewLineDomProvider: () => FastDomNode<HTMLElement>,
+		lineCount: number,
 		scheduleAtNextAnimationFrame: (callback: () => void) => IDisposable
 	) {
 		super();
 
 		const options = this.configuration.options;
 		const layoutInfo = options.get(EditorOption.LayoutInfo);
+
+		this.linesLayout = new LinesLayout(lineCount);
+
 		this.scrollable = this._register(new EditorScrollable(0, scheduleAtNextAnimationFrame));
 		this.scrollable.setScrollDimensions(new EditorScrollDimensions(
 			layoutInfo.width,
@@ -169,6 +171,10 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		this.onDidScroll = this.scrollable.onDidScroll;
 
 		this.updateHeight();
+	}
+
+	public setViewLineLayout(viewLineLayout: IViewLineLayout) {
+		this.linesLayout.setViewLineLayout(viewLineLayout);
 	}
 
 	getScrollable(): Scrollable {
@@ -196,18 +202,27 @@ export class ViewLayout extends Disposable implements IViewLayout {
 		}
 	}
 
+	onHeightMaybeChanged() {
+
+	}
+
+	onLinesInserted(fromLineNumber: number, toLineNumber: number) {
+		this.linesLayout.onLinesInserted(fromLineNumber, toLineNumber);
+	}
+
+	onLinesDeleted(fromLineNumber: number, toLineNumber: number) {
+		this.linesLayout.onLinesDeleted(fromLineNumber, toLineNumber);
+	}
+
+	public onFlushed(lineCount: number): void {
+		this.linesLayout.onFlushed(lineCount);
+	}
+
 	//#endregion
 
 	private _getContentHeight(width: number, height: number, contentWidth: number): number {
-		const viewLinesDom = this.viewLineDomProvider();
-		if (viewLinesDom) {
-			if (!this.linesLayout) {
-				this.linesLayout = new LinesLayout(viewLinesDom.domNode);
-				this._register(this.linesLayout.onDidChange(() => this.updateHeight()));
-			}
-			return viewLinesDom.domNode.clientHeight + 300;
-		}
-		return height + 200;
+		const result = this.linesLayout.getLinesTotalHeight();
+		return result + 200;
 	}
 
 	private updateHeight() {
@@ -296,5 +311,30 @@ export class ViewLayout extends Disposable implements IViewLayout {
 			scrollTop: currentScrollPosition.scrollTop + deltaScrollTop
 		});
 	}
+	//#endregion
+
+	//#region lines layout
+
+	public isAfterLines(verticalOffset: number): boolean {
+		return this.linesLayout.isAfterLines(verticalOffset);
+	}
+
+	public getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones: boolean = false): number {
+		return this.linesLayout.getVerticalOffsetForLineNumber(lineNumber, includeViewZones);
+	}
+
+	public getVerticalOffsetAfterLineNumber(lineNumber: number, includeViewZones: boolean = false): number {
+		return this.linesLayout.getVerticalOffsetAfterLineNumber(lineNumber, includeViewZones);
+	}
+
+	public getLineNumberAtVerticalOffset(verticalOffset: number): number {
+		return this.linesLayout.getLineNumberAtOrAfterVerticalOffset(verticalOffset);
+	}
+
+	public getLinesViewportData(): IPartialViewLinesViewportData {
+		const visibleBox = this.getCurrentViewport();
+		return this.linesLayout.getLinesViewportData(visibleBox.top, visibleBox.top + visibleBox.height);
+	}
+
 	//#endregion
 }

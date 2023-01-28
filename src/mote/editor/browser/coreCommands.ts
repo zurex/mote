@@ -2,9 +2,12 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorCommand, registerEditorCommand } from 'mote/editor/browser/editorExtensions';
 import { EditorContextKeys } from 'mote/editor/common/editorContextKeys';
 import { KeybindingWeight } from 'mote/platform/keybinding/common/keybindingsRegistry';
-import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
+import { KeyCode, KeyMod } from 'mote/base/common/keyCodes';
+import { ContextKeyExpr } from 'mote/platform/contextkey/common/contextkey';
 import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { IViewModel } from 'mote/editor/common/viewModel';
+import { DeleteOperations } from 'mote/editor/common/cursor/cursorDeleteOperations';
+import { EditOperationType } from 'mote/editor/common/cursorCommon';
 
 const CORE_WEIGHT = KeybindingWeight.EditorCore;
 
@@ -75,6 +78,57 @@ export namespace CoreEditingCommands {
 			//editor.pushUndoStop();
 			//editor.executeCommands(this.id, TypeOperations.tab(viewModel.cursorConfig, viewModel.model, viewModel.getCursorStates().map(s => s.modelState.selection)));
 			//editor.pushUndoStop();
+		}
+	});
+
+	export const DeleteLeft: EditorCommand = registerEditorCommand(new class extends CoreEditingCommand {
+		constructor() {
+			super({
+				id: 'deleteLeft',
+				precondition: undefined,
+				kbOpts: {
+					weight: CORE_WEIGHT,
+					kbExpr: EditorContextKeys.textInputFocus,
+					primary: KeyCode.Backspace,
+					secondary: [KeyMod.Shift | KeyCode.Backspace],
+					mac: { primary: KeyCode.Backspace, secondary: [KeyMod.Shift | KeyCode.Backspace, KeyMod.WinCtrl | KeyCode.KeyH, KeyMod.WinCtrl | KeyCode.Backspace] }
+				}
+			});
+		}
+
+		public runCoreEditingCommand(editor: IMoteEditor, viewModel: IViewModel, args: unknown): void {
+			const [shouldPushStackElementBefore, commands] = DeleteOperations.deleteLeft(
+				viewModel.getPrevEditOperationType(), viewModel.cursorConfig, viewModel.model,
+				viewModel.getCursorStates().map(s => s.modelState.selection), viewModel.getCursorAutoClosedCharacters());
+			if (shouldPushStackElementBefore) {
+				editor.pushUndoStop();
+			}
+			editor.executeCommands(this.id, commands);
+			viewModel.setPrevEditOperationType(EditOperationType.DeletingLeft);
+		}
+	});
+
+	export const DeleteRight: EditorCommand = registerEditorCommand(new class extends CoreEditingCommand {
+		constructor() {
+			super({
+				id: 'deleteRight',
+				precondition: undefined,
+				kbOpts: {
+					weight: CORE_WEIGHT,
+					kbExpr: EditorContextKeys.textInputFocus,
+					primary: KeyCode.Delete,
+					mac: { primary: KeyCode.Delete, secondary: [KeyMod.WinCtrl | KeyCode.KeyD, KeyMod.WinCtrl | KeyCode.Delete] }
+				}
+			});
+		}
+
+		public runCoreEditingCommand(editor: IMoteEditor, viewModel: IViewModel, args: unknown): void {
+			const [shouldPushStackElementBefore, commands] = DeleteOperations.deleteRight(viewModel.getPrevEditOperationType(), viewModel.cursorConfig, viewModel.model, viewModel.getCursorStates().map(s => s.modelState.selection));
+			if (shouldPushStackElementBefore) {
+				editor.pushUndoStop();
+			}
+			editor.executeCommands(this.id, commands);
+			viewModel.setPrevEditOperationType(EditOperationType.DeletingRight);
 		}
 	});
 

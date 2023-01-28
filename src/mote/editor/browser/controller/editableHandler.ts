@@ -1,16 +1,17 @@
-import * as browser from 'vs/base/browser/browser';
-import * as platform from 'vs/base/common/platform';
+import * as browser from 'mote/base/browser/browser';
+import * as platform from 'mote/base/common/platform';
 import { ClipboardDataToCopy, EditableInput, EditableWrapper, IEditableInputHost } from 'mote/editor/browser/controller/editableInput';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { KeyCode } from 'vs/base/common/keyCodes';
 import { RangeUtils, TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { Color } from 'vs/base/common/color';
+import { Color } from 'mote/base/common/color';
+import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { ViewController } from 'mote/editor/browser/view/viewController';
+import { KeyCode } from 'mote/base/common/keyCodes';
 
 export interface EditableHandlerOptions {
 	placeholder?: string;
@@ -20,7 +21,7 @@ export interface EditableHandlerOptions {
 export interface ICommandDelegate {
 
 	isEmpty(lineNumber: number): boolean;
-	getSelection(): TextSelection;
+	getSelection(): EditorSelection;
 	type(text: string): void;
 	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
 	select(e: TextSelection): void;
@@ -43,11 +44,12 @@ export class EditableHandler extends ViewPart {
 	constructor(
 		private readonly lineNumber: number,
 		context: ViewContext,
-		private readonly command: ICommandDelegate,
+		private readonly viewController: ViewController,
 		private readonly options: EditableHandlerOptions,
+		domNode?: HTMLDivElement,
 	) {
 		super(context);
-		this.editable = createFastDomNode(document.createElement('div'));
+		this.editable = createFastDomNode(domNode ? domNode : document.createElement('div'));
 		this.editable.setAttribute('contenteditable', '');
 
 		const editableInputHost: IEditableInputHost = {
@@ -91,6 +93,10 @@ export class EditableHandler extends ViewPart {
 		}
 	}
 
+	public isFocused(): boolean {
+		return this.editableInput.isFocused();
+	}
+
 	public focusEditable(): void {
 		this.editableInput.focusEditable();
 	}
@@ -105,14 +111,14 @@ export class EditableHandler extends ViewPart {
 
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
-		const selection = this.command.getSelection();
-		if (this.editableInput.isFocused() && selection.startIndex > 0) {
+		const selection = this.viewController.getSelection();
+		if (this.editableInput.isFocused() && selection.startColumn > 0) {
 			this.ensureSelection(selection);
 		}
 	}
 
 	private isEmpty() {
-		return this.command.isEmpty(this.lineNumber);
+		return this.viewController.isEmpty(this.lineNumber);
 	}
 
 	//#region view event handlers
@@ -126,41 +132,46 @@ export class EditableHandler extends ViewPart {
 				if (_debugComposition) {
 					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
-				this.command.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
+				this.viewController.compositionType(e.type, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
 					console.log(` => type: <<${e.type}>>`);
 				}
-				this.command.type(e.text);
+				this.viewController.type(e.type);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
 				this.editable.domNode.style.webkitTextFillColor = '';
 			}
 		}));
+
 		this._register(this.editableInput.onKeyDown((e) => {
+			this.viewController.emitKeyDown(e);
+			if (e.keyCode === KeyCode.Enter) {
+				// a hot fix plan for onType doesn't works well when type enter
+				this.viewController.type('\n');
+				e.preventDefault();
+			}
+			/*
 			const event = e as StandardKeyboardEvent;
-			if (event.equals(KeyCode.Enter)) {
-				if (this.command.enter()) {
-					event.preventDefault();
-				}
-			}
+
 			if (event.equals(KeyCode.Backspace)) {
-				this.command.backspace();
+				this.viewController.backspace();
 			}
+			*/
 		}));
+
 		this._register(this.editableInput.onSelectionChange((e) => {
-			e.lineNumber = this.lineNumber;
-			this.command.select(e);
+			this.viewController.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
 			// wait 10ms for selection change
 			setTimeout(() => {
 				// force focus to set range
 				this.editable.domNode.focus();
-				const selection = this.command.getSelection();
+				const selection = this.viewController.getSelection();
 				// line number less than 0 means view controller not initialized yet
-				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
+				if (selection.startLineNumber >= 0 && selection.startColumn >= 0) {
 					this.ensureSelection(selection);
 				}
 			}, 10);
@@ -172,19 +183,20 @@ export class EditableHandler extends ViewPart {
 					this.editable.domNode.style.webkitTextFillColor = this.textFillColor.toString();
 				}
 			}
+			this.context.viewModel.setHasFocus(true);
 		}));
 		this._register(this.editableInput.onBlur((e) => {
 			if (this.options.placeholder && !(this.options.forcePlaceholder === true)) {
 				this.editable.removeAttribute('placeholder');
 			}
+			this.context.viewModel.setHasFocus(false);
 		}));
 	}
 
-	private ensureSelection(selection: TextSelection) {
-		const rangeFromElement = RangeUtils.create(this.editable.domNode, selection);
-		const rangeFromDocument = RangeUtils.get();
-		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
-			RangeUtils.set(rangeFromElement);
+	public ensureSelection(selection?: EditorSelection) {
+		if (!selection) {
+			selection = this.viewController.getSelection();
 		}
+		this.editableInput.ensureSelection(selection);
 	}
 }

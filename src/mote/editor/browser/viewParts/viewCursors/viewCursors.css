@@ -1,0 +1,15 @@
+.mote-editor .cursors-layer {
+	position: absolute;
+	top: 0;
+}
+
+.mote-editor .cursors-layer > .cursor {
+	position: absolute;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+/* -- smooth-caret-animation -- */
+.mote-editor .cursors-layer.cursor-smooth-caret-animation > .cursor {
+	transition: all 80ms;
+}

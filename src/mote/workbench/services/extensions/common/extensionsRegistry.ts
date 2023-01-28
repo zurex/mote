@@ -5,7 +5,7 @@ import { IJSONSchema } from 'vs/base/common/jsonSchema';
 import Severity from 'vs/base/common/severity';
 import { ExtensionKind } from 'vs/platform/environment/common/environment';
 import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { Registry } from 'mote/platform/registry/common/platform';
 import { EXTENSION_CATEGORIES } from 'mote/platform/extensions/common/extensions';
 import { allApiProposals } from 'mote/workbench/services/extensions/common/extensionsApiProposals';
 import { EXTENSION_IDENTIFIER_PATTERN } from 'vs/platform/extensionManagement/common/extensionManagement';

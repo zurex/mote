@@ -2,7 +2,7 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
+import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
@@ -84,7 +84,7 @@ export class WorkspacesPicker extends Themable implements IMenuLike {
 	private _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur = this._onDidBlur.event;
 
-	private _onDidCancel = this._register(new Emitter<void>({ onFirstListenerAdd: () => this.cancelHasListener = true }));
+	private _onDidCancel = this._register(new Emitter<void>({ onWillAddFirstListener: () => this.cancelHasListener = true }));
 	readonly onDidCancel = this._onDidCancel.event;
 	private cancelHasListener = false;
 
@@ -144,7 +144,7 @@ export class WorkspacesPicker extends Themable implements IMenuLike {
 		btn.style({ buttonHoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
 		btn.setChildren(container);
 		btn.onDidClick(() => {
-			this.editorService.closeEditor();
+			this.editorService.closeActiveEditor();
 			this.workspaceService.enterWorkspace(spaceId);
 			this._onDidBlur.fire();
 		});

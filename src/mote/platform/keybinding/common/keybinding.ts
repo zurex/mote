@@ -1,7 +1,7 @@
-import { Keybinding, ResolvedKeybinding } from 'vs/base/common/keybindings';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Keybinding, ResolvedKeybinding } from 'mote/base/common/keybindings';
+import { KeyCode } from 'mote/base/common/keyCodes';
+import { IContextKeyServiceTarget } from 'mote/platform/contextkey/common/contextkey';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export interface IKeyboardEvent {
 	readonly _standardKeyboardEventBrand: true;
@@ -10,6 +10,7 @@ export interface IKeyboardEvent {
 	readonly shiftKey: boolean;
 	readonly altKey: boolean;
 	readonly metaKey: boolean;
+	readonly altGraphKey: boolean;
 	readonly keyCode: KeyCode;
 	readonly code: string;
 }

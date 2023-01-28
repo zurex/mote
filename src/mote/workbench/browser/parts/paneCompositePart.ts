@@ -1,11 +1,11 @@
-import { Event } from 'vs/base/common/event';
+import { Event } from 'mote/base/common/event';
 import { ActivitybarPart } from 'mote/workbench/browser/parts/activitybar/activitybarPart';
 import { IPaneComposite } from 'mote/workbench/common/panecomposite';
 import { ViewContainerLocation, ViewContainerLocations } from 'mote/workbench/common/views';
 import { IBadge } from 'mote/workbench/services/activity/common/activity';
 import { IPaneCompositePartService } from 'mote/workbench/services/panecomposite/browser/panecomposite';
-import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { assertIsDefined } from 'vs/base/common/types';
+import { Disposable, DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
+import { assertIsDefined } from 'mote/base/common/types';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { ILogService } from 'vs/platform/log/common/log';

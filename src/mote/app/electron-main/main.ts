@@ -31,6 +31,10 @@ import { RequestMainService } from 'mote/platform/request/electron-main/requestM
 import { IStateMainService } from "vs/platform/state/electron-main/state";
 import { StateMainService } from "vs/platform/state/electron-main/stateMainService";
 import { MoteApplication } from "./app";
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { ConfigurationService } from 'mote/platform/configuration/common/configurationService';
+import { IPolicyService, NullPolicyService } from 'mote/platform/policy/common/policy';
+import { URI } from 'vs/base/common/uri';
 
 class MoteMain {
 
@@ -48,7 +52,9 @@ class MoteMain {
 
 		// Startup
 		await instantiationService.invokeFunction(async accessor => {
-			console.log("startup...");
+
+			const logService = accessor.get(ILogService);
+			logService.info("[MoteMain] startup...");
 
 			return instantiationService.createInstance(MoteApplication, instanceEnvironment).startup();
 		});
@@ -78,9 +84,14 @@ class MoteMain {
 		// Logger
 		services.set(ILoggerService, new ConsoleLoggerService(logService));
 
+		// Policy
+		const policyService = new NullPolicyService();
+		services.set(IPolicyService, policyService);
+
 		// Configuration
-		//const configurationService = new ConfigurationService(environmentMainService.settingsResource, fileService);
-		//services.set(IConfigurationService, configurationService);
+		// TODO @zurex use userProfile service
+		const configurationService = new ConfigurationService(URI.file('settings.json'), fileService, policyService, logService);
+		services.set(IConfigurationService, configurationService);
 
 		// Lifecycle
 		services.set(ILifecycleMainService, new SyncDescriptor(LifecycleMainService));
