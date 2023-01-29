@@ -40,6 +40,7 @@ jobs:
           skip_api_build: true
           #app_build_command: "yarn mote-web"
           output_location: '' # Built app content directory - optional
+          production_branch: 'master'
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
