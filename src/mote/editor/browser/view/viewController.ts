@@ -236,7 +236,7 @@ export class ViewController extends Disposable {
 			return;
 		}
 		const contents = this.contentStore.getValue() || [];
-		if (this.selection.lineNumber >= contents.length) {
+		if (this.selection.lineNumber > contents.length) {
 			// Bad case, should we throw a BugIndicatingError here?
 			return;
 		}
