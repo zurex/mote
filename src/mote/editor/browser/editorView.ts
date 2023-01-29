@@ -180,7 +180,7 @@ export class EditorView extends ViewEventHandler {
 	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
 		this.createCover(parent);
 		const headerDomNode = createFastDomNode(dom.$('div'));
-		headerDomNode.setClassName('editor-header view-line');
+		headerDomNode.setAttribute('data-root', 'true');
 		headerDomNode.setAttribute('data-index', '0');
 		headerDomNode.setAttribute('data-block-id', this.pageStore.id);
 		const headerContainer = this.headerContainer;
@@ -196,7 +196,7 @@ export class EditorView extends ViewEventHandler {
 		headerContainer.appendChild(headerHandler.getDomNode());
 
 		this._register(this.pageStore.onDidUpdate(() => {
-			headerHandler.setValue(this.pageStore);
+			//headerHandler.setValue(this.pageStore);
 		}));
 
 		headerDomNode.appendChild(headerContainer);

@@ -217,36 +217,11 @@ export class EditableInput extends Disposable {
 				console.log(`[input]`, e);
 			}
 
-			/*
 			if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') {
 				return;
 			}
-			*/
 
-
-			const newState = EditableState.readFromEditable(this.editable, this.editableState);
-			const typeInput = EditableState.deduceInput(this.editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
-
-			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1) {
-				// one character was typed
-				if (
-					strings.isHighSurrogate(typeInput.text.charCodeAt(0))
-					|| typeInput.text.charCodeAt(0) === 0x7f /* Delete */
-				) {
-					// Ignore invalid input but keep it around for next time
-					return;
-				}
-			}
-
-			this.editableState = newState;
-			if (
-				typeInput.text !== ''
-				|| typeInput.replacePrevCharCnt !== 0
-				|| typeInput.replaceNextCharCnt !== 0
-				|| typeInput.positionDelta !== 0
-			) {
-				this._onType.fire(typeInput);
-			}
+			this._onType.fire({ text: this.editable.getValue() } as any);
 		}));
 
 		this._register(this.editable.onKeyDown((e) => {
@@ -323,15 +298,11 @@ export class EditableInput extends Disposable {
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
 				const newState = EditableState.readFromEditable(this.editable, this.editableState);
-				const typeInput = EditableState.deduceAndroidCompositionInput(this.editableState, newState);
 				this.editableState = newState;
-				this._onType.fire(typeInput);
 				this._onCompositionUpdate.fire(e);
 				return;
 			}
-			const typeInput = currentComposition.handleCompositionUpdate(e.data);
 			this.editableState = EditableState.readFromEditable(this.editable, this.editableState);
-			this._onType.fire(typeInput);
 			this._onCompositionUpdate.fire(e);
 		}));
 
@@ -353,16 +324,13 @@ export class EditableInput extends Disposable {
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
 				const newState = EditableState.readFromEditable(this.editable, this.editableState);
-				const typeInput = EditableState.deduceAndroidCompositionInput(this.editableState, newState);
 				this.editableState = newState;
-				this._onType.fire(typeInput);
+
 				this._onCompositionEnd.fire();
 				return;
 			}
 
-			const typeInput = currentComposition.handleCompositionUpdate(e.data);
 			this.editableState = EditableState.readFromEditable(this.editable, this.editableState);
-			this._onType.fire(typeInput);
 			this._onCompositionEnd.fire();
 		}));
 
@@ -435,11 +403,6 @@ export class EditableInput extends Disposable {
 					this.editableStates[lineNumber] = EditableState.readFromEditable(this.editable, editableState);
 					editableState = this.editableStates[lineNumber];
 				}
-				const newSelectionStart = this.editable.getSelectionStart();
-				const newSelectionEnd = this.editable.getSelectionEnd();
-
-				const _newSelectionStartPosition = editableState.deduceEditorPosition(newSelectionStart);
-				const _newSelectionEndPosition = editableState.deduceEditorPosition(newSelectionEnd);
 
 				this._onSelectionChange.fire(selectionWithOptions.selection);
 			}
@@ -481,17 +444,7 @@ export class EditableInput extends Disposable {
 		}
 	}
 
-	public ensureSelection(selection: EditorSelection) {
-
-		if (this.currentComposition) {
-
-		}
-		const domNode = this.editable.getDomNode();
-		const rangeFromElement = RangeUtils.create(domNode, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
-		const rangeFromDocument = RangeUtils.get();
-		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
-			RangeUtils.set(rangeFromElement);
-		}
+	public ensureSelection(selection: TextSelection) {
 	}
 
 	public override dispose(): void {
