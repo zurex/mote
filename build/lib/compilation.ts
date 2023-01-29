@@ -106,13 +106,7 @@ export function compileTask(src: string, out: string, build: boolean): () => Nod
 
 		const compile = createCompile(src, build, false, false);
 		const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
-		const generator = new MonacoGenerator(false);
-		if (src === 'src') {
-			//generator.execute();
-		}
-
 		return srcPipe
-			//.pipe(generator.stream)
 			.pipe(compile())
 			.pipe(gulp.dest(out));
 	};
@@ -125,12 +119,7 @@ export function watchTask(out: string, build: boolean): () => NodeJS.ReadWriteSt
 
 		const src = gulp.src('src/**', { base: 'src' });
 		const watchSrc = watch('src/**', { base: 'src', readDelay: 200 });
-
-		const generator = new MonacoGenerator(true);
-		generator.execute();
-
 		return watchSrc
-			.pipe(generator.stream)
 			.pipe(util.incremental(compile, src, true))
 			.pipe(gulp.dest(out));
 	};
