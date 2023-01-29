@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as browser from 'mote/base/browser/browser';
-import { IframeUtils } from 'vs/base/browser/iframe';
+import { IframeUtils } from 'mote/base/browser/iframe';
 import * as platform from 'mote/base/common/platform';
 
 export interface IMouseEvent {

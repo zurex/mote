@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { CancellationError } from 'vs/base/common/errors';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable, MutableDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { extUri as defaultExtUri, IExtUri } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { setTimeout0 } from 'vs/base/common/platform';
+import { CancellationToken, CancellationTokenSource } from 'mote/base/common/cancellation';
+import { CancellationError } from 'mote/base/common/errors';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, IDisposable, MutableDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { extUri as defaultExtUri, IExtUri } from 'mote/base/common/resources';
+import { URI } from 'mote/base/common/uri';
+import { setTimeout0 } from 'mote/base/common/platform';
 
 export function isThenable<T>(obj: unknown): obj is Promise<T> {
 	return !!obj && typeof (obj as unknown as Promise<T>).then === 'function';

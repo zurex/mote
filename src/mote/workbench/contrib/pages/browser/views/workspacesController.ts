@@ -6,11 +6,11 @@ import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { WorkspaceHeaderView } from 'mote/workbench/contrib/pages/browser/views/workspaceHeaderView';
 import { WorkspacesPicker } from 'mote/workbench/contrib/pages/browser/views/workspacesPicker';
-import { addDisposableListener, clearNode, EventType } from 'vs/base/browser/dom';
-import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
-import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
-import { IAction, Separator } from 'vs/base/common/actions';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { addDisposableListener, clearNode, EventType } from 'mote/base/browser/dom';
+import { Gesture, EventType as TouchEventType } from 'mote/base/browser/touch';
+import { IMenuOptions } from 'mote/base/browser/ui/menu/menu';
+import { IAction, Separator } from 'mote/base/common/actions';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 
 export class WorkspacesController extends BrowserContextViewBasedService {
 

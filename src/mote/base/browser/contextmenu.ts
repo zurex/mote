@@ -1,4 +1,4 @@
-import { IAction, IActionRunner } from 'vs/base/common/actions';
+import { IAction, IActionRunner } from 'mote/base/common/actions';
 
 export interface IContextMenuEvent {
 	readonly shiftKey?: boolean;

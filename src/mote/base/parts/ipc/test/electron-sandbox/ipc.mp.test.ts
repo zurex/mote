@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { Client as MessagePortClient } from 'vs/base/parts/ipc/browser/ipc.mp';
+import { Client as MessagePortClient } from 'mote/base/parts/ipc/browser/ipc.mp';
 
 suite('IPC, MessagePorts', () => {
 

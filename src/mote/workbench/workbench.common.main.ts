@@ -1,4 +1,4 @@
-import 'vs/css!./workbench.common.main';
+import 'mote/css!./workbench.common.main';
 
 //#region --- editor/workbench core
 
@@ -37,20 +37,16 @@ import 'mote/workbench/services/keybinding/browser/keybindingService';
 //#endregion
 
 
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { ContextViewService } from 'mote/platform/contextview/browser/contextViewService';
-//import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
-import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
-import { BrowserHostColorSchemeService } from 'mote/platform/theme/browser/browserHostColorSchemeService';
 import { IStoreService } from 'mote/platform/store/common/store';
 import { StoreService } from 'mote/platform/store/common/storeService';
 
 
-registerSingleton(IContextViewService, ContextViewService, true);
-registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
-registerSingleton(IStoreService, StoreService);
-registerSingleton(IContextKeyService, ContextKeyService, true);
+registerSingleton(IContextViewService, ContextViewService, InstantiationType.Delayed);
+registerSingleton(IStoreService, StoreService, InstantiationType.Delayed);
+registerSingleton(IContextKeyService, ContextKeyService, InstantiationType.Delayed);
 
 
 

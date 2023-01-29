@@ -1,6 +1,6 @@
-import { Event } from 'vs/base/common/event';
+import { Event } from 'mote/base/common/event';
 import { IDimension } from 'mote/editor/common/core/dimension';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'mote/base/common/lifecycle';
 import { ConfigurationChangedEvent, IComputedEditorOptions } from 'mote/editor/common/config/editorOptions';
 
 export interface IEditorConfiguration extends IDisposable {

@@ -7,15 +7,15 @@
 import type { Server as NetServer, Socket } from 'net';
 // import { tmpdir } from 'os';
 import type * as zlib from 'zlib';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { join } from 'vs/base/common/path';
-import { Platform, platform } from 'vs/base/common/platform';
-import { generateUuid } from 'vs/base/common/uuid';
-import { ClientConnectionEvent, IPCServer } from 'vs/base/parts/ipc/common/ipc';
-import { ChunkStream, Client, ISocket, Protocol, SocketCloseEvent, SocketCloseEventType, SocketDiagnostics, SocketDiagnosticsEventType } from 'vs/base/parts/ipc/common/ipc.net';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { onUnexpectedError } from 'mote/base/common/errors';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+import { join } from 'mote/base/common/path';
+import { Platform, platform } from 'mote/base/common/platform';
+import { generateUuid } from 'mote/base/common/uuid';
+import { ClientConnectionEvent, IPCServer } from 'mote/base/parts/ipc/common/ipc';
+import { ChunkStream, Client, ISocket, Protocol, SocketCloseEvent, SocketCloseEventType, SocketDiagnostics, SocketDiagnosticsEventType } from 'mote/base/parts/ipc/common/ipc.net';
 
 // TODO@bpasero remove me once electron utility process has landed
 function getNodeDependencies() {

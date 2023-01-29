@@ -5,7 +5,7 @@
 
 import { IDimension } from 'mote/base/browser/dom';
 import { Event } from 'mote/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const ILayoutService = createDecorator<ILayoutService>('layoutService');
 

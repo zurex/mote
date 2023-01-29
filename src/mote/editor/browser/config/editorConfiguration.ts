@@ -1,14 +1,14 @@
-import * as objects from 'vs/base/common/objects';
-import * as browser from 'vs/base/browser/browser';
-import * as arrays from 'vs/base/common/arrays';
-import * as platform from 'vs/base/common/platform';
+import * as objects from 'mote/base/common/objects';
+import * as browser from 'mote/base/browser/browser';
+import * as arrays from 'mote/base/common/arrays';
+import * as platform from 'mote/base/common/platform';
 import { ElementSizeObserver } from 'mote/editor/browser/config/elementSizeObserver';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { ConfigurationChangedEvent, EditorOption, editorOptionsRegistry, FindComputedEditorOptionValueById, IComputedEditorOptions, IEditorOptions, IEnvironmentalOptions } from 'mote/editor/common/config/editorOptions';
 import { IDimension } from 'mote/editor/common/core/dimension';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { BareFontInfo, FontInfo, IValidatedEditorOptions } from 'mote/editor/common/config/fontInfo';
-import { Emitter, Event } from 'vs/base/common/event';
+import { Emitter, Event } from 'mote/base/common/event';
 import { FontMeasurements } from 'mote/editor/browser/config/fontMeasurements';
 
 export interface IEditorConstructionOptions extends IEditorOptions {
@@ -117,8 +117,6 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 			// nothing changed!
 			return;
 		}
-
-		console.log('changeEvent:', newOptions);
 
 		this.options = newOptions;
 		this._onDidChangeFast.fire(changeEvent);

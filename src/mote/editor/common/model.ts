@@ -9,7 +9,7 @@ import { IModelContentChange, IModelContentChangedEvent, InternalModelContentCha
 import { ITokenizationTextModelPart } from 'mote/editor/common/tokenizationTextModelPart';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { UndoRedoGroup } from 'mote/platform/undoRedo/common/undoRedo';
-import { URI } from 'vs/base/common/uri';
+import { URI } from 'mote/base/common/uri';
 
 export const enum PositionAffinity {
 	/**
@@ -130,6 +130,8 @@ export interface ITextModel {
 	 * Gets the resource associated with this editor model.
 	 */
 	readonly uri: URI;
+
+	isEmpty(): boolean;
 
 	/**
 	 * Get the current version id of the model.

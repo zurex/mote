@@ -7,34 +7,35 @@ import { IProtocolMainService } from "mote/platform/protocol/electron-main/proto
 import { ProtocolMainService } from "mote/platform/protocol/electron-main/protocolMainService";
 import { IRequestService } from 'mote/platform/request/common/request';
 import { IThemeMainService, ThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
-import { coalesce, distinct } from "vs/base/common/arrays";
-import { IPathWithLineAndColumn, isValidBasename, parseLineAndColumnAware, sanitizeFilePath } from "vs/base/common/extpath";
-import { basename, resolve } from "vs/base/common/path";
-import { IProcessEnvironment, isMacintosh, isWindows } from "vs/base/common/platform";
-import { cwd } from "vs/base/common/process";
-import { rtrim, trim } from "vs/base/common/strings";
-import { NativeParsedArgs } from "vs/platform/environment/common/argv";
-import { EnvironmentMainService, IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
-import { addArg, parseMainProcessArgv } from "vs/platform/environment/node/argvHelper";
-import { createWaitMarkerFile } from "vs/platform/environment/node/wait";
-import { IFileService } from "vs/platform/files/common/files";
-import { FileService } from "vs/platform/files/common/fileService";
-import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { ConsoleMainLogger, ILoggerService, ILogService, LogLevel, LogService } from "vs/platform/log/common/log";
-import product from "vs/platform/product/common/product";
-import { IProductService } from "vs/platform/product/common/productService";
+import { coalesce, distinct } from "mote/base/common/arrays";
+import { IPathWithLineAndColumn, isValidBasename, parseLineAndColumnAware, sanitizeFilePath } from "mote/base/common/extpath";
+import { basename, resolve } from "mote/base/common/path";
+import { IProcessEnvironment, isMacintosh, isWindows } from "mote/base/common/platform";
+import { cwd } from "mote/base/common/process";
+import { rtrim, trim } from "mote/base/common/strings";
+import { NativeParsedArgs } from "mote/platform/environment/common/argv";
+import { EnvironmentMainService, IEnvironmentMainService } from "mote/platform/environment/electron-main/environmentMainService";
+import { addArg, parseMainProcessArgv } from "mote/platform/environment/node/argvHelper";
+import { createWaitMarkerFileSync } from "mote/platform/environment/node/wait";
+import { IFileService } from "mote/platform/files/common/files";
+import { FileService } from "mote/platform/files/common/fileService";
+import { DiskFileSystemProvider } from "mote/platform/files/node/diskFileSystemProvider";
+import { SyncDescriptor } from "mote/platform/instantiation/common/descriptors";
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { InstantiationService } from "mote/platform/instantiation/common/instantiationService";
+import { ServiceCollection } from "mote/platform/instantiation/common/serviceCollection";
+import { ConsoleMainLogger, ILoggerService, ILogService, LogLevel } from "mote/platform/log/common/log";
+import product from "mote/platform/product/common/product";
+import { IProductService } from "mote/platform/product/common/productService";
 import { RequestMainService } from 'mote/platform/request/electron-main/requestMainService';
-import { IStateMainService } from "vs/platform/state/electron-main/state";
-import { StateMainService } from "vs/platform/state/electron-main/stateMainService";
-import { MoteApplication } from "./app";
+import { IStateMainService } from "mote/platform/state/electron-main/state";
+import { StateMainService } from "mote/platform/state/electron-main/stateMainService";
+import { MoteApplication } from "mote/app/electron-main/app";
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { ConfigurationService } from 'mote/platform/configuration/common/configurationService';
 import { IPolicyService, NullPolicyService } from 'mote/platform/policy/common/policy';
-import { URI } from 'vs/base/common/uri';
+import { URI } from 'mote/base/common/uri';
+import { LogService } from 'mote/platform/log/common/logService';
 
 class MoteMain {
 
@@ -142,7 +143,7 @@ class MoteMain {
 		// Note: we are not doing this if the wait marker has been already
 		// added as argument. This can happen if Code was started from CLI.
 		if (args.wait && !args.waitMarkerFilePath) {
-			const waitMarkerFilePath = createWaitMarkerFile(args.verbose);
+			const waitMarkerFilePath = createWaitMarkerFileSync(args.verbose);
 			if (waitMarkerFilePath) {
 				addArg(process.argv, '--waitMarkerFilePath', waitMarkerFilePath);
 				args.waitMarkerFilePath = waitMarkerFilePath;

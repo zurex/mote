@@ -1,7 +1,7 @@
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { CursorChangeReason } from 'mote/editor/common/cursorEvents';
-import { ScrollEvent } from 'vs/base/common/scrollable';
+import { ScrollEvent } from 'mote/base/common/scrollable';
 import { ScrollType } from 'mote/editor/common/editorCommon';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 

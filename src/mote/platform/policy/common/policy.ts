@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStringDictionary } from 'vs/base/common/collections';
+import { IStringDictionary } from 'mote/base/common/collections';
 import { Emitter, Event } from 'mote/base/common/event';
-import { Iterable } from 'vs/base/common/iterator';
+import { Iterable } from 'mote/base/common/iterator';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 

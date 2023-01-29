@@ -1,10 +1,10 @@
-import * as glob from 'vs/base/common/glob';
+import * as glob from 'mote/base/common/glob';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { EditorInputFactory, IEditorResolverService, RegisteredEditorInfo } from 'mote/workbench/services/editor/common/editorResolverService';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { insert } from 'vs/base/common/arrays';
+import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { insert } from 'mote/base/common/arrays';
 
 interface RegisteredEditor {
 	globPattern: string | glob.IRelativePattern;

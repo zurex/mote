@@ -1,4 +1,4 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { ColorDefaults, ColorIdentifier, getColorRegistry, transparent } from 'mote/platform/theme/common/colorRegistry';
 import { ThemedColors, ThemedStyles } from 'mote/base/common/themes';
 import { Color } from 'mote/base/common/color';

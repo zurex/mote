@@ -3,10 +3,10 @@ import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneCo
 import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
 
-import { localize } from 'vs/nls';
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ILogService } from 'vs/platform/log/common/log';
+import { localize } from 'mote/nls';
+import { SyncDescriptor } from 'mote/platform/instantiation/common/descriptors';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { ILogService } from 'mote/platform/log/common/log';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { FILES_VIEWLET_ID } from '../common/files';
 import { Disposable } from 'mote/base/common/lifecycle';
@@ -17,7 +17,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { WorkspacesController } from 'mote/workbench/contrib/pages/browser/views/workspacesController';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
-import { Codicon } from 'vs/base/common/codicons';
+import { Codicon } from 'mote/base/common/codicons';
 
 const explorerViewIcon = registerIcon('explorer-view-icon', Codicon.files, localize('explorerViewIcon', 'View icon of the explorer view.'));
 

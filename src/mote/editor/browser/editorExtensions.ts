@@ -4,10 +4,10 @@ import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { CommandsRegistry, ICommandHandlerDescription } from 'mote/platform/commands/common/commands';
 import { IKeybindings, KeybindingsRegistry } from 'mote/platform/keybinding/common/keybindingsRegistry';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
-import { withNullAsUndefined } from 'vs/base/common/types';
-import { MenuId } from 'vs/platform/actions/common/actions';
+import { withNullAsUndefined } from 'mote/base/common/types';
+import { MenuId } from 'mote/platform/actions/common/actions';
 import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
-import { BrandedService, IConstructorSignature, ServicesAccessor as InstantiationServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { BrandedService, IConstructorSignature, ServicesAccessor as InstantiationServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 export type ServicesAccessor = InstantiationServicesAccessor;

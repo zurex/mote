@@ -5,17 +5,17 @@
 
 import { IWorkbench, IWorkbenchConstructionOptions, Menu } from 'mote/workbench/browser/web.api';
 import { BrowserMain } from 'mote/workbench/browser/web.main';
-import { URI } from 'vs/base/common/uri';
-import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-import { mark } from 'vs/base/common/performance';
-import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
-import { DeferredPromise } from 'vs/base/common/async';
-import { asArray } from 'vs/base/common/arrays';
-import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress';
-import { IObservableValue } from 'vs/base/common/observableValue';
-import { TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
-import { LogLevel } from 'vs/platform/log/common/log';
+import { URI } from 'mote/base/common/uri';
+import { IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { CommandsRegistry } from 'mote/platform/commands/common/commands';
+import { mark } from 'mote/base/common/performance';
+import { MenuId, MenuRegistry } from 'mote/platform/actions/common/actions';
+import { DeferredPromise } from 'mote/base/common/async';
+import { asArray } from 'mote/base/common/arrays';
+import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from 'mote/platform/progress/common/progress';
+import { IObservableValue } from 'mote/base/common/observableValue';
+import { TelemetryLevel } from 'mote/platform/telemetry/common/telemetry';
+import { LogLevel } from 'mote/platform/log/common/log';
 
 let created = false;
 const workbenchPromise = new DeferredPromise<IWorkbench>();

@@ -1,6 +1,6 @@
 import { ICredentialsChangeEvent, ICredentialsProvider, ICredentialsService } from 'mote/platform/credentials/common/credentials';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { Emitter } from 'vs/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { Emitter } from 'mote/base/common/event';
 
 export class BrowserCredentialsService extends Disposable implements ICredentialsService {
 	declare readonly _serviceBrand: undefined;

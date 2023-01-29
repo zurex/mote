@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LogService, ConsoleLogger, MultiplexLogService, ILogger, LogLevel } from 'vs/platform/log/common/log';
-import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
-import { LogLevelChannelClient, FollowerLogService, LoggerChannelClient } from 'vs/platform/log/common/logIpc';
-import { DisposableStore } from 'vs/base/common/lifecycle';
+import { LogService, ConsoleLogger, MultiplexLogService, ILogger, LogLevel } from 'mote/platform/log/common/log';
+import { INativeWorkbenchEnvironmentService } from 'mote/workbench/services/environment/electron-sandbox/environmentService';
+import { LogLevelChannelClient, FollowerLogService, LoggerChannelClient } from 'mote/platform/log/common/logIpc';
+import { DisposableStore } from 'mote/base/common/lifecycle';
 
 export class NativeLogService extends LogService {
 

@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getRandomElement } from 'vs/base/common/arrays';
-import { CancelablePromise, createCancelablePromise, timeout } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { memoize } from 'vs/base/common/decorators';
-import * as errors from 'vs/base/common/errors';
+import { getRandomElement } from 'mote/base/common/arrays';
+import { CancelablePromise, createCancelablePromise, timeout } from 'mote/base/common/async';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { CancellationToken, CancellationTokenSource } from 'mote/base/common/cancellation';
+import { memoize } from 'mote/base/common/decorators';
+import * as errors from 'mote/base/common/errors';
 import { Emitter, Event, EventMultiplexer, Relay } from 'mote/base/common/event';
 import { combinedDisposable, DisposableStore, dispose, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { revive } from 'vs/base/common/marshalling';
+import { revive } from 'mote/base/common/marshalling';
 import * as strings from 'mote/base/common/strings';
-import { isFunction, isUndefinedOrNull } from 'vs/base/common/types';
+import { isFunction, isUndefinedOrNull } from 'mote/base/common/types';
 
 /**
  * An `IChannel` is an abstraction over a collection of commands.

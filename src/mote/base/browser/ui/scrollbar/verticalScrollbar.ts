@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { StandardWheelEvent } from 'vs/base/browser/mouseEvent';
-import { AbstractScrollbar, ISimplifiedPointerEvent, ScrollbarHost } from 'vs/base/browser/ui/scrollbar/abstractScrollbar';
-import { ScrollableElementResolvedOptions } from 'vs/base/browser/ui/scrollbar/scrollableElementOptions';
-import { ARROW_IMG_SIZE } from 'vs/base/browser/ui/scrollbar/scrollbarArrow';
-import { ScrollbarState } from 'vs/base/browser/ui/scrollbar/scrollbarState';
-import { Codicon } from 'vs/base/common/codicons';
-import { INewScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from 'vs/base/common/scrollable';
+import { StandardWheelEvent } from 'mote/base/browser/mouseEvent';
+import { AbstractScrollbar, ISimplifiedPointerEvent, ScrollbarHost } from 'mote/base/browser/ui/scrollbar/abstractScrollbar';
+import { ScrollableElementResolvedOptions } from 'mote/base/browser/ui/scrollbar/scrollableElementOptions';
+import { ARROW_IMG_SIZE } from 'mote/base/browser/ui/scrollbar/scrollbarArrow';
+import { ScrollbarState } from 'mote/base/browser/ui/scrollbar/scrollbarState';
+import { Codicon } from 'mote/base/common/codicons';
+import { INewScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from 'mote/base/common/scrollable';
 
 
 

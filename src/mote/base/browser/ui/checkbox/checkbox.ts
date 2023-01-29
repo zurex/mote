@@ -1,7 +1,7 @@
-import { addDisposableListener, EventHelper, EventType } from 'vs/base/browser/dom';
-import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
-import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { addDisposableListener, EventHelper, EventType } from 'mote/base/browser/dom';
+import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
+import { Gesture, EventType as TouchEventType } from 'mote/base/browser/touch';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 
 
 export interface ICheckBox extends IDisposable {

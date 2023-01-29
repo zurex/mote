@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IdleValue } from 'vs/base/common/async';
+import { IdleValue } from 'mote/base/common/async';
 import { Event } from 'mote/base/common/event';
-import { illegalState } from 'vs/base/common/errors';
+import { illegalState } from 'mote/base/common/errors';
 import { toDisposable } from 'mote/base/common/lifecycle';
 import { SyncDescriptor, SyncDescriptor0 } from 'mote/platform/instantiation/common/descriptors';
 import { Graph } from 'mote/platform/instantiation/common/graph';
 import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor, _util } from 'mote/platform/instantiation/common/instantiation';
 import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
-import { LinkedList } from 'vs/base/common/linkedList';
+import { LinkedList } from 'mote/base/common/linkedList';
 
 // TRACING
 const _enableAllTracing = false

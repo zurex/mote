@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
-import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget, IHoverWidget } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { TimeoutTimer } from 'vs/base/common/async';
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { IMarkdownString, isMarkdownString } from 'vs/base/common/htmlContent';
-import { stripIcons } from 'vs/base/common/iconLabels';
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { isFunction, isString } from 'vs/base/common/types';
-import { localize } from 'vs/nls';
+import * as dom from 'mote/base/browser/dom';
+import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
+import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget, IHoverWidget } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
+import { TimeoutTimer } from 'mote/base/common/async';
+import { CancellationToken, CancellationTokenSource } from 'mote/base/common/cancellation';
+import { IMarkdownString, isMarkdownString } from 'mote/base/common/htmlContent';
+import { stripIcons } from 'mote/base/common/iconLabels';
+import { DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
+import { isFunction, isString } from 'mote/base/common/types';
+import { localize } from 'mote/nls';
 
 export interface ITooltipMarkdownString {
 	markdown: IMarkdownString | string | undefined | ((token: CancellationToken) => Promise<IMarkdownString | string | undefined>);

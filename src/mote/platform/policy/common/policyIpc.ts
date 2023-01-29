@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStringDictionary } from 'vs/base/common/collections';
+import { IStringDictionary } from 'mote/base/common/collections';
 import { Event } from 'mote/base/common/event';
 import { DisposableStore } from 'mote/base/common/lifecycle';
 import { IChannel, IServerChannel } from 'mote/base/parts/ipc/common/ipc';

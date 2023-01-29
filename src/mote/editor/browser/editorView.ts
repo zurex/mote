@@ -6,15 +6,15 @@ import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser
 import { ViewLines } from 'mote/editor/browser/viewParts/lines/viewLines';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { onUnexpectedError } from 'vs/base/common/errors';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { onUnexpectedError } from 'mote/base/common/errors';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { ViewOverlayWidgets } from 'mote/editor/browser/viewParts/overlayWidgets/overlayWidgets';
-import { IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/editorBrowser';
+import { IMouseTarget, IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/editorBrowser';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
@@ -30,6 +30,7 @@ import { IPointerHandlerHelper } from 'mote/editor/browser/controller/mouseHandl
 import { ViewRenderingContext } from 'mote/editor/browser/view/renderingContext';
 import { ViewCursors } from 'mote/editor/browser/viewParts/viewCursors/viewCursors';
 import { Position } from 'mote/editor/common/core/position';
+import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -273,8 +274,6 @@ export class EditorView extends ViewEventHandler {
 		}
 
 		let viewPartsToRender = this.getViewPartsToRender();
-
-
 		if (!this.viewLines.shouldRender() && viewPartsToRender.length === 0) {
 			// Nothing to render
 			return;
@@ -319,6 +318,18 @@ export class EditorView extends ViewEventHandler {
 		}
 		return result;
 	}
+
+	//#region MoteEditor helper
+
+	public getTargetAtClientPoint(clientX: number, clientY: number): IMouseTarget | null {
+		const mouseTarget = this._pointerHandler.getTargetAtClientPoint(clientX, clientY);
+		if (!mouseTarget) {
+			return null;
+		}
+		return ViewUserInputEvents.convertViewToModelMouseTarget(mouseTarget, this.context.viewModel.coordinatesConverter);
+	}
+
+	//#endregion
 
 	public focus(): void {
 		this._textAreaHandler.focusTextArea();

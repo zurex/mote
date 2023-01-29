@@ -1,5 +1,5 @@
 import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IRemoteService = createDecorator<IRemoteService>('remoteService');
 

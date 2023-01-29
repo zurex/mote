@@ -3,10 +3,10 @@
  *  Licensed under the GPLV3 License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as strings from 'vs/base/common/strings';
-import { Position } from 'vs/editor/common/core/position';
-import { Range } from 'vs/editor/common/core/range';
-import { EndOfLinePreference } from 'vs/editor/common/model';
+import * as strings from 'mote/base/common/strings';
+import { Position } from 'mote/editor/common/core/position';
+import { EditorRange } from 'mote/editor/common/core/editorRange';
+import { EndOfLinePreference } from 'mote/editor/common/model';
 
 export const _debugComposition = false;
 
@@ -22,8 +22,8 @@ export interface ITextAreaWrapper {
 export interface ISimpleModel {
 	getLineCount(): number;
 	getLineMaxColumn(lineNumber: number): number;
-	getValueInRange(range: Range, eol: EndOfLinePreference): string;
-	getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
+	getValueInRange(range: EditorRange, eol: EndOfLinePreference): string;
+	getValueLengthInRange(range: EditorRange, eol: EndOfLinePreference): number;
 	modifyPosition(position: Position, offset: number): Position;
 }
 
@@ -45,7 +45,7 @@ export class TextAreaState {
 		/** the offset where selection ends inside `value` */
 		public readonly selectionEnd: number,
 		/** the editor range in the view coordinate system that matches the selection inside `value` */
-		public readonly selection: Range | null,
+		public readonly selection: EditorRange | null,
 		/** the visible line count (wrapped, not necessarily matching \n characters) for the text in `value` before `selectionStart` */
 		public readonly newlineCountBeforeSelection: number | undefined,
 	) { }
@@ -230,14 +230,14 @@ export class PagedScreenReaderStrategy {
 		return Math.floor((lineNumber - 1) / linesPerPage);
 	}
 
-	private static _getRangeForPage(page: number, linesPerPage: number): Range {
+	private static _getRangeForPage(page: number, linesPerPage: number): EditorRange {
 		const offset = page * linesPerPage;
 		const startLineNumber = offset + 1;
 		const endLineNumber = offset + linesPerPage;
-		return new Range(startLineNumber, 1, endLineNumber + 1, 1);
+		return new EditorRange(startLineNumber, 1, endLineNumber + 1, 1);
 	}
 
-	public static fromEditorSelection(model: ISimpleModel, selection: Range, linesPerPage: number, trimLongText: boolean): TextAreaState {
+	public static fromEditorSelection(model: ISimpleModel, selection: EditorRange, linesPerPage: number, trimLongText: boolean): TextAreaState {
 		// Chromium handles very poorly text even of a few thousand chars
 		// Cut text to avoid stalling the entire UI
 		const LIMIT_CHARS = 500;
@@ -248,19 +248,19 @@ export class PagedScreenReaderStrategy {
 		const selectionEndPage = PagedScreenReaderStrategy._getPageOfLine(selection.endLineNumber, linesPerPage);
 		const selectionEndPageRange = PagedScreenReaderStrategy._getRangeForPage(selectionEndPage, linesPerPage);
 
-		let pretextRange = selectionStartPageRange.intersectRanges(new Range(1, 1, selection.startLineNumber, selection.startColumn))!;
+		let pretextRange = selectionStartPageRange.intersectRanges(new EditorRange(1, 1, selection.startLineNumber, selection.startColumn))!;
 		if (trimLongText && model.getValueLengthInRange(pretextRange, EndOfLinePreference.LF) > LIMIT_CHARS) {
 			const pretextStart = model.modifyPosition(pretextRange.getEndPosition(), -LIMIT_CHARS);
-			pretextRange = Range.fromPositions(pretextStart, pretextRange.getEndPosition());
+			pretextRange = EditorRange.fromPositions(pretextStart, pretextRange.getEndPosition());
 		}
 		const pretext = model.getValueInRange(pretextRange, EndOfLinePreference.LF);
 
 		const lastLine = model.getLineCount();
 		const lastLineMaxColumn = model.getLineMaxColumn(lastLine);
-		let posttextRange = selectionEndPageRange.intersectRanges(new Range(selection.endLineNumber, selection.endColumn, lastLine, lastLineMaxColumn))!;
+		let posttextRange = selectionEndPageRange.intersectRanges(new EditorRange(selection.endLineNumber, selection.endColumn, lastLine, lastLineMaxColumn))!;
 		if (trimLongText && model.getValueLengthInRange(posttextRange, EndOfLinePreference.LF) > LIMIT_CHARS) {
 			const posttextEnd = model.modifyPosition(posttextRange.getStartPosition(), LIMIT_CHARS);
-			posttextRange = Range.fromPositions(posttextRange.getStartPosition(), posttextEnd);
+			posttextRange = EditorRange.fromPositions(posttextRange.getStartPosition(), posttextEnd);
 		}
 		const posttext = model.getValueInRange(posttextRange, EndOfLinePreference.LF);
 

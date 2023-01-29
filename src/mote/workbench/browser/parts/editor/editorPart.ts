@@ -2,14 +2,14 @@ import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/b
 import { $, Dimension, isAncestor } from 'mote/base/browser/dom';
 import { Emitter, Event, Relay } from 'mote/base/common/event';
 import { Part } from 'mote/workbench/browser/part';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { EditorInputWithOptions, GroupIdentifier, GroupModelChangeKind, IEditorPartOptions, IEditorPartOptionsChangeEvent } from 'mote/workbench/common/editor';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { assertIsDefined } from 'mote/base/common/types';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { EmptyHolder } from './emptyHolder';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { contrastBorder, editorBackground } from 'mote/platform/theme/common/themeColors';
@@ -164,6 +164,9 @@ export class EditorPart extends Part implements IEditorGroupsService, IEditorGro
 
 	private readonly whenReadyPromise = new DeferredPromise<void>();
 	readonly whenReady = this.whenReadyPromise.p;
+
+	private readonly whenRestoredPromise = new DeferredPromise<void>();
+	readonly whenRestored = this.whenRestoredPromise.p;
 
 	private shouldRestoreFocus(target: Element | undefined): boolean {
 		if (!target) {

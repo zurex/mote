@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserFeatures } from 'vs/base/browser/canIUse';
-import * as DOM from 'vs/base/browser/dom';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import * as platform from 'vs/base/common/platform';
-import { Range } from 'vs/base/common/range';
-import 'vs/css!./contextview';
+import { BrowserFeatures } from 'mote/base/browser/canIUse';
+import * as DOM from 'mote/base/browser/dom';
+import { Disposable, DisposableStore, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import * as platform from 'mote/base/common/platform';
+import { Range } from 'mote/base/common/range';
+import 'mote/css!./contextview';
 
 export const enum ContextViewDOMPosition {
 	ABSOLUTE = 1,

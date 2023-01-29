@@ -1,6 +1,7 @@
-import 'vs/css!./media/activitybarpart';
+import 'mote/css!./media/activitybarpart';
+import { ThemeIcon } from 'mote/base/common/themables';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { IColorTheme, IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { Part } from 'mote/workbench/browser/part';
 import { PlaceHolderToggleCompositePinnedAction, PlaceHolderViewContainerActivityAction, ViewContainerActivityAction } from 'mote/workbench/browser/parts/activitybar/activitybarActions';
 import { IActivityHoverOptions, ICompositeBarColors, ToggleCompositePinnedAction } from 'mote/workbench/browser/parts/compositeBarAction';
@@ -10,16 +11,16 @@ import { IBadge } from 'mote/workbench/services/activity/common/activity';
 import { IWorkbenchLayoutService, Parts, Position } from 'mote/workbench/services/layout/browser/layoutService';
 import { DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
 import { assertIsDefined, isString } from 'mote/base/common/types';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { URI, UriComponents } from 'mote/base/common/uri';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { CompositeBar } from 'mote/workbench/browser/parts/compositeBar';
 import { IActivity } from 'mote/workbench/common/activity';
-import { asCSSUrl, createCSSRule, Dimension } from 'vs/base/browser/dom';
-import { StringSHA1 } from 'vs/base/common/hash';
-import { ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
+import { asCSSUrl, createCSSRule, Dimension } from 'mote/base/browser/dom';
+import { StringSHA1 } from 'mote/base/common/hash';
+import { ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
 import { ACTIVITY_BAR_ACTIVE_BACKGROUND, ACTIVITY_BAR_ACTIVE_BORDER, ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND, ACTIVITY_BAR_DRAG_AND_DROP_BORDER, ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_INACTIVE_FOREGROUND } from 'mote/workbench/common/theme';
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
+import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
 
 interface IPlaceholderViewContainer {
 	readonly id: string;

@@ -60,7 +60,7 @@ export const isTextBufferElement = function (e: any) {
 
 export function isContentEditable(e: Node) {
 	try {
-		const t: any = getElementInParent(e, (e: any) => Boolean(e.getAttribute && e.getAttribute("contenteditable")) || isDataRootElement(e));
+		const t: any = getElementInParent(e as Element, (e: any) => Boolean(e.getAttribute && e.getAttribute("contenteditable")) || isDataRootElement(e));
 		return t && t['isContentEditable'];
 	} catch (t) {
 		return false;

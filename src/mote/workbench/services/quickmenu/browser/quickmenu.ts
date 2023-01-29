@@ -1,8 +1,8 @@
 import { AnchorAlignment, AnchorAxisAlignment } from 'mote/base/browser/ui/contextview/contextview';
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { TextSelectionState } from 'mote/editor/common/core/selectionUtils';
-import { IAction, IActionRunner } from 'vs/base/common/actions';
-import { BrandedService, createDecorator, IConstructorSignature } from 'vs/platform/instantiation/common/instantiation';
+import { IAction, IActionRunner } from 'mote/base/common/actions';
+import { BrandedService, createDecorator, IConstructorSignature } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 export interface IQuickMenuOptions {

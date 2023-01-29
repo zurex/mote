@@ -285,8 +285,7 @@ export class CaffeineError extends Error {
 	constructor(
 		message: string,
 		public readonly code: number,
-		options?: ErrorOptions
 	) {
-		super(message, options);
+		super(message);
 	}
 }

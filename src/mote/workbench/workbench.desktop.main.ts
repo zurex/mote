@@ -29,11 +29,11 @@ import 'mote/workbench/electron-sandbox/desktop.main';
 
 import 'mote/workbench/services/lifecycle/browser/lifecycleService';
 
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 
 
-registerSingleton(IContextMenuService, BrowserContextMenuService);
+registerSingleton(IContextMenuService, BrowserContextMenuService, InstantiationType.Delayed);
 
 //#endregion

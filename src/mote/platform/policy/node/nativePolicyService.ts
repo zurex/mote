@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AbstractPolicyService, IPolicyService, PolicyDefinition } from 'mote/platform/policy/common/policy';
-import { IStringDictionary } from 'vs/base/common/collections';
-import { Throttler } from 'vs/base/common/async';
+import { IStringDictionary } from 'mote/base/common/collections';
+import { Throttler } from 'mote/base/common/async';
 import { createWatcher, PolicyUpdate, Watcher } from 'vscode-policy-watcher';
 import { MutableDisposable } from 'mote/base/common/lifecycle';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 
 export class NativePolicyService extends AbstractPolicyService implements IPolicyService {
 

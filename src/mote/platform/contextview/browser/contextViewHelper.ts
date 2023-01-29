@@ -4,7 +4,7 @@ import { attachMenuStyler } from 'mote/platform/theme/common/styler';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { DisposableStore } from 'mote/base/common/lifecycle';
 import { IThemable } from 'mote/base/common/styler';
-import { addDisposableListener, EventType } from 'vs/base/browser/dom';
+import { addDisposableListener, EventType } from 'mote/base/browser/dom';
 import { StandardMouseEvent } from 'mote/base/browser/mouseEvent';
 
 export interface IDelegate {

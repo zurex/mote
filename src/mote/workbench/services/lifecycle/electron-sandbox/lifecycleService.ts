@@ -5,15 +5,15 @@
 
 import { handleVetos } from 'mote/platform/lifecycle/common/lifecycle';
 import { ShutdownReason, ILifecycleService, IWillShutdownEventJoiner } from 'mote/workbench/services/lifecycle/common/lifecycle';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ipcRenderer } from 'vs/base/parts/sandbox/electron-sandbox/globals';
-import { ILogService } from 'vs/platform/log/common/log';
+import { IStorageService } from 'mote/platform/storage/common/storage';
+import { ipcRenderer } from 'mote/base/parts/sandbox/electron-sandbox/globals';
+import { ILogService } from 'mote/platform/log/common/log';
 import { AbstractLifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycleService';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { INativeHostService } from 'vs/platform/native/electron-sandbox/native';
-import { Promises, disposableTimeout, raceCancellation } from 'vs/base/common/async';
-import { toErrorMessage } from 'vs/base/common/errorMessage';
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { INativeHostService } from 'mote/platform/native/electron-sandbox/native';
+import { Promises, disposableTimeout, raceCancellation } from 'mote/base/common/async';
+import { toErrorMessage } from 'mote/base/common/errorMessage';
+import { CancellationTokenSource } from 'mote/base/common/cancellation';
 
 export class NativeLifecycleService extends AbstractLifecycleService {
 

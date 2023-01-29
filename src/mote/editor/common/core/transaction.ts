@@ -1,4 +1,4 @@
-import { generateUuid } from 'vs/base/common/uuid';
+import { generateUuid } from 'mote/base/common/uuid';
 import { Operation } from 'mote/platform/transaction/common/operations';
 import CommandFacade from '../../../platform/store/common/commandFacade';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
@@ -50,7 +50,7 @@ export class Transaction {
 		for (const callback of this.postSubmitCallbacks) {
 			callback(args);
 		}
-		console.debug(`[${this.id}] done.`);
+		//console.debug(`[${this.id}] done.`);
 	}
 
 	commit() {

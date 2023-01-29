@@ -9,7 +9,7 @@
  */
 function createModuleDescription(name, exclude) {
 
-	let excludes = ['vs/css', 'vs/nls'];
+	let excludes = ['mote/css', 'mote/nls'];
 	if (Array.isArray(exclude) && exclude.length > 0) {
 		excludes = excludes.concat(exclude);
 	}
@@ -25,50 +25,50 @@ function createModuleDescription(name, exclude) {
  * @param {string} name
  */
 function createEditorWorkerModuleDescription(name) {
-	return createModuleDescription(name, ['vs/base/common/worker/simpleWorker', 'vs/editor/common/services/editorSimpleWorker']);
+	return createModuleDescription(name, ['mote/base/common/worker/simpleWorker', 'mote/editor/common/services/editorSimpleWorker']);
 }
 
 exports.base = [
 	{
-		name: 'vs/editor/common/services/editorSimpleWorker',
-		include: ['vs/base/common/worker/simpleWorker'],
-		exclude: ['vs/nls'],
+		name: 'mote/editor/common/services/editorSimpleWorker',
+		include: ['mote/base/common/worker/simpleWorker'],
+		exclude: ['mote/nls'],
 		prepend: [
-			{ path: 'vs/loader.js' },
-			{ path: 'vs/nls.js', amdModuleId: 'vs/nls' },
-			{ path: 'vs/base/worker/workerMain.js' }
+			{ path: 'mote/loader.js' },
+			{ path: 'mote/nls.js', amdModuleId: 'mote/nls' },
+			{ path: 'mote/base/worker/workerMain.js' }
 		],
-		dest: 'vs/base/worker/workerMain.js'
+		dest: 'mote/base/worker/workerMain.js'
 	},
 	{
-		name: 'vs/base/common/worker/simpleWorker',
-		exclude: ['vs/nls'],
+		name: 'mote/base/common/worker/simpleWorker',
+		exclude: ['mote/nls'],
 	}
 ];
 
-exports.workerExtensionHost = [createEditorWorkerModuleDescription('vs/workbench/api/worker/extensionHostWorker')];
-exports.workerNotebook = [createEditorWorkerModuleDescription('vs/workbench/contrib/notebook/common/services/notebookSimpleWorker')];
-exports.workerSharedProcess = [createEditorWorkerModuleDescription('vs/platform/sharedProcess/electron-browser/sharedProcessWorkerMain')];
-exports.workerLanguageDetection = [createEditorWorkerModuleDescription('vs/workbench/services/languageDetection/browser/languageDetectionSimpleWorker')];
-exports.workerLocalFileSearch = [createEditorWorkerModuleDescription('vs/workbench/services/search/worker/localFileSearch')];
+exports.workerExtensionHost = [createEditorWorkerModuleDescription('mote/workbench/api/worker/extensionHostWorker')];
+exports.workerNotebook = [createEditorWorkerModuleDescription('mote/workbench/contrib/notebook/common/services/notebookSimpleWorker')];
+exports.workerSharedProcess = [createEditorWorkerModuleDescription('mote/platform/sharedProcess/electron-browser/sharedProcessWorkerMain')];
+exports.workerLanguageDetection = [createEditorWorkerModuleDescription('mote/workbench/services/languageDetection/browser/languageDetectionSimpleWorker')];
+exports.workerLocalFileSearch = [createEditorWorkerModuleDescription('mote/workbench/services/search/worker/localFileSearch')];
 
 exports.workbenchDesktop = [
-	createEditorWorkerModuleDescription('vs/workbench/contrib/output/common/outputLinkComputer'),
-	createModuleDescription('vs/workbench/contrib/debug/node/telemetryApp'),
-	createModuleDescription('vs/platform/files/node/watcher/watcherMain'),
-	createModuleDescription('vs/platform/terminal/node/ptyHostMain'),
-	createModuleDescription('vs/workbench/api/node/extensionHostProcess')
+	createEditorWorkerModuleDescription('mote/workbench/contrib/output/common/outputLinkComputer'),
+	createModuleDescription('mote/workbench/contrib/debug/node/telemetryApp'),
+	createModuleDescription('mote/platform/files/node/watcher/watcherMain'),
+	createModuleDescription('mote/platform/terminal/node/ptyHostMain'),
+	createModuleDescription('mote/workbench/api/node/extensionHostProcess')
 ];
 
 exports.workbenchWeb = [
-	//createEditorWorkerModuleDescription('vs/workbench/contrib/output/common/outputLinkComputer'),
+	//createEditorWorkerModuleDescription('mote/workbench/contrib/output/common/outputLinkComputer'),
 	createModuleDescription('mote/app/browser/workbench/workbench', ['mote/workbench/workbench.web.main'])
 ];
 
 exports.keyboardMaps = [
-	createModuleDescription('vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.linux'),
-	createModuleDescription('vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.darwin'),
-	createModuleDescription('vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.win')
+	createModuleDescription('mote/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.linux'),
+	createModuleDescription('mote/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.darwin'),
+	createModuleDescription('mote/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.win')
 ];
 
 exports.code = [

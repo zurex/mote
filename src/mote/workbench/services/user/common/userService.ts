@@ -1,9 +1,9 @@
 import { IUserProfile } from 'mote/platform/user/common/user';
 import { IRemoteService, LoginData, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { Emitter } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 
 export class UserService extends Disposable implements IUserService {
 

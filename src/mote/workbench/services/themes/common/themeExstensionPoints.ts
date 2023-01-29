@@ -1,10 +1,10 @@
 
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 
-import * as types from 'vs/base/common/types';
-import * as resources from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { Emitter, Event } from 'vs/base/common/event';
+import * as types from 'mote/base/common/types';
+import * as resources from 'mote/base/common/resources';
+import { URI } from 'mote/base/common/uri';
+import { Emitter, Event } from 'mote/base/common/event';
 
 import { ExtensionMessageCollector, ExtensionsRegistry, IExtensionPoint } from 'mote/workbench/services/extensions/common/extensionsRegistry';
 import { ExtensionData, IThemeExtensionPoint, MOTE_DARK_THEME, MOTE_HC_DARK_THEME, MOTE_HC_LIGHT_THEME, MOTE_LIGHT_THEME } from 'mote/workbench/services/themes/common/workbenchThemeService';

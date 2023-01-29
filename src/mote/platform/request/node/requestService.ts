@@ -6,19 +6,19 @@
 import * as http from 'http';
 import * as https from 'https';
 import { parse as parseUrl } from 'url';
-import { Promises } from 'vs/base/common/async';
-import { streamToBufferReadableStream } from 'vs/base/common/buffer';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { canceled } from 'vs/base/common/errors';
-import { Disposable } from 'vs/base/common/lifecycle';
-import * as streams from 'vs/base/common/stream';
-import { isBoolean, isNumber } from 'vs/base/common/types';
-import { IRequestContext, IRequestOptions } from 'vs/base/parts/request/common/request';
-import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
-import { getResolvedShellEnv } from 'vs/platform/shell/node/shellEnv';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IRequestService } from 'vs/platform/request/common/request';
-import { Agent, getProxyAgent } from 'vs/platform/request/node/proxy';
+import { Promises } from 'mote/base/common/async';
+import { streamToBufferReadableStream } from 'mote/base/common/buffer';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { canceled } from 'mote/base/common/errors';
+import { Disposable } from 'mote/base/common/lifecycle';
+import * as streams from 'mote/base/common/stream';
+import { isBoolean, isNumber } from 'mote/base/common/types';
+import { IRequestContext, IRequestOptions } from 'mote/base/parts/request/common/request';
+import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
+import { getResolvedShellEnv } from 'mote/platform/shell/node/shellEnv';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IRequestService } from 'mote/platform/request/common/request';
+import { Agent, getProxyAgent } from 'mote/platform/request/node/proxy';
 import { createGunzip } from 'zlib';
 
 export interface IRawRequestFunction {

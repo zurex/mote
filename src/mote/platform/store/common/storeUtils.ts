@@ -1,11 +1,11 @@
 import { Lodash } from 'mote/base/common/lodash';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { BugIndicatingError } from 'vs/base/common/errors';
+import { BugIndicatingError } from 'mote/base/common/errors';
 import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 import { BLOCK_TABLE_NAME } from 'mote/platform/store/common/blockRepository';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 
 export class StoreUtils {
 

@@ -5,16 +5,16 @@
 
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { IAppWindow, LoadReason, UnloadReason } from 'mote/platform/window/electron-main/window';
-import { Barrier, Promises, timeout } from 'vs/base/common/async';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { isMacintosh, isWindows } from 'vs/base/common/platform';
-import { cwd } from 'vs/base/common/process';
-import { assertIsDefined } from 'vs/base/common/types';
-import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IStateMainService } from 'vs/platform/state/electron-main/state';
+import { Barrier, Promises, timeout } from 'mote/base/common/async';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, DisposableStore } from 'mote/base/common/lifecycle';
+import { isMacintosh, isWindows } from 'mote/base/common/platform';
+import { cwd } from 'mote/base/common/process';
+import { assertIsDefined } from 'mote/base/common/types';
+import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IStateMainService } from 'mote/platform/state/electron-main/state';
 
 export const ILifecycleMainService = createDecorator<ILifecycleMainService>('lifecycleMainService');
 

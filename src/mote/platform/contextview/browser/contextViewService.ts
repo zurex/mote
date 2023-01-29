@@ -1,4 +1,4 @@
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
 import { IContextViewDelegate, IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { ContextView, ContextViewDOMPosition } from 'mote/base/browser/ui/contextview/contextview';
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';

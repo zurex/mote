@@ -2,9 +2,9 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
 import { IMenuLike, IMenuLikeOptions } from 'mote/base/browser/ui/menu/menu';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
-import { ActionViewItem, BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
-import { IAction } from 'vs/base/common/actions';
+import { ActionBar, ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
+import { ActionViewItem, BaseActionViewItem } from 'mote/base/browser/ui/actionbar/actionViewItems';
+import { IAction } from 'mote/base/common/actions';
 
 interface ISubMenuData {
 	parent: QuickMenu;

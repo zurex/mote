@@ -2,7 +2,7 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { AbstractMoteEditorService } from 'mote/editor/browser/services/abstractMoteEditorService';
 import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 
 export class MoteEditorService extends AbstractMoteEditorService {
 

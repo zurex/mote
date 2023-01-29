@@ -296,7 +296,7 @@ function loadCode() {
 		} else {
 			delete process.env['VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH'];
 		}
-		require('./bootstrap-amd').load('vs/server/node/server.main', resolve, reject);
+		require('./bootstrap-amd').load('mote/server/node/server.main', resolve, reject);
 	});
 }
 

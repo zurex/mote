@@ -1,12 +1,12 @@
-import 'vs/css!./media/hover';
+import 'mote/css!./media/hover';
 import { IHoverService, IHoverOptions, IHoverWidget } from 'mote/workbench/services/hover/browser/hover';
-import { DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { DisposableStore, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { HoverWidget } from 'mote/workbench/services/hover/browser/hoverWidget';
-import { addDisposableListener, EventType } from 'vs/base/browser/dom';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { addDisposableListener, EventType } from 'mote/base/browser/dom';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
-import { IContextViewProvider, IDelegate } from 'vs/base/browser/ui/contextview/contextview';
+import { IContextViewProvider, IDelegate } from 'mote/base/browser/ui/contextview/contextview';
 import { registerThemingParticipant } from 'mote/platform/theme/common/themeService';
 import { editorHoverBackground } from 'mote/platform/theme/common/themeColors';
 

@@ -1,5 +1,5 @@
 import { IAppWindow } from "mote/platform/window/electron-main/window";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { createDecorator } from "mote/platform/instantiation/common/instantiation";
 
 export const enum OpenContext {
 
@@ -33,7 +33,7 @@ export interface IOpenConfiguration extends IBaseOpenConfiguration {
 
 export interface IWindowsMainService {
 
-    open(openConfig: IOpenConfiguration): IAppWindow[];
+	open(openConfig: IOpenConfiguration): IAppWindow[];
 }
 
 export const IWindowsMainService = createDecorator<IWindowsMainService>('windowsMainService');

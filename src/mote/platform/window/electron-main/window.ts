@@ -1,7 +1,7 @@
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'mote/base/common/lifecycle';
 import { INativeWindowConfiguration } from 'mote/platform/window/common/window';
 import { BrowserWindow } from 'electron';
-import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
+import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
 
 export interface IAppWindow extends IDisposable {
 
@@ -60,4 +60,22 @@ export const enum UnloadReason {
 	 * The window is loaded into a different workspace context.
 	 */
 	LOAD
+}
+
+export const enum WindowError {
+
+	/**
+	 * Maps to the `unresponsive` event on a `BrowserWindow`.
+	 */
+	UNRESPONSIVE = 1,
+
+	/**
+	 * Maps to the `render-process-gone` event on a `WebContents`.
+	 */
+	PROCESS_GONE = 2,
+
+	/**
+	 * Maps to the `did-fail-load` event on a `WebContents`.
+	 */
+	LOAD = 3
 }

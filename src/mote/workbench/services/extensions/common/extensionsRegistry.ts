@@ -1,18 +1,23 @@
-import * as nls from 'vs/nls';
-import { IMessage } from 'mote/workbench/services/extensions/common/extensions';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import Severity from 'vs/base/common/severity';
-import { ExtensionKind } from 'vs/platform/environment/common/environment';
-import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import * as nls from 'mote/nls';
+import { onUnexpectedError } from 'mote/base/common/errors';
+import { IJSONSchema } from 'mote/base/common/jsonSchema';
+import Severity from 'mote/base/common/severity';
+import { EXTENSION_IDENTIFIER_PATTERN } from 'mote/platform/extensionManagement/common/extensionManagement';
+import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
 import { Registry } from 'mote/platform/registry/common/platform';
-import { EXTENSION_CATEGORIES } from 'mote/platform/extensions/common/extensions';
+import { IMessage } from 'mote/workbench/services/extensions/common/extensions';
+import { ExtensionIdentifier, IExtensionDescription, EXTENSION_CATEGORIES } from 'mote/platform/extensions/common/extensions';
+import { ExtensionKind } from 'mote/platform/environment/common/environment';
 import { allApiProposals } from 'mote/workbench/services/extensions/common/extensionsApiProposals';
-import { EXTENSION_IDENTIFIER_PATTERN } from 'vs/platform/extensionManagement/common/extensionManagement';
-import { Extensions, IJSONContributionRegistry } from 'vs/platform/jsonschemas/common/jsonContributionRegistry';
+import { productSchemaId } from 'mote/platform/product/common/productService';
+import { ImplicitActivationEvents, IActivationEventsGenerator } from 'mote/platform/extensionManagement/common/implicitActivationEvents';
 
-const schemaRegistry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution);
-
+const schemaRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
 
 export class ExtensionMessageCollector {
 
@@ -155,16 +160,16 @@ const extensionKindSchema: IJSONSchema = {
 	],
 };
 
-const schemaId = 'mote://schemas/mote-extensions';
+const schemaId = 'vscode://schemas/vscode-extensions';
 export const schema: IJSONSchema = {
 	properties: {
 		engines: {
 			type: 'object',
-			description: nls.localize('mote.extension.engines', "Engine compatibility."),
+			description: nls.localize('vscode.extension.engines', "Engine compatibility."),
 			properties: {
-				'mote': {
+				'vscode': {
 					type: 'string',
-					description: nls.localize('mote.extension.engines.mote', 'For VS Code extensions, specifies the VS Code version that the extension is compatible with. Cannot be *. For example: ^0.10.5 indicates compatibility with a minimum VS Code version of 0.10.5.'),
+					description: nls.localize('vscode.extension.engines.vscode', 'For VS Code extensions, specifies the VS Code version that the extension is compatible with. Cannot be *. For example: ^0.10.5 indicates compatibility with a minimum VS Code version of 0.10.5.'),
 					default: '^1.22.0',
 				}
 			}
@@ -234,6 +239,14 @@ export const schema: IJSONSchema = {
 				markdownEnumDescriptions: Object.values(allApiProposals)
 			}
 		},
+		api: {
+			markdownDescription: nls.localize('vscode.extension.api', 'Describe the API provided by this extension. For more details visit: https://code.visualstudio.com/api/advanced-topics/remote-extensions#handling-dependencies-with-remote-extensions'),
+			type: 'string',
+			enum: ['none'],
+			enumDescriptions: [
+				nls.localize('vscode.extension.api.none', "Give up entirely the ability to export any APIs. This allows other extensions that depend on this extension to run in a separate extension host process or in a remote machine.")
+			]
+		},
 		activationEvents: {
 			description: nls.localize('vscode.extension.activationEvents', 'Activation events for the VS Code extension.'),
 			type: 'array',
@@ -301,6 +314,11 @@ export const schema: IJSONSchema = {
 						body: 'onFileSystem:${1:scheme}'
 					},
 					{
+						label: 'onEditSession',
+						description: nls.localize('vscode.extension.activationEvents.onEditSession', 'An activation event emitted whenever an edit session is accessed with the given scheme.'),
+						body: 'onEditSession:${1:scheme}'
+					},
+					{
 						label: 'onSearch',
 						description: nls.localize('vscode.extension.activationEvents.onSearch', 'An activation event emitted whenever a search is started in the folder with the given scheme.'),
 						body: 'onSearch:${7:scheme}'
@@ -309,11 +327,6 @@ export const schema: IJSONSchema = {
 						label: 'onView',
 						body: 'onView:${5:viewId}',
 						description: nls.localize('vscode.extension.activationEvents.onView', 'An activation event emitted whenever the specified view is expanded.'),
-					},
-					{
-						label: 'onIdentity',
-						body: 'onIdentity:${8:identity}',
-						description: nls.localize('vscode.extension.activationEvents.onIdentity', 'An activation event emitted whenever the specified user identity.'),
 					},
 					{
 						label: 'onUri',
@@ -349,6 +362,11 @@ export const schema: IJSONSchema = {
 						label: 'onTerminalProfile',
 						body: 'onTerminalProfile:${1:terminalId}',
 						description: nls.localize('vscode.extension.activationEvents.onTerminalProfile', 'An activation event emitted when a specific terminal profile is launched.'),
+					},
+					{
+						label: 'onTerminalQuickFixRequest',
+						body: 'onTerminalQuickFixRequest:${1:quickFixId}',
+						description: nls.localize('vscode.extension.activationEvents.onTerminalQuickFixRequest', 'An activation event emitted when a command matches the selector associated with this ID'),
 					},
 					{
 						label: 'onWalkthrough',
@@ -541,27 +559,47 @@ export const schema: IJSONSchema = {
 		icon: {
 			type: 'string',
 			description: nls.localize('vscode.extension.icon', 'The path to a 128x128 pixel icon.')
+		},
+		l10n: {
+			type: 'string',
+			description: nls.localize({
+				key: 'vscode.extension.l10n',
+				comment: [
+					'{Locked="bundle.l10n._locale_.json"}',
+					'{Locked="vscode.l10n API"}'
+				]
+			}, 'The relative path to a folder containing localization (bundle.l10n.*.json) files. Must be specified if you are using the vscode.l10n API.')
 		}
 	}
 };
 
-export interface IExtensionPointDescriptor {
+export type removeArray<T> = T extends Array<infer X> ? X : T;
+
+export interface IExtensionPointDescriptor<T> {
 	extensionPoint: string;
 	deps?: IExtensionPoint<any>[];
 	jsonSchema: IJSONSchema;
 	defaultExtensionKind?: ExtensionKind[];
+	/**
+	 * A function which runs before the extension point has been validated and which
+	 * can should collect automatic activation events from the contribution.
+	 */
+	activationEventsGenerator?: IActivationEventsGenerator<removeArray<T>>;
 }
 
 export class ExtensionsRegistryImpl {
 
 	private readonly _extensionPoints = new Map<string, ExtensionPoint<any>>();
 
-	public registerExtensionPoint<T>(desc: IExtensionPointDescriptor): IExtensionPoint<T> {
+	public registerExtensionPoint<T>(desc: IExtensionPointDescriptor<T>): IExtensionPoint<T> {
 		if (this._extensionPoints.has(desc.extensionPoint)) {
 			throw new Error('Duplicate extension point: ' + desc.extensionPoint);
 		}
 		const result = new ExtensionPoint<T>(desc.extensionPoint, desc.defaultExtensionKind);
 		this._extensionPoints.set(desc.extensionPoint, result);
+		if (desc.activationEventsGenerator) {
+			ImplicitActivationEvents.register(desc.extensionPoint, desc.activationEventsGenerator);
+		}
 
 		schema.properties!['contributes'].properties![desc.extensionPoint] = desc.jsonSchema;
 		schemaRegistry.registerSchema(schemaId, schema);
@@ -579,3 +617,27 @@ const PRExtensions = {
 };
 Registry.add(PRExtensions.ExtensionsRegistry, new ExtensionsRegistryImpl());
 export const ExtensionsRegistry: ExtensionsRegistryImpl = Registry.as(PRExtensions.ExtensionsRegistry);
+
+schemaRegistry.registerSchema(schemaId, schema);
+
+
+schemaRegistry.registerSchema(productSchemaId, {
+	properties: {
+		extensionEnabledApiProposals: {
+			description: nls.localize('product.extensionEnabledApiProposals', "API proposals that the respective extensions can freely use."),
+			type: 'object',
+			properties: {},
+			additionalProperties: {
+				anyOf: [{
+					type: 'array',
+					uniqueItems: true,
+					items: {
+						type: 'string',
+						enum: Object.keys(allApiProposals),
+						markdownEnumDescriptions: Object.values(allApiProposals)
+					}
+				}]
+			}
+		}
+	}
+});

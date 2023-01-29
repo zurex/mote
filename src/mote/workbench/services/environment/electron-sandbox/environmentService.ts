@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PerformanceMark } from 'vs/base/common/performance';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { PerformanceMark } from 'mote/base/common/performance';
+import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { IColorScheme, INativeWindowConfiguration, IOSConfiguration } from 'mote/platform/window/common/window';
-import { IEnvironmentService, INativeEnvironmentService } from 'vs/platform/environment/common/environment';
-import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { AbstractNativeEnvironmentService } from 'vs/platform/environment/common/environmentService';
-import { memoize } from 'vs/base/common/decorators';
-import { URI } from 'vs/base/common/uri';
-import { Schemas } from 'vs/base/common/network';
-import { join } from 'vs/base/common/path';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { IEnvironmentService, INativeEnvironmentService } from 'mote/platform/environment/common/environment';
+import { refineServiceDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { AbstractNativeEnvironmentService } from 'mote/platform/environment/common/environmentService';
+import { memoize } from 'mote/base/common/decorators';
+import { URI } from 'mote/base/common/uri';
+import { Schemas } from 'mote/base/common/network';
+import { join } from 'mote/base/common/path';
+import { IProductService } from 'mote/platform/product/common/productService';
 
 export const INativeWorkbenchEnvironmentService = refineServiceDecorator<IEnvironmentService, INativeWorkbenchEnvironmentService>(IEnvironmentService);
 

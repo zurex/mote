@@ -1,12 +1,12 @@
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorActivation, IEditorOptions, IResourceEditorInput } from 'mote/platform/editor/common/editor';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IEditorCloseEvent, IEditorIdentifier, IEditorPane, isEditorInput, isEditorInputWithOptionsAndGroup, IVisibleEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { ICloseEditorOptions, IEditorGroup, IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IEditorResolverService, ResolvedStatus } from 'mote/workbench/services/editor/common/editorResolverService';
 import { IEditorsChangeEvent, IEditorService, isPreferredGroup, PreferredGroup } from 'mote/workbench/services/editor/common/editorService';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { findGroup } from 'mote/workbench/services/editor/common/editorGroupFinder';
 import { Disposable, DisposableStore, dispose } from 'mote/base/common/lifecycle';
 import { Emitter, Event } from 'mote/base/common/event';

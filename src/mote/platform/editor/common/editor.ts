@@ -1,5 +1,5 @@
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { URI } from 'vs/base/common/uri';
+import { URI } from 'mote/base/common/uri';
 
 export interface IBaseUntypedEditorInput {
 
@@ -105,3 +105,6 @@ export enum EditorActivation {
 	PRESERVE
 }
 
+export interface ITextEditorOptions extends IEditorOptions {
+
+}

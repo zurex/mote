@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { net } from 'electron';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IRequestContext, IRequestOptions } from 'vs/base/parts/request/common/request';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { IRequestContext, IRequestOptions } from 'mote/base/parts/request/common/request';
 import { IRawRequestFunction, RequestService as NodeRequestService } from 'mote/platform/request/node/requestService';
 
 function getRawRequest(options: IRequestOptions): IRawRequestFunction {

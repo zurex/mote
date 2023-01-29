@@ -239,6 +239,10 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public getViewLineCount(): number {
+		if (this.model.isEmpty()) {
+			// if the model is empty, just return 0
+			return 0;
+		}
 		return this.projectedModelLineLineCounts.getTotalSum();
 	}
 
@@ -254,6 +258,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public getViewLineContent(viewLineNumber: number): string {
+		if (this.model.isEmpty()) {
+			return '';
+		}
 		const info = this.getViewLineInfo(viewLineNumber);
 		return this.modelLineProjections[info.modelLineNumber - 1].getViewLineContent(this.model, info.modelLineNumber, info.modelLineWrappedLineIdx);
 	}
@@ -264,6 +271,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public getViewLineMinColumn(viewLineNumber: number): number {
+		if (this.model.isEmpty()) {
+			return 1;
+		}
 		const info = this.getViewLineInfo(viewLineNumber);
 		return this.modelLineProjections[info.modelLineNumber - 1].getViewLineMinColumn(this.model, info.modelLineNumber, info.modelLineWrappedLineIdx);
 	}
@@ -282,6 +292,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public validateViewPosition(viewLineNumber: number, viewColumn: number, expectedModelPosition: Position): Position {
+		if (this.model.isEmpty()) {
+			return new Position(1, 1);
+		}
 		viewLineNumber = this.toValidViewLineNumber(viewLineNumber);
 
 		const r = this.projectedModelLineLineCounts.getIndexOf(viewLineNumber - 1);
@@ -310,6 +323,9 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 	}
 
 	public validateViewRange(viewRange: EditorRange, expectedModelRange: EditorRange): EditorRange {
+		if (this.model.isEmpty()) {
+			return new EditorRange(1, 1, 1, 1);
+		}
 		const validViewStart = this.validateViewPosition(viewRange.startLineNumber, viewRange.startColumn, expectedModelRange.getStartPosition());
 		const validViewEnd = this.validateViewPosition(viewRange.endLineNumber, viewRange.endColumn, expectedModelRange.getEndPosition());
 		return new EditorRange(validViewStart.lineNumber, validViewStart.column, validViewEnd.lineNumber, validViewEnd.column);

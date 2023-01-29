@@ -55,7 +55,7 @@ export class TextModel extends Disposable implements ITextModel {
 
 
 	constructor(
-		private readonly pageStore: BlockStore
+		pageStore: BlockStore
 	) {
 		super();
 
@@ -69,7 +69,7 @@ export class TextModel extends Disposable implements ITextModel {
 		this.commandManager = new EditStack(this);
 		this._isUndoing = false;
 		this._isRedoing = false;
-		this._tokenizationTextModelPart = new TokenizationTextModelPart(this);
+		this._tokenizationTextModelPart = new TokenizationTextModelPart(this.buffer);
 	}
 
 	get uri(): URI {
@@ -98,11 +98,11 @@ export class TextModel extends Disposable implements ITextModel {
 		this._versionId = versionId;
 	}
 
-	validateRange(range: IRange): EditorRange {
+	public validateRange(range: IRange): EditorRange {
 		return range as EditorRange;
 	}
 
-	validatePosition(position: IPosition): Position {
+	public validatePosition(position: IPosition): Position {
 		return position as Position;
 	}
 
@@ -136,6 +136,10 @@ export class TextModel extends Disposable implements ITextModel {
 
 	//#region line
 
+	public isEmpty(): boolean {
+		return this.getLineCount() === 0;
+	}
+
 	public getLineMinColumn(lineNumber: number): number {
 		this.assertNotDisposed();
 		return 1;
@@ -162,6 +166,9 @@ export class TextModel extends Disposable implements ITextModel {
 
 	public getLineContent(lineNumber: number): string {
 		this.assertNotDisposed();
+		if (this.isEmpty()) {
+			return '';
+		}
 		return this.buffer.getLineContent(lineNumber);
 	}
 

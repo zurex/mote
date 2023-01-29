@@ -1,15 +1,15 @@
 import { ActivityAction, CompositeActionViewItem, CompositeOverflowActivityAction, CompositeOverflowActivityActionViewItem, IActivityHoverOptions, ICompositeActivity, ICompositeBar, ICompositeBarColors } from 'mote/workbench/browser/parts/compositeBarAction';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { IAction } from 'vs/base/common/actions';
-import { isUndefinedOrNull } from 'vs/base/common/types';
-import { Dimension, $, addDisposableListener, EventType, EventHelper, isAncestor } from 'vs/base/browser/dom';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { localize } from 'vs/nls';
-import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { IAction } from 'mote/base/common/actions';
+import { isUndefinedOrNull } from 'mote/base/common/types';
+import { Dimension, $, addDisposableListener, EventType, EventHelper, isAncestor } from 'mote/base/browser/dom';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { localize } from 'mote/nls';
+import { ActionBar, ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
 import { IColorTheme } from 'mote/platform/theme/common/themeService';
 import { IComposite } from 'mote/workbench/common/composite';
-import { ILogService } from 'vs/platform/log/common/log';
-import { Emitter } from 'vs/base/common/event';
+import { ILogService } from 'mote/platform/log/common/log';
+import { Emitter } from 'mote/base/common/event';
 
 export interface ICompositeBarItem {
 	id: string;

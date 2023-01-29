@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
-import { URI } from 'vs/base/common/uri';
-import { hash } from 'vs/base/common/hash';
+import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
+import { URI } from 'mote/base/common/uri';
+import { hash } from 'mote/base/common/hash';
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE

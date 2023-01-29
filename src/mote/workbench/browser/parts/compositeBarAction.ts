@@ -1,19 +1,20 @@
+import { ThemeIcon } from 'mote/base/common/themables';
 import { ICommandService } from 'mote/platform/commands/common/commands';
-import { IColorTheme, IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { IActivity } from 'mote/workbench/common/activity';
 import { IBadge, IconBadge, NumberBadge, ProgressBadge, TextBadge } from 'mote/workbench/services/activity/common/activity';
-import { BaseActionViewItem, IBaseActionViewItemOptions } from 'vs/base/browser/ui/actionbar/actionViewItems';
-import { Action, IAction } from 'vs/base/common/actions';
-import { Codicon } from 'vs/base/common/codicons';
+import { BaseActionViewItem, IBaseActionViewItemOptions } from 'mote/base/browser/ui/actionbar/actionViewItems';
+import { Action, IAction } from 'mote/base/common/actions';
+import { Codicon } from 'mote/base/common/codicons';
 import { Color } from 'mote/base/common/color';
 import { Emitter } from 'mote/base/common/event';
-import { localize } from 'vs/nls';
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
+import { localize } from 'mote/nls';
+import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
 import { IHoverService, IHoverWidget } from 'mote/workbench/services/hover/browser/hover';
-import { DisposableStore, MutableDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { DisposableStore, MutableDisposable, toDisposable } from 'mote/base/common/lifecycle';
 import { contrastBorder } from 'mote/platform/theme/common/themeColors';
-import { addDisposableListener, append, clearNode, hide, show, $, EventType } from 'vs/base/browser/dom';
-import { RunOnceScheduler } from 'vs/base/common/async';
+import { addDisposableListener, append, clearNode, hide, show, $, EventType } from 'mote/base/browser/dom';
+import { RunOnceScheduler } from 'mote/base/common/async';
 
 export interface ICompositeActivity {
 	badge: IBadge;
@@ -283,7 +284,7 @@ export class ActivityActionViewItem extends BaseActionViewItem {
 	}
 
 	protected updateBadge(): void {
-		const action = this.getAction();
+		const action = this.action;
 		if (!this.badge || !this.badgeContent || !(action instanceof ActivityAction)) {
 			return;
 		}
@@ -357,7 +358,7 @@ export class ActivityActionViewItem extends BaseActionViewItem {
 		}
 
 		if (!this.options.icon) {
-			this.label.textContent = this.getAction().label;
+			this.label.textContent = this.action.label;
 		}
 	}
 
@@ -375,7 +376,7 @@ export class ActivityActionViewItem extends BaseActionViewItem {
 
 	private computeTitle(): string {
 		let title = this.activity.name;
-		const badge = (this.getAction() as ActivityAction).getBadge();
+		const badge = (this.action as ActivityAction).getBadge();
 		if (badge?.getDescription()) {
 			title = localize('badgeTitle', "{0} - {1}", title, badge.getDescription());
 		}
@@ -442,7 +443,7 @@ export class CompositeOverflowActivityAction extends ActivityAction {
 		super({
 			id: 'additionalComposites.action',
 			name: localize('additionalViews', "Additional Views"),
-			cssClass: Codicon.more.classNames
+			cssClass: ThemeIcon.asClassName(Codicon.more)
 		});
 	}
 
@@ -491,7 +492,7 @@ export class CompositeActionViewItem extends ActivityActionViewItem {
 	}
 
 	protected override updateChecked(): void {
-		if (this.getAction().checked) {
+		if (this.action.checked) {
 			this.container.classList.add('checked');
 			this.container.setAttribute('aria-label', this.container.title);
 			this.container.setAttribute('aria-expanded', 'true');

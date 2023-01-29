@@ -1,7 +1,7 @@
 import { IMarkdownString } from 'mote/base/common/htmlContent';
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { HoverPosition } from "mote/base/browser/ui/hover/hoverWidget";
+import { IDisposable } from "mote/base/common/lifecycle";
+import { createDecorator } from "mote/platform/instantiation/common/instantiation";
 
 export const IHoverService = createDecorator<IHoverService>('hoverService');
 

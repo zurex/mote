@@ -7,7 +7,7 @@ import { buttonHoverBuleBackground, mediumIconColor, mediumTextColor } from 'mot
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { clearNode } from 'mote/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 
 interface Template {
 	name: string;

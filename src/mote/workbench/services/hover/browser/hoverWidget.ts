@@ -1,11 +1,11 @@
-import * as dom from 'vs/base/browser/dom';
-import { AnchorPosition } from 'vs/base/browser/ui/contextview/contextview';
-import { HoverPosition, HoverWidget as BaseHoverWidget } from 'vs/base/browser/ui/hover/hoverWidget';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { Emitter, Event } from 'vs/base/common/event';
-import { KeyCode } from 'vs/base/common/keyCodes';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import * as dom from 'mote/base/browser/dom';
+import { AnchorPosition } from 'mote/base/browser/ui/contextview/contextview';
+import { HoverPosition, HoverWidget as BaseHoverWidget } from 'mote/base/browser/ui/hover/hoverWidget';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { Emitter, Event } from 'mote/base/common/event';
+import { KeyCode } from 'mote/base/common/keyCodes';
+import { DisposableStore } from 'mote/base/common/lifecycle';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IHoverOptions, IHoverTarget } from './hover';
 
 const $ = dom.$;

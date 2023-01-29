@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isFirefox } from 'mote/base/browser/browser';
-import { DataTransfers } from 'vs/base/browser/dnd';
+import { DataTransfers } from 'mote/base/browser/dnd';
 import { $, addDisposableListener, append, clearNode, EventHelper, EventType, trackFocus } from 'mote/base/browser/dom';
 import { DomEmitter } from 'mote/base/browser/event';
 import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
-import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
+import { Gesture, EventType as TouchEventType } from 'mote/base/browser/touch';
 import { Orientation } from 'mote/base/browser/ui/sash/sash';
 import { Color, RGBA } from 'mote/base/common/color';
 import { Emitter, Event } from 'mote/base/common/event';
 import { KeyCode } from 'mote/base/common/keyCodes';
 import { Disposable, DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
-import { ScrollEvent } from 'vs/base/common/scrollable';
-import 'vs/css!./paneview';
-import { localize } from 'vs/nls';
+import { ScrollEvent } from 'mote/base/common/scrollable';
+import 'mote/css!./paneview';
+import { localize } from 'mote/nls';
 import { IView, Sizing, SplitView } from './splitview';
 
 export interface IPaneOptions {

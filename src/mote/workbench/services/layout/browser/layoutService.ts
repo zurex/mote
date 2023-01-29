@@ -1,6 +1,6 @@
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
 import { Part } from 'mote/workbench/browser/part';
-import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { refineServiceDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const enum Parts {
 	TITLEBAR_PART = 'workbench.parts.titlebar',

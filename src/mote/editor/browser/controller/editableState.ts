@@ -1,4 +1,4 @@
-import * as strings from 'vs/base/common/strings';
+import * as strings from 'mote/base/common/strings';
 import { Position } from 'mote/editor/common/core/position';
 import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { EditorRange } from 'mote/editor/common/core/editorRange';

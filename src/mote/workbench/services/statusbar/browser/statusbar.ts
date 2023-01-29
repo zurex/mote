@@ -4,7 +4,7 @@ import { IDisposable } from 'mote/base/common/lifecycle';
 import { Command } from 'mote/editor/common/languages';
 import { ColorIdentifier } from 'mote/platform/theme/common/colorRegistry';
 import { ThemeColor } from 'mote/platform/theme/common/themeService';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IStatusbarService = createDecorator<IStatusbarService>('statusbarService');
 
@@ -16,6 +16,11 @@ export interface IStatusbarService {
 	 * An event that is triggered when an entry's visibility is changed.
 	 */
 	readonly onDidChangeEntryVisibility: Event<{ id: string; visible: boolean }>;
+
+	/**
+	 * Focused the status bar. If one of the status bar entries was focused, focuses it directly.
+	 */
+	focus(preserveEntryFocus?: boolean): void;
 
 	/**
 	 * Adds an entry to the statusbar with the given alignment and priority. Use the returned accessor

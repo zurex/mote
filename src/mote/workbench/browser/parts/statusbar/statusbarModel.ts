@@ -6,7 +6,7 @@
 import { Disposable } from 'mote/base/common/lifecycle';
 import { isStatusbarEntryLocation, IStatusbarEntryLocation, StatusbarAlignment } from 'mote/workbench/services/statusbar/browser/statusbar';
 import { hide, show, isAncestor } from 'mote/base/browser/dom';
-import { IStorageService, StorageScope, IStorageValueChangeEvent, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, IStorageValueChangeEvent, StorageTarget } from 'mote/platform/storage/common/storage';
 import { Emitter } from 'mote/base/common/event';
 
 export interface IStatusbarEntryPriority {

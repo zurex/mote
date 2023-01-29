@@ -1,8 +1,8 @@
 import { IRange } from 'mote/editor/common/core/editorRange';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { ITextModel, IValidEditOperation } from 'mote/editor/common/model';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { IDimension } from 'vs/editor/common/core/dimension';
+import { IDisposable } from 'mote/base/common/lifecycle';
+import { IDimension } from 'mote/editor/common/core/dimension';
 
 /**
  * A builder and helper for edit operations for a command.

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { isIOS, isLinux, isMacintosh, isMobile, isWeb, isWindows } from 'mote/base/common/platform';
-import { localize } from 'vs/nls';
-import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { localize } from 'mote/nls';
+import { RawContextKey } from 'mote/platform/contextkey/common/contextkey';
 
 export const IsMacContext = new RawContextKey<boolean>('isMac', isMacintosh, localize('isMac', "Whether the operating system is macOS"));
 export const IsLinuxContext = new RawContextKey<boolean>('isLinux', isLinux, localize('isLinux', "Whether the operating system is Linux"));

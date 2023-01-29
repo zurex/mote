@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMatch, matchesFuzzy } from 'vs/base/common/filters';
+import { IMatch, matchesFuzzy } from 'mote/base/common/filters';
 import { ltrim } from 'mote/base/common/strings';
 import { ThemeIcon } from 'mote/base/common/themables';
 

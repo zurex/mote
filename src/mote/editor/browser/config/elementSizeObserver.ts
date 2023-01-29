@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IDimension } from 'vs/editor/common/core/dimension';
-import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IDimension } from 'mote/editor/common/core/dimension';
+import { Emitter, Event } from 'mote/base/common/event';
 
 export class ElementSizeObserver extends Disposable {
 

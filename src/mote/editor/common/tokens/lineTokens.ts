@@ -1,3 +1,7 @@
+import { AnnotationType } from 'mote/editor/common/annotation';
+import { ColorId, FontStyle, ITokenPresentation, MetadataConsts, StandardTokenType, TokenMetadata } from 'mote/editor/common/encodedTokenAttributes';
+import { ISegment } from 'mote/editor/common/segmentUtils';
+
 export interface IViewLineTokens {
 	getCount(): number;
 	getLineContent(): string;
@@ -8,14 +12,89 @@ export interface IViewLineTokens {
 export class LineTokens implements IViewLineTokens {
 	_lineTokensBrand: void = undefined;
 
-
 	private readonly _tokensCount: number;
+
+	public static defaultTokenMetadata = (
+		(FontStyle.None << MetadataConsts.FONT_STYLE_OFFSET)
+		| (ColorId.DefaultForeground << MetadataConsts.FOREGROUND_OFFSET)
+		| (ColorId.DefaultBackground << MetadataConsts.BACKGROUND_OFFSET)
+	) >>> 0;
+
+	public static createEmpty(lineContent: string): LineTokens {
+		const defaultMetadata = LineTokens.defaultTokenMetadata;
+
+		const tokens = new Uint32Array(2);
+		tokens[0] = lineContent.length;
+		tokens[1] = defaultMetadata;
+
+		return new LineTokens(tokens, lineContent);
+	}
+
+	public static fromSegments(segments: ISegment[]): LineTokens {
+		const binTokens = new Uint32Array(segments.length << 1);
+
+		let lineContent = '';
+		for (let i = 0, len = segments.length; i < len; i++) {
+			let metadata = 0;
+			const segment = segments[i];
+			const text = segment[0];
+			const offset = text.length;
+			lineContent += text;
+			const annotations = segment[1] || [];
+
+			binTokens[(i << 1)] = (i + 1 < len ? offset : lineContent.length);
+
+			annotations.forEach((annotation) => {
+				switch (annotation[0]) {
+					case AnnotationType.Bold:
+						metadata = TokenMetadata.setFontStyle(metadata, FontStyle.Bold);
+						break;
+					case AnnotationType.Underline:
+						metadata = TokenMetadata.setFontStyle(metadata, FontStyle.Underline);
+						break;
+					case AnnotationType.Italics:
+						metadata = TokenMetadata.setFontStyle(metadata, FontStyle.Italic);
+						break;
+					case AnnotationType.Strike:
+						metadata = TokenMetadata.setFontStyle(metadata, FontStyle.Strikethrough);
+						break;
+				}
+			});
+			binTokens[(i << 1) + 1] = metadata;
+		}
+
+		return new LineTokens(binTokens, lineContent);
+	}
 
 	constructor(
 		private readonly _tokens: Uint32Array,
 		private readonly text: string,
 	) {
 		this._tokensCount = (this._tokens.length >>> 1);
+	}
+
+	public equals(other: IViewLineTokens): boolean {
+		if (other instanceof LineTokens) {
+			return this.slicedEquals(other, 0, this._tokensCount);
+		}
+		return false;
+	}
+
+	public slicedEquals(other: LineTokens, sliceFromTokenIndex: number, sliceTokenCount: number): boolean {
+		if (this.text !== other.text) {
+			return false;
+		}
+		if (this._tokensCount !== other._tokensCount) {
+			return false;
+		}
+		const from = (sliceFromTokenIndex << 1);
+		const to = from + (sliceTokenCount << 1);
+		for (let i = from; i < to; i++) {
+			if (this._tokens[i] !== other._tokens[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public getLineContent(): string {
@@ -33,6 +112,40 @@ export class LineTokens implements IViewLineTokens {
 		return 0;
 	}
 
+	public getMetadata(tokenIndex: number): number {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return metadata;
+	}
+
+	public getStandardTokenType(tokenIndex: number): StandardTokenType {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return TokenMetadata.getTokenType(metadata);
+	}
+
+	public getForeground(tokenIndex: number): ColorId {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return TokenMetadata.getForeground(metadata);
+	}
+
+	public getClassName(tokenIndex: number): string {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return TokenMetadata.getClassNameFromMetadata(metadata);
+	}
+
+	public getInlineStyle(tokenIndex: number, colorMap: string[]): string {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return TokenMetadata.getInlineStyleFromMetadata(metadata, colorMap);
+	}
+
+	public getPresentation(tokenIndex: number): ITokenPresentation {
+		const metadata = this._tokens[(tokenIndex << 1) + 1];
+		return TokenMetadata.getPresentationFromMetadata(metadata);
+	}
+
+	public getEndOffset(tokenIndex: number): number {
+		return this._tokens[tokenIndex << 1];
+	}
+
 	/**
 	 * Find the token containing offset `offset`.
 	 * @param offset The search offset
@@ -48,6 +161,15 @@ export class LineTokens implements IViewLineTokens {
 
 	public sliceAndInflate(startOffset: number, endOffset: number, deltaOffset: number): IViewLineTokens {
 		return new SliceLineTokens(this, startOffset, endOffset, deltaOffset);
+	}
+
+	public static convertToEndOffset(tokens: Uint32Array, lineTextLength: number): void {
+		const tokenCount = (tokens.length >>> 1);
+		const lastTokenIndex = tokenCount - 1;
+		for (let tokenIndex = 0; tokenIndex < lastTokenIndex; tokenIndex++) {
+			tokens[tokenIndex << 1] = tokens[(tokenIndex + 1) << 1];
+		}
+		tokens[lastTokenIndex << 1] = lineTextLength;
 	}
 
 	public static findIndexInTokensArray(tokens: Uint32Array, desiredIndex: number): number {
@@ -119,7 +241,7 @@ export class LineTokens implements IViewLineTokens {
 			}
 		}
 
-		return new LineTokens(new Uint32Array(newTokens), text, this._languageIdCodec);
+		return new LineTokens(new Uint32Array(newTokens), text);
 	}
 }
 
@@ -151,8 +273,7 @@ class SliceLineTokens implements IViewLineTokens {
 	}
 
 	public getMetadata(tokenIndex: number): number {
-		throw new Error();
-		//return this._source.getMetadata(this._firstTokenIndex + tokenIndex);
+		return this._source.getMetadata(this._firstTokenIndex + tokenIndex);
 	}
 
 	public getLanguageId(tokenIndex: number): string {

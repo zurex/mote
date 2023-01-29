@@ -1,8 +1,8 @@
 import { EditorExtensions, IEditorDescriptor as ICommonEditorDescriptor } from 'mote/workbench/common/editor';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+import { SyncDescriptor } from 'mote/platform/instantiation/common/descriptors';
 import { IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { BrandedService, IConstructorSignature, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { BrandedService, IConstructorSignature, IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { insert } from 'mote/base/common/arrays';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { EditorInput } from 'mote/workbench/common/editorInput';

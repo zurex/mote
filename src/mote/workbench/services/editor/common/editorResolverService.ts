@@ -1,8 +1,8 @@
-import * as glob from 'vs/base/common/glob';
+import * as glob from 'mote/base/common/glob';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IDisposable } from 'mote/base/common/lifecycle';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { PreferredGroup } from 'mote/workbench/services/editor/common/editorService';
 import { EditorInputWithOptionsAndGroup } from 'mote/workbench/common/editor';
 

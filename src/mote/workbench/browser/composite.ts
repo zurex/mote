@@ -4,8 +4,8 @@ import { ICompositeControl } from 'mote/workbench/common/composite';
 import { Dimension } from 'mote/base/browser/dom';
 import { Emitter } from 'mote/base/common/event';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { IConstructorSignature, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IConstructorSignature, IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 /**
  * Composites are layed out in the sidebar and panel part of the workbench. At a time only one composite

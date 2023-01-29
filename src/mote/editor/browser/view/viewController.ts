@@ -11,16 +11,16 @@ import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
 import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
-import { BugIndicatingError } from 'vs/base/common/errors';
+import { BugIndicatingError } from 'mote/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { ViewUserInputEvents } from 'mote/editor/browser/view/viewUserInputEvents';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IMouseWheelEvent } from 'mote/base/browser/mouseEvent';
 import { IEditorMouseEvent, IPartialEditorMouseEvent } from 'mote/editor/browser/editorBrowser';
 import { Position } from 'mote/editor/common/core/position';
@@ -69,7 +69,7 @@ export class ViewController extends Disposable {
 	) {
 		super();
 
-		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
+		this.selection = { startIndex: 0, endIndex: 0, lineNumber: -1 };
 		this.eventDispatcher = (viewModel as any).eventDispatcher;
 	}
 
@@ -80,13 +80,6 @@ export class ViewController extends Disposable {
 	 * @param selection
 	 */
 	public select(selection: TextSelection): void {
-		if (selection.startIndex === selection.endIndex) {
-			const position = new Position(selection.lineNumber, selection.startIndex + 1);
-			this.moveTo(position, NavigationCommandRevealType.Minimal);
-		} else {
-
-		}
-
 		this.withViewEventsCollector(eventsCollector => {
 			this.setSelection(selection);
 			eventsCollector.emitOutgoingEvent(new SelectionChangedEvent(selection));
@@ -130,6 +123,34 @@ export class ViewController extends Disposable {
 
 	public type(text: string): void {
 		this.commandDelegate.type(text);
+	}
+
+	/**
+	 * Only used for editable input
+	 * @deprecated
+	 * @param text
+	 */
+	public editableType(text: string): void {
+		this.executeCursorEdit(eventsCollector => {
+			Transaction.createAndCommit((transaction) => {
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
+			}, this.contentStore.userId);
+		});
+	}
+
+	/**
+	 * Only used for editable input
+	 * @deprecated
+	 * @param text
+	 */
+	public editableCompositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
+		this.executeCursorEdit(eventsCollector => {
+			Transaction.createAndCommit((transaction) => {
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
+			}, this.contentStore.userId);
+		});
 	}
 
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
@@ -195,7 +216,7 @@ export class ViewController extends Disposable {
 	}
 
 	public getSelection() {
-		return this.viewModel.getSelection();
+		return this.selection;
 	}
 
 	public isEmpty(lineNumber: number) {
@@ -299,6 +320,61 @@ export class ViewController extends Disposable {
 					}
 				}
 			}
+		}
+	}
+
+	private onType(eventsCollector: ViewModelEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
+		const oldRecord = store.getValue();
+		const content = segmentUtils.collectValueFromSegment(oldRecord);
+		const diffResult = textChange(selection, content, newValue);
+
+		let needChange = false;
+		let startIndex = 0;
+		let deleteFlag = false;
+
+		for (const [op, txt] of diffResult) {
+			switch (op) {
+				case DIFF_INSERT:
+					needChange = true;
+					this._insert(
+						eventsCollector,
+						txt,
+						transaction,
+						store,
+						{
+							startIndex: startIndex,
+							endIndex: startIndex,
+							lineNumber: selection.lineNumber
+						},
+						TextSelectionMode.Editing
+					);
+					startIndex += txt.length;
+					break;
+				case DIFF_DELETE:
+					needChange = true;
+					deleteFlag = false;
+					this.delete(
+						transaction,
+						store,
+						{
+							startIndex: startIndex,
+							endIndex: startIndex + txt.length,
+							lineNumber: selection.lineNumber
+						},
+					);
+					break;
+				default:
+					if (DIFF_EQUAL === op) {
+						startIndex += txt.length;
+					}
+			}
+		}
+
+		if (needChange) {
+
+		}
+		if (deleteFlag) {
+
 		}
 	}
 

@@ -1,7 +1,7 @@
 import { IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
-import { URI } from 'vs/base/common/uri';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { URI } from 'mote/base/common/uri';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IWorkspacesService = createDecorator<IWorkspacesService>('workspacesService');
 

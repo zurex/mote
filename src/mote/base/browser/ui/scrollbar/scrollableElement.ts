@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getZoomFactor } from 'vs/base/browser/browser';
-import * as dom from 'vs/base/browser/dom';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
-import { IMouseEvent, IMouseWheelEvent, StandardWheelEvent } from 'vs/base/browser/mouseEvent';
-import { ScrollbarHost } from 'vs/base/browser/ui/scrollbar/abstractScrollbar';
-import { HorizontalScrollbar } from 'vs/base/browser/ui/scrollbar/horizontalScrollbar';
-import { ScrollableElementChangeOptions, ScrollableElementCreationOptions, ScrollableElementResolvedOptions } from 'vs/base/browser/ui/scrollbar/scrollableElementOptions';
-import { VerticalScrollbar } from 'vs/base/browser/ui/scrollbar/verticalScrollbar';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { TimeoutTimer } from 'vs/base/common/async';
+import { getZoomFactor } from 'mote/base/browser/browser';
+import * as dom from 'mote/base/browser/dom';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
+import { IMouseEvent, IMouseWheelEvent, StandardWheelEvent } from 'mote/base/browser/mouseEvent';
+import { ScrollbarHost } from 'mote/base/browser/ui/scrollbar/abstractScrollbar';
+import { HorizontalScrollbar } from 'mote/base/browser/ui/scrollbar/horizontalScrollbar';
+import { ScrollableElementChangeOptions, ScrollableElementCreationOptions, ScrollableElementResolvedOptions } from 'mote/base/browser/ui/scrollbar/scrollableElementOptions';
+import { VerticalScrollbar } from 'mote/base/browser/ui/scrollbar/verticalScrollbar';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { TimeoutTimer } from 'mote/base/common/async';
 import { Emitter, Event } from 'mote/base/common/event';
-import { dispose, IDisposable } from 'vs/base/common/lifecycle';
-import * as platform from 'vs/base/common/platform';
-import { INewScrollDimensions, INewScrollPosition, IScrollDimensions, IScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from 'vs/base/common/scrollable';
-import 'vs/css!./media/scrollbars';
+import { dispose, IDisposable } from 'mote/base/common/lifecycle';
+import * as platform from 'mote/base/common/platform';
+import { INewScrollDimensions, INewScrollPosition, IScrollDimensions, IScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from 'mote/base/common/scrollable';
+import 'mote/css!./media/scrollbars';
 
 const HIDE_TIMEOUT = 500;
 const SCROLL_WHEEL_SENSITIVITY = 50;

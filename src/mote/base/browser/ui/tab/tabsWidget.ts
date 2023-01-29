@@ -1,11 +1,11 @@
 import { IMenuLikeStyles } from 'mote/base/browser/ui/menu/menu';
 import { Lodash } from 'mote/base/common/lodash';
-import * as dom from 'vs/base/browser/dom';
-import { createStyleSheet, isInShadowDOM } from 'vs/base/browser/dom';
-import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { Action } from 'vs/base/common/actions';
-import { IThemable } from 'vs/base/common/styler';
+import * as dom from 'mote/base/browser/dom';
+import { createStyleSheet, isInShadowDOM } from 'mote/base/browser/dom';
+import { ActionBar, ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { Action } from 'mote/base/common/actions';
+import { IThemable } from 'mote/base/common/styler';
 
 interface ITabItem {
 	id: string;

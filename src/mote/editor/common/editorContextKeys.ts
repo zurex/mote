@@ -1,4 +1,4 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { RawContextKey } from 'mote/platform/contextkey/common/contextkey';
 
 export namespace EditorContextKeys {

@@ -1,4 +1,4 @@
-import 'vs/css!./media/editorgroupview';
+import 'mote/css!./media/editorgroupview';
 import { IDomNodePagePosition, isAncestor } from 'mote/base/browser/dom';
 import { LayoutPriority } from 'mote/base/browser/ui/splitview/splitview';
 import { Emitter, Relay } from 'mote/base/common/event';
@@ -10,7 +10,7 @@ import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
 import { IVisibleEditorPane, IEditorPane, GroupIdentifier, EditorsOrder, IActiveEditorChangeEvent, SideBySideEditor, IEditorWillOpenEvent, IEditorWillMoveEvent, IEditorCloseEvent, GroupModelChangeKind, EditorCloseContext } from 'mote/workbench/common/editor';
 import { EditorGroupModel, IEditorOpenOptions, IGroupModelChangeEvent, ISerializedEditorGroupModel, isGroupEditorCloseEvent, isGroupEditorOpenEvent, isSerializedEditorGroupModel } from 'mote/workbench/common/editorGroupModel';
 import { EditorInput } from 'mote/workbench/common/editorInput';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { GroupsOrder, ICloseEditorOptions } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { SideBySideEditorInput } from 'mote/workbench/common/sideBySideEditorInput';
 import { RunOnceWorker } from 'mote/base/common/async';

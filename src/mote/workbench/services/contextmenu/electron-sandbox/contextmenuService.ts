@@ -1,9 +1,9 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { IContextMenuDelegate } from "mote/base/browser/contextmenu";
 import { IContextMenuService } from "mote/platform/contextview/browser/contextView";
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { registerSingleton } from "vs/platform/instantiation/common/extensions";
+import { Emitter } from "mote/base/common/event";
+import { Disposable } from "mote/base/common/lifecycle";
+import { registerSingleton } from "mote/platform/instantiation/common/extensions";
 
 export class NativeContextMenuService extends Disposable implements IContextMenuService {
 

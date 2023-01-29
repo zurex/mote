@@ -5,9 +5,9 @@ import { contextViewBackground, regularTextColor } from 'mote/platform/theme/com
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { $, addDisposableListener, EventType, isHTMLElement } from 'mote/base/browser/dom';
 import { StandardMouseEvent } from 'mote/base/browser/mouseEvent';
-import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
-import { ActionRunner, IAction, IRunEvent } from 'vs/base/common/actions';
-import { Emitter } from 'vs/base/common/event';
+import { IMenuOptions } from 'mote/base/browser/ui/menu/menu';
+import { ActionRunner, IAction, IRunEvent } from 'mote/base/common/actions';
+import { Emitter } from 'mote/base/common/event';
 import { combinedDisposable, DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
 import { IContextMenuService, IContextViewService } from './contextView';
 

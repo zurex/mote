@@ -7,7 +7,7 @@ import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { EditorAction, EditorCommand, registerEditorAction, registerEditorContribution } from 'mote/editor/browser/editorExtensions';
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
-import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 
 export class SlashController implements IEditorContribution {
 

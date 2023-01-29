@@ -1,19 +1,19 @@
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { IWorkspace, IWorkspaceContextService, WorkbenchState } from 'mote/platform/workspace/common/workspace';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { generateUuid } from 'vs/base/common/uuid';
+import { generateUuid } from 'mote/base/common/uuid';
 import { Lodash } from 'mote/base/common/lodash';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 import { IUserProfile } from 'mote/platform/user/common/user';
 import SpaceRootStore from 'mote/platform/store/common/spaceRootStore';
 import SpaceStore from 'mote/platform/store/common/spaceStore';
 import { IStoreService } from 'mote/platform/store/common/store';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { StoreStorageProvider } from 'mote/platform/store/common/storeStorageProvider';
 
 const CurrentSpaceIdStorageKey = 'CurrentSpaceIdStorageKey';

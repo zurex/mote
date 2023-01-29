@@ -1,6 +1,6 @@
 import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { runWhenIdle } from 'mote/base/common/async';
-import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 export namespace WorkbenchExtensions {

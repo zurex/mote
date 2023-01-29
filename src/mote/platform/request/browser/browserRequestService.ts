@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { request } from 'vs/base/parts/request/browser/request';
-import { IRequestContext, IRequestOptions } from 'vs/base/parts/request/common/request';
-import { ILogService } from 'vs/platform/log/common/log';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { request } from 'mote/base/parts/request/browser/request';
+import { IRequestContext, IRequestOptions } from 'mote/base/parts/request/common/request';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IRequestService } from 'mote/platform/request/common/request';
 
 /**

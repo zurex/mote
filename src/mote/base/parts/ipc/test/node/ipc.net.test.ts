@@ -7,15 +7,15 @@ import * as assert from 'assert';
 import { EventEmitter } from 'events';
 import { createServer, Socket } from 'net';
 import { tmpdir } from 'os';
-import { Barrier, timeout } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { ILoadEstimator, PersistentProtocol, Protocol, ProtocolConstants, SocketCloseEvent, SocketDiagnosticsEventType } from 'vs/base/parts/ipc/common/ipc.net';
-import { createRandomIPCHandle, createStaticIPCHandle, NodeSocket, WebSocketNodeSocket } from 'vs/base/parts/ipc/node/ipc.net';
-import { flakySuite } from 'vs/base/test/common/testUtils';
-import { runWithFakedTimers } from 'vs/base/test/common/timeTravelScheduler';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import { Barrier, timeout } from 'mote/base/common/async';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, DisposableStore } from 'mote/base/common/lifecycle';
+import { ILoadEstimator, PersistentProtocol, Protocol, ProtocolConstants, SocketCloseEvent, SocketDiagnosticsEventType } from 'mote/base/parts/ipc/common/ipc.net';
+import { createRandomIPCHandle, createStaticIPCHandle, NodeSocket, WebSocketNodeSocket } from 'mote/base/parts/ipc/node/ipc.net';
+import { flakySuite } from 'mote/base/test/common/testUtils';
+import { runWithFakedTimers } from 'mote/base/test/common/timeTravelScheduler';
+import { ensureNoDisposablesAreLeakedInTestSuite } from 'mote/base/test/common/utils';
 
 class MessageStream extends Disposable {
 

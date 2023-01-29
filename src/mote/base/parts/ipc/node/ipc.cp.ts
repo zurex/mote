@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ChildProcess, fork, ForkOptions } from 'child_process';
-import { createCancelablePromise, Delayer } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { isRemoteConsoleLog, log } from 'vs/base/common/console';
-import * as errors from 'vs/base/common/errors';
-import { Emitter, Event } from 'vs/base/common/event';
-import { dispose, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { deepClone } from 'vs/base/common/objects';
-import { createQueuedSender } from 'vs/base/node/processes';
-import { removeDangerousEnvVariables } from 'vs/base/common/processes';
-import { ChannelClient as IPCClient, ChannelServer as IPCServer, IChannel, IChannelClient } from 'vs/base/parts/ipc/common/ipc';
+import { createCancelablePromise, Delayer } from 'mote/base/common/async';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { isRemoteConsoleLog, log } from 'mote/base/common/console';
+import * as errors from 'mote/base/common/errors';
+import { Emitter, Event } from 'mote/base/common/event';
+import { dispose, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { deepClone } from 'mote/base/common/objects';
+import { createQueuedSender } from 'mote/base/node/processes';
+import { removeDangerousEnvVariables } from 'mote/base/common/processes';
+import { ChannelClient as IPCClient, ChannelServer as IPCServer, IChannel, IChannelClient } from 'mote/base/parts/ipc/common/ipc';
 
 /**
  * This implementation doesn't perform well since it uses base64 encoding for buffers.
@@ -151,14 +151,14 @@ export class Client implements IChannelClient, IDisposable {
 
 		let listener: IDisposable;
 		const emitter = new Emitter<any>({
-			onFirstListenerAdd: () => {
+			onWillAddFirstListener: () => {
 				const channel = this.getCachedChannel(channelName);
 				const event: Event<T> = channel.listen(name, arg);
 
 				listener = event(emitter.fire, emitter);
 				this.activeRequests.add(listener);
 			},
-			onLastListenerRemove: () => {
+			onDidRemoveLastListener: () => {
 				this.activeRequests.delete(listener);
 				listener.dispose();
 
@@ -241,9 +241,7 @@ export class Client implements IChannelClient, IDisposable {
 					console.warn('IPC "' + this.options.serverName + '" crashed with exit code ' + code + ' and signal ' + signal);
 				}
 
-				if (this.disposeDelayer) {
-					this.disposeDelayer.cancel();
-				}
+				this.disposeDelayer?.cancel();
 				this.disposeClient();
 				this._onDidProcessExit.fire({ code, signal });
 			});
@@ -276,10 +274,8 @@ export class Client implements IChannelClient, IDisposable {
 
 	dispose() {
 		this._onDidProcessExit.dispose();
-		if (this.disposeDelayer) {
-			this.disposeDelayer.cancel();
-			this.disposeDelayer = undefined;
-		}
+		this.disposeDelayer?.cancel();
+		this.disposeDelayer = undefined;
 		this.disposeClient();
 		this.activeRequests.clear();
 	}

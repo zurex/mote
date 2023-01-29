@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, markAsSingleton } from 'vs/base/common/lifecycle';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, markAsSingleton } from 'mote/base/common/lifecycle';
 
 class WindowManager {
 

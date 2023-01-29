@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Event } from 'mote/base/common/event';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export interface IUpdate {
 	version: string;

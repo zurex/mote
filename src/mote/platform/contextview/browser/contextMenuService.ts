@@ -1,7 +1,7 @@
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { BrowserContextViewBasedService } from 'mote/platform/contextview/browser/contextViewBasedService';
-import { IMenuOptions, Menu } from 'vs/base/browser/ui/menu/menu';
-import { IAction } from 'vs/base/common/actions';
+import { IMenuOptions, Menu } from 'mote/base/browser/ui/menu/menu';
+import { IAction } from 'mote/base/common/actions';
 import { IContextMenuService } from './contextView';
 
 export interface IContextMenuHandlerOptions {

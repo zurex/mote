@@ -7,23 +7,23 @@ import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import { chmodSync, existsSync, readFileSync, statSync, truncateSync, unlinkSync } from 'fs';
 import { homedir, release, tmpdir } from 'os';
 import type { ProfilingSession, Target } from 'v8-inspect-profiler';
-import { Event } from 'vs/base/common/event';
-import { isAbsolute, resolve } from 'vs/base/common/path';
-import { IProcessEnvironment, isMacintosh, isWindows } from 'vs/base/common/platform';
-import { randomPort } from 'vs/base/common/ports';
-import { isString } from 'vs/base/common/types';
-import { whenDeleted, writeFileSync } from 'vs/base/node/pfs';
-import { findFreePort } from 'vs/base/node/ports';
-import { watchFileContents } from 'vs/platform/files/node/watcher/nodejs/nodejsWatcherLib';
-import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
-import { buildHelpMessage, buildVersionMessage, OPTIONS } from 'vs/platform/environment/node/argv';
-import { addArg, parseCLIProcessArgv } from 'vs/platform/environment/node/argvHelper';
-import { getStdinFilePath, hasStdinWithoutTty, readFromStdin, stdinDataListener } from 'vs/platform/environment/node/stdin';
-import { createWaitMarkerFile } from 'vs/platform/environment/node/wait';
-import product from 'vs/platform/product/common/product';
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { randomPath } from 'vs/base/common/extpath';
-import { Utils } from 'vs/platform/profiling/common/profiling';
+import { Event } from 'mote/base/common/event';
+import { isAbsolute, resolve } from 'mote/base/common/path';
+import { IProcessEnvironment, isMacintosh, isWindows } from 'mote/base/common/platform';
+import { randomPort } from 'mote/base/common/ports';
+import { isString } from 'mote/base/common/types';
+import { whenDeleted, writeFileSync } from 'mote/base/node/pfs';
+import { findFreePort } from 'mote/base/node/ports';
+import { watchFileContents } from 'mote/platform/files/node/watcher/nodejs/nodejsWatcherLib';
+import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
+import { buildHelpMessage, buildVersionMessage, OPTIONS } from 'mote/platform/environment/node/argv';
+import { addArg, parseCLIProcessArgv } from 'mote/platform/environment/node/argvHelper';
+import { getStdinFilePath, hasStdinWithoutTty, readFromStdin, stdinDataListener } from 'mote/platform/environment/node/stdin';
+import { createWaitMarkerFileSync } from 'mote/platform/environment/node/wait';
+import product from 'mote/platform/product/common/product';
+import { CancellationTokenSource } from 'mote/base/common/cancellation';
+import { randomPath } from 'mote/base/common/extpath';
+import { Utils } from 'mote/platform/profiling/common/profiling';
 
 function shouldSpawnCliProcess(argv: NativeParsedArgs): boolean {
 	return !!argv['install-source']
@@ -201,7 +201,7 @@ export async function main(argv: string[]): Promise<any> {
 		// is closed and then exit the waiting process.
 		let waitMarkerFilePath: string | undefined;
 		if (args.wait) {
-			waitMarkerFilePath = createWaitMarkerFile(verbose);
+			waitMarkerFilePath = createWaitMarkerFileSync(verbose);
 			if (waitMarkerFilePath) {
 				addArg(argv, '--waitMarkerFilePath', waitMarkerFilePath);
 			}

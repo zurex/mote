@@ -1,7 +1,7 @@
 import { workbenchColorsSchemaId } from 'mote/platform/theme/common/colorRegistry';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import * as nls from 'vs/nls';
-import { Extensions as JSONExtensions, IJSONContributionRegistry } from 'vs/platform/jsonschemas/common/jsonContributionRegistry';
+import { IJSONSchema } from 'mote/base/common/jsonSchema';
+import * as nls from 'mote/nls';
+import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 

@@ -3,7 +3,7 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
 import { BlockType } from 'mote/platform/store/common/record';
-import { BrandedService, IConstructorSignature } from 'vs/platform/instantiation/common/instantiation';
+import { BrandedService, IConstructorSignature } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 export type IViewLineContributionCtor = IConstructorSignature<IViewLineContribution, [number, ViewContext, ViewController, EditableHandlerOptions]>;

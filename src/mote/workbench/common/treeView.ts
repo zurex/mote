@@ -1,4 +1,4 @@
-import { Event, } from 'vs/base/common/event';
+import { Event, } from 'mote/base/common/event';
 
 export enum TreeItemCollapsibleState {
 	None = 0,

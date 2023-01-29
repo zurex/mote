@@ -3,20 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { UriComponents, URI } from 'vs/base/common/uri';
-import type { IWebSocketFactory } from 'vs/platform/remote/browser/browserSocketFactory';
-import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';
-import type { LogLevel } from 'vs/platform/log/common/log';
-import type { IUpdateProvider } from 'vs/workbench/services/update/browser/updateService';
-import type { Event } from 'vs/base/common/event';
-import type { IWorkspaceProvider } from 'vs/workbench/services/host/browser/browserHostService';
-import type { IProductConfiguration } from 'vs/base/common/product';
-import type { ICredentialsProvider } from 'vs/platform/credentials/common/credentials';
-import type { TunnelProviderFeatures } from 'vs/platform/tunnel/common/tunnel';
-import type { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from 'vs/platform/progress/common/progress';
-import { IObservableValue } from 'vs/base/common/observableValue';
-import { TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
-import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import type { UriComponents, URI } from 'mote/base/common/uri';
+import type { IWebSocketFactory } from 'mote/platform/remote/browser/browserSocketFactory';
+import type { IURLCallbackProvider } from 'mote/workbench/services/url/browser/urlService';
+import type { LogLevel } from 'mote/platform/log/common/log';
+import type { Event } from 'mote/base/common/event';
+import type { IWorkspaceProvider } from 'mote/workbench/services/host/browser/browserHostService';
+import type { IProductConfiguration } from 'mote/base/common/product';
+import type { ICredentialsProvider } from 'mote/platform/credentials/common/credentials';
+import type { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from 'mote/platform/progress/common/progress';
+import { IObservableValue } from 'mote/base/common/observableValue';
+import { TelemetryLevel } from 'mote/platform/telemetry/common/telemetry';
+import { IEditorOptions } from 'mote/platform/editor/common/editor';
 
 /**
  * The `IWorkbench` interface is the API facade for web embedders
@@ -161,7 +159,7 @@ export interface IWorkbenchConstructionOptions {
 	 * A provider for supplying tunneling functionality,
 	 * such as creating tunnels and showing candidate ports to forward.
 	 */
-	readonly tunnelProvider?: ITunnelProvider;
+	//readonly tunnelProvider?: ITunnelProvider;
 
 	/**
 	 * Endpoints to be used for proxying authentication code exchange calls in the browser.
@@ -267,7 +265,7 @@ export interface IWorkbenchConstructionOptions {
 	/**
 	 * Support for update reporting
 	 */
-	readonly updateProvider?: IUpdateProvider;
+	//readonly updateProvider?: IUpdateProvider;
 
 	/**
 	 * Support for product quality switching
@@ -356,86 +354,6 @@ export interface IExternalURLOpener {
 	 * @returns true if URL was handled, false otherwise.
 	 */
 	openExternal(href: string): boolean | Promise<boolean>;
-}
-
-export interface ITunnelProvider {
-
-	/**
-	 * Support for creating tunnels.
-	 */
-	tunnelFactory?: ITunnelFactory;
-
-	/**
-	 * Support for filtering candidate ports.
-	 */
-	showPortCandidate?: IShowPortCandidate;
-
-	/**
-	 * The features that the tunnel provider supports.
-	 */
-	features?: TunnelProviderFeatures;
-}
-
-export interface ITunnelFactory {
-	(tunnelOptions: ITunnelOptions, tunnelCreationOptions: TunnelCreationOptions): Promise<ITunnel> | undefined;
-}
-
-export interface ITunnelOptions {
-
-	remoteAddress: { port: number; host: string };
-
-	/**
-	 * The desired local port. If this port can't be used, then another will be chosen.
-	 */
-	localAddressPort?: number;
-
-	label?: string;
-
-	/**
-	 * @deprecated Use privacy instead
-	 */
-	public?: boolean;
-
-	privacy?: string;
-
-	protocol?: string;
-}
-
-export interface TunnelCreationOptions {
-
-	/**
-	 * True when the local operating system will require elevation to use the requested local port.
-	 */
-	elevationRequired?: boolean;
-}
-
-export interface ITunnel {
-
-	remoteAddress: { port: number; host: string };
-
-	/**
-	 * The complete local address(ex. localhost:1234)
-	 */
-	localAddress: string;
-
-	/**
-	 * @deprecated Use privacy instead
-	 */
-	public?: boolean;
-
-	privacy?: string;
-
-	/**
-	 * If protocol is not provided, it is assumed to be http, regardless of the localAddress
-	 */
-	protocol?: string;
-
-	/**
-	 * Implementers of Tunnel should fire onDidDispose when dispose is called.
-	 */
-	onDidDispose: Event<void>;
-
-	dispose(): Promise<void> | void;
 }
 
 export interface IShowPortCandidate {

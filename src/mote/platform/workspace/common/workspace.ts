@@ -1,7 +1,7 @@
 import SpaceStore from 'mote/platform/store/common/spaceStore';
-import { Event } from 'vs/base/common/event';
-import { URI } from 'vs/base/common/uri';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Event } from 'mote/base/common/event';
+import { URI } from 'mote/base/common/uri';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const enum WorkbenchState {
 	/** Current workbench is empty */
@@ -62,6 +62,8 @@ export interface IWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
 	 */
 	configPath: URI;
 }
+
+export type IAnyWorkspaceIdentifier = IWorkspaceIdentifier;
 
 export const IWorkspaceContextService = createDecorator<IWorkspaceContextService>('contextService');
 

@@ -7,12 +7,12 @@
 'use strict';
 
 /**
- * @typedef {import('./vs/base/common/product').IProductConfiguration} IProductConfiguration
- * @typedef {import('./vs/base/node/languagePacks').NLSConfiguration} NLSConfiguration
- * @typedef {import('./vs/platform/environment/common/argv').NativeParsedArgs} NativeParsedArgs
+ * @typedef {import('./mote/base/common/product').IProductConfiguration} IProductConfiguration
+ * @typedef {import('./mote/base/node/languagePacks').NLSConfiguration} NLSConfiguration
+ * @typedef {import('./mote/platform/environment/common/argv').NativeParsedArgs} NativeParsedArgs
  */
 
-const perf = require('./vs/base/common/performance');
+const perf = require('./mote/base/common/performance');
 perf.mark('code/didStartMain');
 
 const path = require('path');
@@ -20,8 +20,8 @@ const fs = require('fs');
 const os = require('os');
 const bootstrap = require('./bootstrap');
 const bootstrapNode = require('./bootstrap-node');
-const { getUserDataPath } = require('./vs/platform/environment/node/userDataPath');
-const { stripComments } = require('./vs/base/common/stripComments');
+const { getUserDataPath } = require('./mote/platform/environment/node/userDataPath');
+const { stripComments } = require('./mote/base/common/stripComments');
 /** @type {Partial<IProductConfiguration>} */
 const product = require('../product.json');
 const { app, protocol, crashReporter } = require('electron');
@@ -34,7 +34,7 @@ bootstrap.enableASARSupport();
 
 // Set userData path before app 'ready' event
 const args = parseCLIArgs();
-const userDataPath = getUserDataPath(args);
+const userDataPath = getUserDataPath(args, product.nameShort ?? 'mote-oss-dev');
 app.setPath('userData', userDataPath);
 
 // Resolve code cache path

@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ipcMain, session } from 'electron';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { TernarySearchTree } from 'vs/base/common/map';
+import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { TernarySearchTree } from 'mote/base/common/map';
 import { FileAccess, Schemas } from 'mote/base/common/network';
-import { extname, normalize } from 'vs/base/common/path';
-import { isLinux } from 'vs/base/common/platform';
-import { URI } from 'vs/base/common/uri';
-import { generateUuid } from 'vs/base/common/uuid';
-import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
-import { ILogService } from 'vs/platform/log/common/log';
+import { extname, normalize } from 'mote/base/common/path';
+import { isLinux } from 'mote/base/common/platform';
+import { URI } from 'mote/base/common/uri';
+import { generateUuid } from 'mote/base/common/uuid';
+import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IIPCObjectUrl, IProtocolMainService } from 'mote/platform/protocol/electron-main/protocol';
 
 type ProtocolCallback = { (result: string | Electron.FilePathWithHeaders | { error: number }): void };

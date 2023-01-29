@@ -1,5 +1,5 @@
-import { IHoverDelegate } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
+import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
+import { IMenuOptions } from 'mote/base/browser/ui/menu/menu';
 import { Color } from 'mote/base/common/color';
 import { Event } from 'mote/base/common/event';
 import { IDisposable } from 'mote/base/common/lifecycle';

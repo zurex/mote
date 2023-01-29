@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
+import { CancellationToken } from 'mote/base/common/cancellation';
 import { CancellationError } from 'mote/base/common/errors';
-import { ISplice } from 'vs/base/common/sequence';
+import { ISplice } from 'mote/base/common/sequence';
 
 /**
  * Returns the last element of an array.

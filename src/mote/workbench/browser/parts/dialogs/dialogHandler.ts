@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
-import { IDialogOptions, IConfirmation, IConfirmationResult, DialogType, IShowResult, IInputResult, ICheckbox, IInput, IDialogHandler, ICustomDialogOptions } from 'vs/platform/dialogs/common/dialogs';
+import { localize } from 'mote/nls';
+import { IDialogOptions, IConfirmation, IConfirmationResult, DialogType, IShowResult, IInputResult, ICheckbox, IInput, IDialogHandler, ICustomDialogOptions } from 'mote/platform/dialogs/common/dialogs';
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
-import { ILogService } from 'vs/platform/log/common/log';
-import Severity from 'vs/base/common/severity';
-import { Dialog, IDialogResult } from 'vs/base/browser/ui/dialog/dialog';
+import { ILogService } from 'mote/platform/log/common/log';
+import Severity from 'mote/base/common/severity';
+import { Dialog, IDialogResult } from 'mote/base/browser/ui/dialog/dialog';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { fromNow } from 'vs/base/common/date';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { Color, RGBA } from 'vs/base/common/color';
+import { DisposableStore } from 'mote/base/common/lifecycle';
+import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
+import { IProductService } from 'mote/platform/product/common/productService';
+import { fromNow } from 'mote/base/common/date';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { Color, RGBA } from 'mote/base/common/color';
 
 export class BrowserDialogHandler implements IDialogHandler {
 

@@ -20,8 +20,8 @@
 	// the related CSS and NLS counterparts.
 	bootstrapWindow.load([
 		'mote/workbench/workbench.desktop.main',
-		//'vs/nls!vs/workbench/workbench.desktop.main',
-		//'vs/css!vs/workbench/workbench.desktop.main'
+		'mote/nls!mote/workbench/workbench.desktop.main',
+		'mote/css!mote/workbench/workbench.desktop.main'
 	],
 		function (_, configuration) {
 

@@ -1,5 +1,5 @@
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 import { Pointer, RecordWithRole } from './record';
 
 interface CacheKeyProps {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Constants } from 'vs/base/common/uint';
+import { Constants } from 'mote/base/common/uint';
 import { FloatHorizontalRange } from 'mote/editor/browser/view/renderingContext';
 
 export class RangeUtil {
