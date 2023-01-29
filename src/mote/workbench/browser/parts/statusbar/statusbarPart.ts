@@ -22,7 +22,6 @@ import { isStatusbarEntryLocation, IStatusbarEntry, IStatusbarEntryAccessor, ISt
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IStorageService } from 'mote/platform/storage/common/storage';
 import { activeContrastBorder, contrastBorder } from 'mote/platform/theme/common/themeColors';
-import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 
 interface IPendingStatusbarEntry {
 	readonly id: string;
@@ -98,7 +97,6 @@ export class StatusbarPart extends Part implements IStatusbarService {
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
 		super(Parts.STATUSBAR_PART, { hasTitle: false }, themeService, storageService, layoutService);
 

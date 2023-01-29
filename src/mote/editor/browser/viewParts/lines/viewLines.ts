@@ -10,7 +10,7 @@ import { FastDomNode } from 'mote/base/browser/fastDomNode';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { Position } from 'mote/editor/common/core/position';
-import { HorizontalPosition, VisibleRanges } from 'mote/editor/browser/view/renderingContext';
+import { HorizontalPosition, IViewLines, LineVisibleRanges, VisibleRanges } from 'mote/editor/browser/view/renderingContext';
 import { getDataRootInParent } from 'mote/editor/common/htmlElementUtils';
 import { IViewLineLayout } from 'mote/editor/common/viewModel';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
@@ -34,7 +34,7 @@ class LastRenderedData {
 	}
 }
 
-export class ViewLines extends ViewPart implements IViewLineLayout, IVisibleLinesHost<ViewLine> {
+export class ViewLines extends ViewPart implements IViewLineLayout, IViewLines, IVisibleLinesHost<ViewLine> {
 
 	private domNode: FastDomNode<HTMLElement>;
 	private readonly _textRangeRestingSpot: HTMLElement;
@@ -202,6 +202,10 @@ export class ViewLines extends ViewPart implements IViewLineLayout, IVisibleLine
 		}
 
 		return this.visibleLines.getVisibleLine(lineNumber).getVisibleRangesForRange(lineNumber, startColumn, endColumn, new DomReadingContext(this.domNode.domNode, this._textRangeRestingSpot));
+	}
+
+	linesVisibleRangesForRange(range: EditorRange, includeNewLines: boolean): LineVisibleRanges[] | null {
+		return null;
 	}
 
 	public getLineWidth(lineNumber: number): number {

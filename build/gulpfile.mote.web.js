@@ -33,11 +33,10 @@ const host = 'https://caffeine-function-edog.azurewebsites.net/';
 
 const moteWebResourceIncludes = [
 	// Workbench
-	'out-build/vs/{base,platform,editor,workbench}/**/*.{svg,png,jpg,opus}',
-	'out-build/vs/code/browser/workbench/*.html',
+	'out-build/mote/{base,platform,editor,workbench}/**/*.{svg,png,jpg,opus}',
 	'out-build/mote/app/browser/workbench/*.html',
-	'out-build/vs/base/browser/ui/codicons/codicon/**/*.ttf',
-	'out-build/vs/**/markdown.css',
+	'out-build/mote/base/browser/ui/codicons/codicon/**/*.ttf',
+	'out-build/mote/**/markdown.css',
 
 	// Web node paths (needed for integration tests)
 	'out-build/mote/webPackagePaths.js',
@@ -50,10 +49,9 @@ const moteWebResources = [
 	...moteWebResourceIncludes,
 
 	// Excludes
-	'!out-build/vs/**/{node,electron-browser,electron-main}/**',
 	'!out-build/mote/**/{node,electron-browser,electron-main}/**',
-	'!out-build/vs/editor/standalone/**',
-	'!out-build/vs/workbench/**/*-tb.png',
+	'!out-build/mote/editor/standalone/**',
+	'!out-build/mote/workbench/**/*-tb.png',
 	'!**/test/**'
 ];
 
