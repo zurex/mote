@@ -80,10 +80,8 @@ export class ViewController extends Disposable {
 	 * @param selection
 	 */
 	public select(selection: TextSelection): void {
-		this.withViewEventsCollector(eventsCollector => {
-			this.setSelection(selection);
-			eventsCollector.emitOutgoingEvent(new SelectionChangedEvent(selection));
-		});
+		console.log(selection);
+		this.setSelection(selection);
 	}
 
 	public decorate(annotation: IAnnotation): void {
@@ -173,10 +171,10 @@ export class ViewController extends Disposable {
 			Transaction.createAndCommit((transaction) => {
 				let lineNumber: number;
 				// create first child
-				if (this.selection.lineNumber < 0) {
+				if (this.selection.lineNumber === 0) {
 					let child: BlockStore = EditOperation.createBlockStore('text', transaction, this.contentStore);
 					child = EditOperation.appendToParent(this.contentStore, child, transaction).child as BlockStore;
-					lineNumber = 0;
+					lineNumber = 1;
 				} else {
 					let type = 'text';
 					const lineStore = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
@@ -222,7 +220,7 @@ export class ViewController extends Disposable {
 	public isEmpty(lineNumber: number) {
 		let titleStore: RecordStore;
 		// header
-		if (lineNumber === -1) {
+		if (lineNumber === 0) {
 			const pageStore = this.getPageStore();
 			titleStore = pageStore.getTitleStore();
 		} else {
@@ -262,7 +260,7 @@ export class ViewController extends Disposable {
 	private getTitleStore() {
 		let titleStore: RecordStore;
 		// header
-		if (this.selection.lineNumber === -1) {
+		if (this.selection.lineNumber === 0) {
 			const pageStore = this.getPageStore();
 			titleStore = pageStore.getTitleStore();
 		} else {
@@ -324,57 +322,15 @@ export class ViewController extends Disposable {
 	}
 
 	private onType(eventsCollector: ViewModelEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
-		const oldRecord = store.getValue();
-		const content = segmentUtils.collectValueFromSegment(oldRecord);
-		const diffResult = textChange(selection, content, newValue);
 
-		let needChange = false;
-		let startIndex = 0;
-		let deleteFlag = false;
-
-		for (const [op, txt] of diffResult) {
-			switch (op) {
-				case DIFF_INSERT:
-					needChange = true;
-					this._insert(
-						eventsCollector,
-						txt,
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex,
-							lineNumber: selection.lineNumber
-						},
-						TextSelectionMode.Editing
-					);
-					startIndex += txt.length;
-					break;
-				case DIFF_DELETE:
-					needChange = true;
-					deleteFlag = false;
-					this.delete(
-						transaction,
-						store,
-						{
-							startIndex: startIndex,
-							endIndex: startIndex + txt.length,
-							lineNumber: selection.lineNumber
-						},
-					);
-					break;
-				default:
-					if (DIFF_EQUAL === op) {
-						startIndex += txt.length;
-					}
-			}
-		}
-
-		if (needChange) {
-
-		}
-		if (deleteFlag) {
-
+		if (newValue === '\n') {
+			this.enter();
+		} else {
+			EditOperation.addSetOperationForStore(
+				store,
+				[[newValue]],
+				transaction
+			);
 		}
 	}
 

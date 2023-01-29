@@ -112,7 +112,7 @@ export class EditableHandler extends ViewPart {
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
 		const selection = this.viewController.getSelection();
-		if (this.editableInput.isFocused() && selection.startColumn > 0) {
+		if (this.editableInput.isFocused() && selection.startIndex > 0) {
 			this.ensureSelection(selection);
 		}
 	}
@@ -130,14 +130,14 @@ export class EditableHandler extends ViewPart {
 			if (e.replacePrevCharCnt || e.replaceNextCharCnt || e.positionDelta) {
 				// must be handled through the new command
 				if (_debugComposition) {
-					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
+					console.log(` => compositionType: <<${e.text}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
-				this.viewController.editableCompositionType(e.type, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
+				this.viewController.editableCompositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
-					console.log(` => type: <<${e.type}>>`);
+					console.log(` => type: <<${e.text}>>`);
 				}
-				this.viewController.editableType(e.type);
+				this.viewController.editableType(e.text);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
@@ -162,7 +162,6 @@ export class EditableHandler extends ViewPart {
 		}));
 
 		this._register(this.editableInput.onSelectionChange((e) => {
-			e.lineNumber = e.lineNumber - 1;
 			this.viewController.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
@@ -172,7 +171,7 @@ export class EditableHandler extends ViewPart {
 				this.editable.domNode.focus();
 				const selection = this.viewController.getSelection();
 				// line number less than 0 means view controller not initialized yet
-				if (selection.startLineNumber > 0 && selection.startColumn > 0 && this.lineNumber > 0) {
+				if (selection.startIndex > 0) {
 					this.ensureSelection(selection);
 				}
 			}, 10);
@@ -184,17 +183,15 @@ export class EditableHandler extends ViewPart {
 					this.editable.domNode.style.webkitTextFillColor = this.textFillColor.toString();
 				}
 			}
-			this.context.viewModel.setHasFocus(true);
 		}));
 		this._register(this.editableInput.onBlur((e) => {
 			if (this.options.placeholder && !(this.options.forcePlaceholder === true)) {
 				this.editable.removeAttribute('placeholder');
 			}
-			this.context.viewModel.setHasFocus(false);
 		}));
 	}
 
-	public ensureSelection(selection?: EditorSelection) {
+	public ensureSelection(selection?: TextSelection) {
 		if (!selection) {
 			selection = this.viewController.getSelection();
 		}
