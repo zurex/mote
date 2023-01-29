@@ -130,7 +130,7 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
 	});
 
 
-	const code = require('fs').readFileSync(path.join(__dirname, '../../src/vs/loader.js'));
+	const code = require('fs').readFileSync(path.join(__dirname, '../../src/mote/loader.js'));
 	const r: Function = <any>vm.runInThisContext('(function(require, module, exports) { ' + code + '\n});');
 	const loaderModule = { exports: {} };
 	r.call({}, require, loaderModule, loaderModule.exports);
@@ -138,15 +138,15 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
 	const loader: any = loaderModule.exports;
 	config.isBuild = true;
 	config.paths = config.paths || {};
-	if (!config.paths['vs/nls']) {
-		config.paths['vs/nls'] = 'out-build/vs/nls.build';
+	if (!config.paths['mote/nls']) {
+		config.paths['mote/nls'] = 'out-build/mote/nls.build';
 	}
-	if (!config.paths['vs/css']) {
-		config.paths['vs/css'] = 'out-build/vs/css.build';
+	if (!config.paths['mote/css']) {
+		config.paths['mote/css'] = 'out-build/mote/css.build';
 	}
 	config.buildForceInvokeFactory = config.buildForceInvokeFactory || {};
-	config.buildForceInvokeFactory['vs/nls'] = true;
-	config.buildForceInvokeFactory['vs/css'] = true;
+	config.buildForceInvokeFactory['mote/nls'] = true;
+	config.buildForceInvokeFactory['mote/css'] = true;
 	loader.config(config);
 
 	loader(['require'], (localRequire: any) => {
@@ -156,8 +156,8 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
 				r += '.js';
 			}
 			// avoid packaging the build version of plugins:
-			r = r.replace('vs/nls.build.js', 'vs/nls.js');
-			r = r.replace('vs/css.build.js', 'vs/css.js');
+			r = r.replace('mote/nls.build.js', 'mote/nls.js');
+			r = r.replace('mote/css.build.js', 'mote/css.js');
 			return { path: r, amdModuleId: entry.amdModuleId };
 		};
 		for (const moduleId in entryPointsMap) {
@@ -174,7 +174,7 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
 	loader(Object.keys(allMentionedModulesMap), () => {
 		const modules = <IBuildModuleInfo[]>loader.getBuildInfo();
 		const partialResult = emitEntryPoints(modules, entryPointsMap);
-		const cssInlinedResources = loader('vs/css').getInlinedResources();
+		const cssInlinedResources = loader('mote/css').getInlinedResources();
 		callback(null, {
 			files: partialResult.files,
 			cssInlinedResources: cssInlinedResources,

@@ -33,7 +33,7 @@ export function loaderConfig() {
 		amdModulesPattern: /(^vs\/|^mote\/)/
 	};
 
-	result['vs/css'] = { inlineResources: true };
+	result['mote/css'] = { inlineResources: true };
 
 	return result;
 }
@@ -56,12 +56,12 @@ function loaderPlugin(src: string, base: string, amdModuleId: string | undefined
 }
 
 function loader(src: string, bundledFileHeader: string, bundleLoader: boolean, externalLoaderInfo?: any): NodeJS.ReadWriteStream {
-	let loaderStream = gulp.src(`${src}/vs/loader.js`, { base: `${src}` });
+	let loaderStream = gulp.src(`${src}/mote/loader.js`, { base: `${src}` });
 	if (bundleLoader) {
 		loaderStream = es.merge(
 			loaderStream,
-			loaderPlugin(`${src}/vs/css.js`, `${src}`, 'vs/css'),
-			loaderPlugin(`${src}/vs/nls.js`, `${src}`, 'vs/nls'),
+			loaderPlugin(`${src}/mote/css.js`, `${src}`, 'mote/css'),
+			loaderPlugin(`${src}/mote/nls.js`, `${src}`, 'mote/nls'),
 		);
 	}
 
@@ -104,7 +104,7 @@ function loader(src: string, bundledFileHeader: string, bundleLoader: boolean, e
 				}
 				this.emit('end');
 			}))
-			.pipe(concat('vs/loader.js'))
+			.pipe(concat('mote/loader.js'))
 	);
 }
 

@@ -108,11 +108,11 @@ export function compileTask(src: string, out: string, build: boolean): () => Nod
 		const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
 		const generator = new MonacoGenerator(false);
 		if (src === 'src') {
-			generator.execute();
+			//generator.execute();
 		}
 
 		return srcPipe
-			.pipe(generator.stream)
+			//.pipe(generator.stream)
 			.pipe(compile())
 			.pipe(gulp.dest(out));
 	};
