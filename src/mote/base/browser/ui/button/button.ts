@@ -2,11 +2,11 @@ import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedColors } from 'mote/base/common/themes';
 import { $, addDisposableListener, EventHelper, EventType, reset } from 'mote/base/browser/dom';
-import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
+import { Gesture, EventType as TouchEventType } from 'mote/base/browser/touch';
 import { Color } from 'mote/base/common/color';
 import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
 import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
-import { mixin } from 'vs/base/common/objects';
+import { mixin } from 'mote/base/common/objects';
 import { IThemable } from 'mote/base/common/styler';
 
 export interface IButton extends IDisposable {

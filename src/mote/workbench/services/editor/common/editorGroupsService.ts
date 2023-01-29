@@ -3,7 +3,7 @@ import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { EditorInputWithOptions, GroupIdentifier, IActiveEditorChangeEvent, IEditorCloseEvent, IEditorPane, IVisibleEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { Event } from 'mote/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { IGroupModelChangeEvent } from 'mote/workbench/common/editorGroupModel';
 
 export const IEditorGroupsService = createDecorator<IEditorGroupsService>('editorGroupsService');
@@ -50,6 +50,36 @@ export const enum GroupsArrangement {
 	 * group is not already maximized and EVEN otherwise
 	 */
 	TOGGLE
+}
+
+export interface GroupLayoutArgument {
+
+	/**
+	 * Only applies when there are multiple groups
+	 * arranged next to each other in a row or column.
+	 * If provided, their sum must be 1 to be applied
+	 * per row or column.
+	 */
+	size?: number;
+
+	/**
+	 * Editor groups  will be laid out orthogonal to the
+	 * parent orientation.
+	 */
+	groups?: GroupLayoutArgument[];
+}
+
+export interface EditorGroupLayout {
+
+	/**
+	 * The initial orientation of the editor groups at the root.
+	 */
+	orientation: GroupOrientation;
+
+	/**
+	 * The editor groups at the root of the layout.
+	 */
+	groups: GroupLayoutArgument[];
 }
 
 export interface IAddGroupOptions {
@@ -263,6 +293,17 @@ export interface IEditorGroupsService {
 	 * having fully resolved.
 	 */
 	readonly whenReady: Promise<void>;
+
+	/**
+	 * A promise that resolves when groups have been restored.
+	 *
+	 * For groups with active editor, the promise will resolve
+	 * when the visible editor has finished to resolve.
+	 *
+	 * Use the `whenReady` property to not await editors to
+	 * resolve.
+	 */
+	readonly whenRestored: Promise<void>;
 
 	/**
 	 * Add a new group to the editor area. A new group is added by splitting a provided one in

@@ -1,11 +1,11 @@
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
 import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions, ViewContainerLocationToString } from "mote/workbench/common/views";
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { generateUuid } from 'vs/base/common/uuid';
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, DisposableStore, IDisposable } from 'mote/base/common/lifecycle';
+import { generateUuid } from 'mote/base/common/uuid';
+import { SyncDescriptor } from 'mote/platform/instantiation/common/descriptors';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { ViewContainerModel } from 'mote/workbench/services/views/common/viewContainerModel';
 

@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { isFunction } from 'vs/base/common/types';
+import { isFunction } from 'mote/base/common/types';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 suite('Platform / Registry', () => {

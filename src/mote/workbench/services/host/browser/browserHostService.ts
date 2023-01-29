@@ -1,7 +1,7 @@
 import { IWorkspaceToOpen } from 'mote/platform/window/common/window';
 import { IHostService } from 'mote/workbench/services/host/browser/host';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 
 /**
  * A workspace to open in the workbench can either be:

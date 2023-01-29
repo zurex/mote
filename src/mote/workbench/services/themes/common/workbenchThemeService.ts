@@ -3,7 +3,7 @@ import { IColorTheme, IProductIconTheme, IThemeService } from 'mote/platform/the
 import { Color } from 'mote/base/common/color';
 import { isBoolean, isString } from 'mote/base/common/types';
 import { ConfigurationTarget } from 'mote/platform/configuration/common/configuration';
-import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { refineServiceDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IWorkbenchThemeService = refineServiceDecorator<IThemeService, IWorkbenchThemeService>(IThemeService);
 

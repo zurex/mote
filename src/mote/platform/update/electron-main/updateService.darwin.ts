@@ -1,14 +1,14 @@
 import * as electron from 'electron';
-import { Event } from 'vs/base/common/event';
-import { memoize } from 'vs/base/common/decorators';
-import { DisposableStore } from 'vs/base/common/lifecycle';
+import { Event } from 'mote/base/common/event';
+import { memoize } from 'mote/base/common/decorators';
+import { DisposableStore } from 'mote/base/common/lifecycle';
 import { AbstractUpdateService, createUpdateURL } from 'mote/platform/update/electron-main/abstractUpdateService';
 import { IUpdate, State, StateType, UpdateType } from 'mote/platform/update/common/update';
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
-import { IEnvironmentMainService } from 'vs/platform/environment/electron-main/environmentMainService';
+import { IEnvironmentMainService } from 'mote/platform/environment/electron-main/environmentMainService';
 import { IRequestService } from 'mote/platform/request/common/request';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IProductService } from 'mote/platform/product/common/productService';
 
 
 export class DarwinUpdateService extends AbstractUpdateService {

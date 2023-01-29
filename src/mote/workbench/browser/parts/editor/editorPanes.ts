@@ -6,8 +6,8 @@ import { EditorExtensions, IEditorOpenContext } from 'mote/workbench/common/edit
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { Dimension, hide, IDomNodePagePosition, show } from 'mote/base/browser/dom';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { assertIsDefined } from 'vs/base/common/types';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { assertIsDefined } from 'mote/base/common/types';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 export interface IOpenEditorResult {

@@ -2,9 +2,9 @@
 import { CSSProperties } from "mote/base/browser/jsx";
 import { setStyles } from "mote/base/browser/jsx/createElement";
 import { ThemedStyles } from "mote/base/common/themes";
-import { $, addDisposableListener } from "vs/base/browser/dom";
-import { Disposable } from "vs/base/common/lifecycle";
-import * as DOM from 'vs/base/browser/dom';
+import { $, addDisposableListener } from "mote/base/browser/dom";
+import { Disposable } from "mote/base/common/lifecycle";
+import * as DOM from 'mote/base/browser/dom';
 import { Transaction } from "mote/editor/common/core/transaction";
 import BlockStore from "mote/platform/store/common/blockStore";
 import { EditOperation } from "mote/editor/common/core/editOperation";

@@ -40,7 +40,7 @@ const moteWebResourceIncludes = [
 	'out-build/vs/**/markdown.css',
 
 	// Web node paths (needed for integration tests)
-	'out-build/vs/webPackagePaths.js',
+	'out-build/mote/webPackagePaths.js',
 ];
 exports.moteWebResourceIncludes = moteWebResourceIncludes;
 

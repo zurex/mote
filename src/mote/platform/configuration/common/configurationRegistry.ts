@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { distinct } from 'vs/base/common/arrays';
-import { IStringDictionary } from 'vs/base/common/collections';
+import { distinct } from 'mote/base/common/arrays';
+import { IStringDictionary } from 'mote/base/common/collections';
 import { Emitter, Event } from 'mote/base/common/event';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
+import { IJSONSchema } from 'mote/base/common/jsonSchema';
 import * as types from 'mote/base/common/types';
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { getLanguageTagSettingPlainKey } from 'mote/platform/configuration/common/configuration';
 import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
 import { PolicyName } from 'mote/platform/policy/common/policy';

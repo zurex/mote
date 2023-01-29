@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ThrottledDelayer } from 'vs/base/common/async';
+import { ThrottledDelayer } from 'mote/base/common/async';
 import { Event } from 'mote/base/common/event';
-import { Iterable } from 'vs/base/common/iterator';
-import { isObject } from 'vs/base/common/types';
-import { URI } from 'vs/base/common/uri';
-import { FileOperationError, FileOperationResult, IFileService } from 'vs/platform/files/common/files';
-import { ILogService } from 'vs/platform/log/common/log';
+import { Iterable } from 'mote/base/common/iterator';
+import { isObject } from 'mote/base/common/types';
+import { URI } from 'mote/base/common/uri';
+import { FileOperationError, FileOperationResult, IFileService } from 'mote/platform/files/common/files';
+import { ILogService } from 'mote/platform/log/common/log';
 import { AbstractPolicyService, IPolicyService, PolicyName, PolicyValue } from 'mote/platform/policy/common/policy';
 
 function keysDiff<T>(a: Map<string, T>, b: Map<string, T>): string[] {

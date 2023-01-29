@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ipcRenderer } from 'electron';
-import { Event } from 'vs/base/common/event';
-import { ClientConnectionEvent, IPCServer } from 'vs/base/parts/ipc/common/ipc';
-import { Protocol as MessagePortProtocol } from 'vs/base/parts/ipc/common/ipc.mp';
+import { Event } from 'mote/base/common/event';
+import { ClientConnectionEvent, IPCServer } from 'mote/base/parts/ipc/common/ipc';
+import { Protocol as MessagePortProtocol } from 'mote/base/parts/ipc/common/ipc.mp';
 
 /**
  * An implementation of a `IPCServer` on top of MessagePort style IPC communication.

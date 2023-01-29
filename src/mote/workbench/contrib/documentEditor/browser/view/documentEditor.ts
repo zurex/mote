@@ -4,22 +4,22 @@ import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
-import { Dimension, $, } from 'vs/base/browser/dom';
-import { BugIndicatingError } from 'vs/base/common/errors';
-import { Disposable, IDisposable, } from 'vs/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { Dimension, $, } from 'mote/base/browser/dom';
+import { BugIndicatingError } from 'mote/base/common/errors';
+import { Disposable, IDisposable, } from 'mote/base/common/lifecycle';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IQuickMenuService } from 'mote/workbench/services/quickmenu/browser/quickmenu';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
-import { IAction } from 'vs/base/common/actions';
+import { IAction } from 'mote/base/common/actions';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { IEditorResolverService } from 'mote/workbench/services/editor/common/editorResolverService';
 import { MoteEditorWidget } from 'mote/editor/browser/widget/moteEditorWidget';
-import { assertIsDefined } from 'vs/base/common/types';
+import { assertIsDefined } from 'mote/base/common/types';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 
 export class DocumentEditor extends EditorPane {

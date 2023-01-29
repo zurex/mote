@@ -2,8 +2,8 @@
 import { setStyles } from "mote/base/browser/jsx/createElement";
 import fonts from "mote/base/browser/ui/fonts";
 import RecordStore from "mote/platform/store/common/recordStore";
-import { $ } from "vs/base/browser/dom";
-import { IDisposable } from "vs/base/common/lifecycle";
+import { $ } from "mote/base/browser/dom";
+import { IDisposable } from "mote/base/common/lifecycle";
 
 
 export class NameFromStore {

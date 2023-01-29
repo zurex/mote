@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GlobalPointerMoveMonitor } from 'vs/base/browser/globalPointerMoveMonitor';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { IntervalTimer, TimeoutTimer } from 'vs/base/common/async';
-import { Codicon } from 'vs/base/common/codicons';
-import * as dom from 'vs/base/browser/dom';
+import { GlobalPointerMoveMonitor } from 'mote/base/browser/globalPointerMoveMonitor';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { IntervalTimer, TimeoutTimer } from 'mote/base/common/async';
+import { Codicon } from 'mote/base/common/codicons';
+import * as dom from 'mote/base/browser/dom';
 
 /**
  * The arrow image size.

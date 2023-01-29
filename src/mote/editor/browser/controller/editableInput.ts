@@ -8,7 +8,7 @@ import { IKeyboardEvent, StandardKeyboardEvent } from 'mote/base/browser/keyboar
 import { EditableState, IEditableWrapper, ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { OperatingSystem } from 'mote/base/common/platform';
 import { KeyCode } from 'mote/base/common/keyCodes';
-import { generateUuid } from 'vs/base/common/uuid';
+import { generateUuid } from 'mote/base/common/uuid';
 import { inputLatency } from 'mote/base/browser/performance';
 import { DomEmitter } from 'mote/base/browser/event';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
@@ -486,8 +486,8 @@ export class EditableInput extends Disposable {
 		if (this.currentComposition) {
 
 		}
-		const domNode = this.editable.getDomNode().childNodes[selection.startLineNumber - 1];
-		const rangeFromElement = RangeUtils.create(domNode as any, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
+		const domNode = this.editable.getDomNode();
+		const rangeFromElement = RangeUtils.create(domNode, { startIndex: selection.startColumn - 1, endIndex: selection.endColumn - 1, lineNumber: selection.startColumn });
 		const rangeFromDocument = RangeUtils.get();
 		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
 			RangeUtils.set(rangeFromElement);

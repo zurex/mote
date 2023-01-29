@@ -1,22 +1,23 @@
 /* eslint-disable code-no-unexternalized-strings */
-import 'vs/css!./media/views';
-import 'vs/css!./media/paneviewlet';
-import * as nls from 'vs/nls';
-import 'vs/base/browser/ui/codicons/codiconStyles';
+import 'mote/css!./media/views';
+import 'mote/css!./media/paneviewlet';
+import * as nls from 'mote/nls';
+import { ThemeIcon } from 'mote/base/common/themables';
+import 'mote/base/browser/ui/codicons/codiconStyles';
 import { IView, IViewContentDescriptor, IViewsRegistry, Extensions as ViewContainerExtensions } from "mote/workbench/common/views";
-import { append, $, trackFocus } from "vs/base/browser/dom";
-import { Event, Emitter } from 'vs/base/common/event';
-import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
-import { IPaneOptions, Pane } from "vs/base/browser/ui/splitview/paneview";
-import { Disposable, DisposableStore, IDisposable } from "vs/base/common/lifecycle";
-import { ScrollbarVisibility } from "vs/base/common/scrollable";
-import { ILogService } from "vs/platform/log/common/log";
-import { parseLinkedText } from "vs/base/common/linkedText";
-import { Button } from "vs/base/browser/ui/button/button";
+import { append, $, trackFocus } from "mote/base/browser/dom";
+import { Event, Emitter } from 'mote/base/common/event';
+import { DomScrollableElement } from "mote/base/browser/ui/scrollbar/scrollableElement";
+import { IPaneOptions, Pane } from "mote/base/browser/ui/splitview/paneview";
+import { Disposable, DisposableStore, IDisposable } from "mote/base/common/lifecycle";
+import { ScrollbarVisibility } from "mote/base/common/scrollable";
+import { ILogService } from "mote/platform/log/common/log";
+import { parseLinkedText } from "mote/base/common/linkedText";
+import { Button } from "mote/base/browser/ui/button/button";
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
-import { IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
-import { Codicon } from 'vs/base/common/codicons';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { Codicon } from 'mote/base/common/codicons';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 
 const viewPaneContainerExpandedIcon = registerIcon('view-pane-container-expanded', Codicon.chevronDown, nls.localize('viewPaneContainerExpandedIcon', 'Icon for an expanded view pane container.'));

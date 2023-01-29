@@ -1,4 +1,5 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
+import { ThemeIcon } from 'mote/base/common/themables';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { CheckBox } from 'mote/base/browser/ui/checkbox/checkbox';
 import fonts from 'mote/base/browser/ui/fonts';
@@ -11,8 +12,8 @@ import { CodeBlock } from 'mote/editor/contrib/viewBlock/browser/codeBlock';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
-import { Codicon } from 'vs/base/common/codicons';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
+import { Codicon } from 'mote/base/common/codicons';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { ImageBlock } from 'mote/editor/contrib/viewBlock/browser/imageBlock';
 

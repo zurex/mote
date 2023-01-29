@@ -184,10 +184,7 @@ export class ViewLineData {
 	public readonly startVisibleColumn: number;
 
 	public modelLineNumber!: number;
-	/**
-	 * The tokens at this view line.
-	 */
-	public readonly tokens: IViewLineTokens;
+
 
 	/**
 	 * Additional inline decorations for this line.
@@ -200,7 +197,10 @@ export class ViewLineData {
 		minColumn: number,
 		maxColumn: number,
 		startVisibleColumn: number,
-		tokens: IViewLineTokens,
+		/**
+		 * The tokens at this view line.
+		 */
+		public readonly tokens: IViewLineTokens,
 		//inlineDecorations: readonly SingleLineInlineDecoration[] | null
 	) {
 		this.content = content;
@@ -208,7 +208,6 @@ export class ViewLineData {
 		this.minColumn = minColumn;
 		this.maxColumn = maxColumn;
 		this.startVisibleColumn = startVisibleColumn;
-		this.tokens = tokens;
 		//this.inlineDecorations = inlineDecorations;
 	}
 }

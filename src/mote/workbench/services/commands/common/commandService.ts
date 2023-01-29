@@ -1,10 +1,10 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { CommandsRegistry, ICommandEvent, ICommandService } from "mote/platform/commands/common/commands";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
+import { Emitter, Event } from "mote/base/common/event";
+import { Disposable } from "mote/base/common/lifecycle";
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
+import { ILogService } from "mote/platform/log/common/log";
 
 export class CommandService extends Disposable implements ICommandService {
 

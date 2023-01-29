@@ -1,4 +1,4 @@
-import 'vs/css!./media/part';
+import 'mote/css!./media/part';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { Component } from 'mote/workbench/common/component';
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
@@ -6,7 +6,7 @@ import { Dimension, IDimension, size } from 'mote/base/browser/dom';
 import { ISerializableView, IViewSize } from 'mote/base/browser/ui/grid/grid';
 import { Emitter, Event } from 'mote/base/common/event';
 import { assertIsDefined } from 'mote/base/common/types';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export interface IPartOptions {
 	hasTitle?: boolean;

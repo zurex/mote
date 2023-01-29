@@ -1,10 +1,11 @@
+import { CharCode } from 'mote/base/common/charCode';
 import * as strings from 'mote/base/common/strings';
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
+import { pureTextTypes } from 'mote/editor/common/blockTypes';
 import { StringBuilder } from 'mote/editor/common/core/stringBuilder';
 import { IViewLineTokens } from 'mote/editor/common/tokens/lineTokens';
 import { LinePart } from 'mote/editor/common/viewLayout/linePart';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 
 export const enum RenderWhitespace {
 	None = 0,
@@ -90,7 +91,6 @@ export class RenderLineInput {
 		this.isBasicASCII = isBasicASCII;
 		this.containsRTL = containsRTL;
 		this.fauxIndentLength = fauxIndentLength;
-		//this.lineTokens = lineTokens;
 		//this.lineDecorations = lineDecorations.sort(LineDecoration.compare);
 		this.tabSize = tabSize;
 		this.startVisibleColumn = startVisibleColumn;
@@ -382,7 +382,7 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 		len = lineContent.length;
 	}
 
-	let tokens: any[] = [];//transformAndRemoveOverflowing(lineContent, input.containsRTL, input.lineTokens, input.fauxIndentLength, len);
+	let tokens = transformAndRemoveOverflowing(lineContent, input.containsRTL, input.lineTokens, input.fauxIndentLength, len);
 	if (input.renderControlCharacters && !input.isBasicASCII) {
 		// Calling `extractControlCharacters` before adding (possibly empty) line parts
 		// for inline decorations. `extractControlCharacters` removes empty line parts.
@@ -416,6 +416,8 @@ function resolveRenderLineInput(input: RenderLineInput): ResolvedRenderLineInput
 		// We can never split RTL text, as it ruins the rendering
 		//tokens = splitLargeTokens(lineContent, tokens, !input.isBasicASCII || input.fontLigatures);
 	}
+
+	//console.log(input.lineTokens);
 
 	return new ResolvedRenderLineInput(
 		input.useMonospaceOptimizations,
@@ -491,6 +493,9 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 	const lineContent = resolvedInput.lineContent;
 	const fauxIndentLength = resolvedInput.fauxIndentLength;
 	const startVisibleColumn = resolvedInput.startVisibleColumn;
+	const parts = resolvedInput.parts;
+
+	//console.log(resolvedInput.parts);
 
 	const characterMapping = new CharacterMapping(len + 1, 0);
 	let lastCharacterMappingDefined = false;
@@ -500,10 +505,105 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 	let charOffsetInPart = 0; // the character offset in the current part
 	let charHorizontalOffset = 0; // the character horizontal position in terms of chars relative to line start
 
-	const partDisplacement = 0;
-	const partIndex = 0;
+	let partDisplacement = 0;
 
-	sb.appendString('<span>');
+	if (containsRTL) {
+		sb.appendString('<span dir="ltr">');
+	} else {
+		sb.appendString('<span>');
+	}
+
+	if (pureTextTypes.has(store.getType() || '')) {
+		for (let partIndex = 0, tokensLen = parts.length; partIndex < tokensLen; partIndex++) {
+			const part = parts[partIndex];
+			const partEndIndex = part.endIndex;
+			const partType = part.type;
+			const partContainsRTL = part.containsRTL;
+			const partRendersWhitespace = false;
+			const partRendersWhitespaceWithWidth = false;
+			const partIsEmptyAndHasPseudoAfter = (charIndex === partEndIndex && part.isPseudoAfter());
+
+			charOffsetInPart = 0;
+
+			sb.appendString('<span ');
+			if (partContainsRTL) {
+				sb.appendString('style="unicode-bidi:isolate" ');
+			}
+			sb.appendString('class="');
+			sb.appendString(partRendersWhitespaceWithWidth ? 'mtkz' : partType);
+			sb.appendASCIICharCode(CharCode.DoubleQuote);
+
+			if (partRendersWhitespace) {
+
+			} else {
+				sb.appendASCIICharCode(CharCode.GreaterThan);
+
+				for (; charIndex < partEndIndex; charIndex++) {
+					characterMapping.setColumnInfo(charIndex + 1, partIndex - partDisplacement, charOffsetInPart, charHorizontalOffset);
+					partDisplacement = 0;
+					const charCode = lineContent.charCodeAt(charIndex);
+
+					const producedCharacters = 1;
+					let charWidth = 1;
+
+					switch (charCode) {
+						case CharCode.Space:
+							sb.appendCharCode(0xA0); // &nbsp;
+							break;
+
+						case CharCode.LessThan:
+							sb.appendString('&lt;');
+							break;
+
+						case CharCode.GreaterThan:
+							sb.appendString('&gt;');
+							break;
+
+						case CharCode.Ampersand:
+							sb.appendString('&amp;');
+							break;
+						default: {
+							if (strings.isFullWidthCharacter(charCode)) {
+								charWidth++;
+							}
+							sb.appendCharCode(charCode);
+						}
+					}
+
+					charOffsetInPart += producedCharacters;
+					charHorizontalOffset += charWidth;
+					if (charIndex >= fauxIndentLength) {
+						visibleColumn += charWidth;
+					}
+				}
+			}
+
+			if (partIsEmptyAndHasPseudoAfter) {
+				partDisplacement++;
+			} else {
+				partDisplacement = 0;
+			}
+
+			if (charIndex >= len && !lastCharacterMappingDefined && part.isPseudoAfter()) {
+				lastCharacterMappingDefined = true;
+				characterMapping.setColumnInfo(charIndex + 1, partIndex, charOffsetInPart, charHorizontalOffset);
+			}
+
+			sb.appendString('</span>');
+		}
+
+		if (!lastCharacterMappingDefined) {
+			// When getting client rects for the last character, we will position the
+			// text range at the end of the span, insteaf of at the beginning of next span
+			characterMapping.setColumnInfo(len + 1, parts.length - 1, charOffsetInPart, charHorizontalOffset);
+		}
+
+		sb.appendString('</span>');
+
+		return new RenderLineOutput(characterMapping, containsRTL, containsForeignElements);
+	}
+
+	const partIndex = 0;
 
 	for (; charIndex < resolvedInput.len; charIndex++) {
 		characterMapping.setColumnInfo(charIndex + 1, partIndex - partDisplacement, charOffsetInPart, charHorizontalOffset);

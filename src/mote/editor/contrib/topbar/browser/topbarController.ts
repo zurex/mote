@@ -6,7 +6,7 @@ import { IContextViewService } from 'mote/platform/contextview/browser/contextVi
 import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'mote/base/common/lifecycle';
 
 export class TopbarController extends Disposable implements IEditorContribution {
 	public static readonly ID = 'editor.contrib.topbarController';

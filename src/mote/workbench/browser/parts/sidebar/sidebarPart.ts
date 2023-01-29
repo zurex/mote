@@ -7,10 +7,10 @@ import { IPaneComposite } from 'mote/workbench/common/panecomposite';
 import { SIDE_BAR_BACKGROUND } from 'mote/workbench/common/theme';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
 import { assertIsDefined } from 'mote/base/common/types';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ILogService } from 'vs/platform/log/common/log';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { ILogService } from 'mote/platform/log/common/log';
 import { Registry } from 'mote/platform/registry/common/platform';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCompositePart {
 

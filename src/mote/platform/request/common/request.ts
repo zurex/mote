@@ -1,6 +1,6 @@
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IRequestContext, IRequestOptions } from 'vs/base/parts/request/common/request';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { IRequestContext, IRequestOptions } from 'mote/base/parts/request/common/request';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IRequestService = createDecorator<IRequestService>('requestService');
 

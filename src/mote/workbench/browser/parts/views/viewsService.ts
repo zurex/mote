@@ -5,15 +5,15 @@ import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { IView, IViewDescriptor, IViewDescriptorService, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import { registerSingleton } from "vs/platform/instantiation/common/extensions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, DisposableStore, IDisposable, toDisposable } from "mote/base/common/lifecycle";
+import { registerSingleton } from "mote/platform/instantiation/common/extensions";
+import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
+import { ILogService } from "mote/platform/log/common/log";
 import { Registry } from 'mote/platform/registry/common/platform';
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "../../panecomposite";
 import { ViewPaneContainer } from "./viewPaneContainer";
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export class ViewsService extends Disposable implements IViewsService {
 

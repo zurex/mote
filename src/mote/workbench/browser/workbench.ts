@@ -1,16 +1,15 @@
 /* eslint-disable code-no-unexternalized-strings */
 import 'mote/workbench/browser/style';
-import { getSingletonServiceDescriptors } from 'vs/platform/instantiation/common/extensions';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { InstantiationService } from 'vs/platform/instantiation/common/instantiationService';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { ILogService } from 'vs/platform/log/common/log';
+import { getSingletonServiceDescriptors } from 'mote/platform/instantiation/common/extensions';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { InstantiationService } from 'mote/platform/instantiation/common/instantiationService';
+import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
 import { Layout } from "./layout";
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IWorkbenchContributionsRegistry, WorkbenchExtensions } from 'mote/workbench/common/contributions';
-import { IWorkbenchOptions } from 'vs/workbench/browser/workbench';
 import { isLinux, isWeb, isWindows } from 'mote/base/common/platform';
 import { coalesce } from 'mote/base/common/arrays';
 import { isChrome, isFirefox, isSafari } from 'mote/base/browser/browser';
@@ -18,7 +17,15 @@ import { EditorExtensions, IEditorFactoryRegistry } from 'mote/workbench/common/
 import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { RunOnceScheduler, runWhenIdle, timeout } from 'mote/base/common/async';
-import { mark } from 'vs/base/common/performance';
+import { mark } from 'mote/base/common/performance';
+
+export interface IWorkbenchOptions {
+
+	/**
+	 * Extra classes to be added to the workbench container.
+	 */
+	extraClasses?: string[];
+}
 
 export class Workbench extends Layout {
 

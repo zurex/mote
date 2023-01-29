@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { Client } from 'vs/base/parts/ipc/node/ipc.cp';
-import { getPathFromAmdModule } from 'vs/base/test/node/testUtils';
+import { Client } from 'mote/base/parts/ipc/node/ipc.cp';
+import { getPathFromAmdModule } from 'mote/base/test/node/testUtils';
 import { TestServiceClient } from './testService';
 
 function createClient(): Client {
 	return new Client(getPathFromAmdModule(require, 'bootstrap-fork'), {
 		serverName: 'TestServer',
-		env: { VSCODE_AMD_ENTRYPOINT: 'vs/base/parts/ipc/test/node/testApp', verbose: true }
+		env: { VSCODE_AMD_ENTRYPOINT: 'mote/base/parts/ipc/test/node/testApp', verbose: true }
 	});
 }
 

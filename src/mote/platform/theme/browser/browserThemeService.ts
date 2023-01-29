@@ -5,7 +5,7 @@ import { Disposable } from 'mote/base/common/lifecycle';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
 import { createStyleSheet } from 'mote/base/browser/dom';
 import { getIconsStyleSheet } from 'mote/platform/theme/browser/iconsStyleSheet';
-import { RunOnceScheduler } from 'vs/base/common/async';
+import { RunOnceScheduler } from 'mote/base/common/async';
 import { IconTheme } from 'mote/platform/theme/common/iconTheme';
 
 export class BrowserThemeService extends Disposable implements IThemeService {

@@ -7,8 +7,8 @@ import { IMoteEditor, IOverlayWidget, IOverlayWidgetPosition, OverlayWidgetPosit
 import { ShareMenu } from 'mote/editor/contrib/topbar/browser/shareMenu';
 import { ContextViewHelper } from 'mote/platform/contextview/browser/contextViewHelper';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { Widget } from 'vs/base/browser/ui/widget';
-import { Emitter } from 'vs/base/common/event';
+import { Widget } from 'mote/base/browser/ui/widget';
+import { Emitter } from 'mote/base/common/event';
 
 export const TopbarDefaultHeight = 45;
 export const TopbarDesktopHeight = 37;

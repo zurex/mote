@@ -29,15 +29,13 @@ import 'mote/workbench/browser/web.main';
 
 import 'mote/workbench/services/lifecycle/browser/lifecycleService';
 import 'mote/workbench/services/keybinding/browser/browserKeyboardLayoutService';
+import 'mote/workbench/services/themes/browser/browserHostColorSchemeService';
 
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { ILoggerService } from 'vs/platform/log/common/log';
-import { FileLoggerService } from 'vs/platform/log/common/fileLog';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
 
-registerSingleton(ILoggerService, FileLoggerService);
-registerSingleton(IContextMenuService, BrowserContextMenuService);
+registerSingleton(IContextMenuService, BrowserContextMenuService, InstantiationType.Delayed);
 
 //#endregion
 
@@ -58,12 +56,12 @@ registerSingleton(IContextMenuService, BrowserContextMenuService);
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 import { create, } from 'mote/workbench/browser/web.factory';
-import { IWorkbench, IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api';
-import { ICredentialsProvider } from 'vs/platform/credentials/common/credentials';
+import { IWorkbench, IWorkbenchConstructionOptions } from 'mote/workbench/browser/web.api';
+import { ICredentialsProvider } from 'mote/platform/credentials/common/credentials';
 // eslint-disable-next-line no-duplicate-imports
-import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';
+import type { IURLCallbackProvider } from 'mote/workbench/services/url/browser/urlService';
 // eslint-disable-next-line no-duplicate-imports
-import type { IWorkspace, IWorkspaceProvider } from 'vs/workbench/services/host/browser/browserHostService';
+import type { IWorkspace, IWorkspaceProvider } from 'mote/workbench/services/host/browser/browserHostService';
 
 export {
 

@@ -1,4 +1,4 @@
-import * as types from 'vs/base/common/types';
+import * as types from 'mote/base/common/types';
 
 import { IPosition, Position } from 'mote/editor/common/core/position';
 import { CursorState, PartialCursorState, SelectionStartKind, SingleCursorState } from 'mote/editor/common/cursorCommon';

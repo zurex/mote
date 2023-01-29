@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { coalesce } from 'vs/base/common/arrays';
-import { IStringDictionary } from 'vs/base/common/collections';
+import { coalesce } from 'mote/base/common/arrays';
+import { IStringDictionary } from 'mote/base/common/collections';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { equals } from 'vs/base/common/objects';
+import { equals } from 'mote/base/common/objects';
 import { isEmptyObject } from 'mote/base/common/types';
 import { addToValueTree, IOverrides, toValuesTree } from 'mote/platform/configuration/common/configuration';
 import { ConfigurationModel } from 'mote/platform/configuration/common/configurationModels';
 import { ConfigurationExtensions, IConfigurationRegistry, overrideIdentifiersFromKey, OVERRIDE_PROPERTY_REGEX } from 'mote/platform/configuration/common/configurationRegistry';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IPolicyService, PolicyDefinition, PolicyName, PolicyValue } from 'mote/platform/policy/common/policy';
 import { Registry } from 'mote/platform/registry/common/platform';
 

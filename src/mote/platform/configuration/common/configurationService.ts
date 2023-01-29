@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from 'vs/base/common/async';
+import { RunOnceScheduler } from 'mote/base/common/async';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
-import { extUriBiasedIgnorePathCase } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
+import { extUriBiasedIgnorePathCase } from 'mote/base/common/resources';
+import { URI } from 'mote/base/common/uri';
 import { ConfigurationTarget, IConfigurationChange, IConfigurationChangeEvent, IConfigurationData, IConfigurationOverrides, IConfigurationService, IConfigurationValue, isConfigurationOverrides } from 'mote/platform/configuration/common/configuration';
 import { Configuration, ConfigurationChangeEvent, ConfigurationModel, UserSettings } from 'mote/platform/configuration/common/configurationModels';
 import { DefaultConfiguration, IPolicyConfiguration, NullPolicyConfiguration, PolicyConfiguration } from 'mote/platform/configuration/common/configurations';
-import { IFileService } from 'vs/platform/files/common/files';
-import { ILogService } from 'vs/platform/log/common/log';
+import { IFileService } from 'mote/platform/files/common/files';
+import { ILogService } from 'mote/platform/log/common/log';
 import { IPolicyService, NullPolicyService } from 'mote/platform/policy/common/policy';
 
 export class ConfigurationService extends Disposable implements IConfigurationService, IDisposable {

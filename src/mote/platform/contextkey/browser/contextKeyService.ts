@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event, PauseableEmitter } from 'vs/base/common/event';
-import { Iterable } from 'vs/base/common/iterator';
-import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
-import { MarshalledObject } from 'vs/base/common/marshalling';
-import { MarshalledId } from 'vs/base/common/marshallingIds';
-import { cloneAndChange, distinct } from 'vs/base/common/objects';
+import { Emitter, Event, PauseableEmitter } from 'mote/base/common/event';
+import { Iterable } from 'mote/base/common/iterator';
+import { DisposableStore, IDisposable, MutableDisposable } from 'mote/base/common/lifecycle';
+import { MarshalledObject } from 'mote/base/common/marshalling';
+import { MarshalledId } from 'mote/base/common/marshallingIds';
+import { cloneAndChange, distinct } from 'mote/base/common/objects';
 import { TernarySearchTree } from 'mote/base/common/ternarySearchTree';
-import { URI } from 'vs/base/common/uri';
-import { localize } from 'vs/nls';
-import { CommandsRegistry } from 'vs/platform/commands/common/commands';
+import { URI } from 'mote/base/common/uri';
+import { localize } from 'mote/nls';
+import { CommandsRegistry } from 'mote/platform/commands/common/commands';
 import { ConfigurationTarget, IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { ContextKeyExpression, ContextKeyInfo, ContextKeyValue, IContext, IContextKey, IContextKeyChangeEvent, IContextKeyService, IContextKeyServiceTarget, IReadableSet, RawContextKey } from 'mote/platform/contextkey/common/contextkey';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
 
@@ -387,6 +387,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
 		this._toDispose.add(myContext);
 
 		// Uncomment this to see the contexts continuously logged
+		/*
 		let lastLoggedValue: string | null = null;
 		setInterval(() => {
 			const values = Object.keys(this._contexts).map((key) => this._contexts[key]);
@@ -396,6 +397,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
 				console.log(lastLoggedValue);
 			}
 		}, 2000);
+		*/
 	}
 
 	public dispose(): void {

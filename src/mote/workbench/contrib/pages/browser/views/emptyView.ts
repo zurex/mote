@@ -3,7 +3,7 @@ import { IContextMenuService } from 'mote/platform/contextview/browser/contextVi
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IViewPaneOptions, ViewPane } from 'mote/workbench/browser/parts/views/viewPane';
 import { Extensions, IViewsRegistry } from 'mote/workbench/common/views';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 import { Registry } from 'mote/platform/registry/common/platform';
 
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);

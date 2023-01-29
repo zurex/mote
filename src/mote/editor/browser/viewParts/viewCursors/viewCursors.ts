@@ -1,4 +1,4 @@
-import 'vs/css!./viewCursors';
+import 'mote/css!./viewCursors';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { RestrictedRenderingContext, ViewRenderingContext } from 'mote/editor/browser/view/renderingContext';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';

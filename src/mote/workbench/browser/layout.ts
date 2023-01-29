@@ -4,20 +4,20 @@ import { IWorkbenchLayoutService, Parts, Position } from 'mote/workbench/service
 import { Dimension, getClientArea, IDimension, isAncestorUsingFlowTo, position, size } from 'mote/base/browser/dom';
 import { Part } from "./part";
 import { Emitter } from "mote/base/common/event";
-import { ILogService } from "vs/platform/log/common/log";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "mote/platform/log/common/log";
+import { ServicesAccessor } from "mote/platform/instantiation/common/instantiation";
 import { IPaneCompositePartService } from 'mote/workbench/services/panecomposite/browser/panecomposite';
-import { DeferredPromise, Promises } from "vs/base/common/async";
+import { DeferredPromise, Promises } from "mote/base/common/async";
 import { IViewDescriptorService, ViewContainerLocation } from 'mote/workbench/common/views';
 import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from 'mote/base/browser/ui/grid/grid';
-import { mark } from "vs/base/common/performance";
+import { mark } from "mote/base/common/performance";
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
-import { IPath } from 'vs/platform/window/common/window';
+import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
+import { IPath } from 'mote/platform/window/common/window';
 import { pathToEditor } from 'mote/workbench/common/editor';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
-import { IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { EditorGroupLayout, IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IStatusbarService } from 'mote/workbench/services/statusbar/browser/statusbar';
 
 interface IWorkbenchLayoutWindowInitializationState {
@@ -62,6 +62,18 @@ enum WorkbenchLayoutClasses {
 	FULLSCREEN = 'fullscreen',
 	MAXIMIZED = 'maximized',
 	WINDOW_BORDER = 'border'
+}
+
+interface IPathToOpen extends IPath {
+	readonly viewColumn?: number;
+}
+
+interface IInitialEditorsState {
+	readonly filesToOpenOrCreate?: IPathToOpen[];
+	readonly filesToDiff?: IPathToOpen[];
+	readonly filesToMerge?: IPathToOpen[];
+
+	readonly layout?: EditorGroupLayout;
 }
 
 export abstract class Layout extends Disposable implements IWorkbenchLayoutService {
@@ -156,6 +168,15 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.initLayoutState(accessor.get(ILifecycleService), accessor);
 	}
 
+	private registerLayoutListeners(): void {
+
+		// Wait to register these listeners after the editor group service
+		// is ready to avoid conflicts on startup
+		this.editorGroupService.whenRestored.then(() => {
+
+		});
+	}
+
 	private initLayoutState(lifecycleService: ILifecycleService, accessor: ServicesAccessor) {
 
 		// Window Initialization State
@@ -211,6 +232,32 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		}
 
 		return part;
+	}
+
+	hasFocus(part: Parts): boolean {
+		const activeElement = document.activeElement;
+		if (!activeElement) {
+			return false;
+		}
+
+		const container = this.getContainer(part);
+
+		return !!container && isAncestorUsingFlowTo(activeElement, container);
+	}
+
+	focusPart(part: Parts): void {
+		switch (part) {
+			case Parts.EDITOR_PART:
+				this.editorGroupService.activeGroup.focus();
+				break;
+			case Parts.STATUSBAR_PART:
+				this.statusBarService.focus();
+			default: {
+				// Title Bar & Banner simply pass focus to container
+				const container = this.getContainer(part);
+				container?.focus();
+			}
+		}
 	}
 
 	protected createWorkbenchLayout(): void {
@@ -400,17 +447,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		};
 
 		return result;
-	}
-
-	hasFocus(part: Parts): boolean {
-		const activeElement = document.activeElement;
-		if (!activeElement) {
-			return false;
-		}
-
-		const container = this.getContainer(part);
-
-		return !!container && isAncestorUsingFlowTo(activeElement, container);
 	}
 
 	getContainer(part: Parts): HTMLElement | undefined {

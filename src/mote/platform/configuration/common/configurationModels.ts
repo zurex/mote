@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as arrays from 'vs/base/common/arrays';
-import { IStringDictionary } from 'vs/base/common/collections';
-import { Emitter, Event } from 'vs/base/common/event';
-import * as json from 'vs/base/common/json';
+import * as arrays from 'mote/base/common/arrays';
+import { IStringDictionary } from 'mote/base/common/collections';
+import { Emitter, Event } from 'mote/base/common/event';
+import * as json from 'mote/base/common/json';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { getOrSet, ResourceMap } from 'vs/base/common/map';
-import * as objects from 'vs/base/common/objects';
-import { IExtUri } from 'vs/base/common/resources';
-import * as types from 'vs/base/common/types';
-import { URI, UriComponents } from 'vs/base/common/uri';
+import { getOrSet, ResourceMap } from 'mote/base/common/map';
+import * as objects from 'mote/base/common/objects';
+import { IExtUri } from 'mote/base/common/resources';
+import * as types from 'mote/base/common/types';
+import { URI, UriComponents } from 'mote/base/common/uri';
 import { addToValueTree, ConfigurationTarget, getConfigurationValue, IConfigurationChange, IConfigurationChangeEvent, IConfigurationCompareResult, IConfigurationData, IConfigurationModel, IConfigurationOverrides, IConfigurationUpdateOverrides, IConfigurationValue, IOverrides, removeFromValueTree, toValuesTree } from 'mote/platform/configuration/common/configuration';
 import { ConfigurationScope, ConfigurationExtensions, IConfigurationPropertySchema, IConfigurationRegistry, overrideIdentifiersFromKey, OVERRIDE_PROPERTY_REGEX } from 'mote/platform/configuration/common/configurationRegistry';
-import { FileOperation, IFileService } from 'vs/platform/files/common/files';
+import { FileOperation, IFileService } from 'mote/platform/files/common/files';
 import { Registry } from 'mote/platform/registry/common/platform';
-import { Workspace } from 'vs/platform/workspace/common/workspace';
+import { Workspace } from 'mote/platform/workspace/common/workspace';
 
 export interface IInspectValue<V> {
 	value?: V;

@@ -1,7 +1,7 @@
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import fonts from 'mote/base/browser/ui/fonts';
-import { Color } from 'vs/base/common/color';
-import { IThemable } from 'vs/base/common/styler';
+import { Color } from 'mote/base/common/color';
+import { IThemable } from 'mote/base/common/styler';
 
 export interface IItemContainerOptions {
 	isSmall?: boolean;

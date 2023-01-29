@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GestureEvent } from 'vs/base/browser/touch';
+import { GestureEvent } from 'mote/base/browser/touch';
 import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
 import { IDisposable } from 'mote/base/common/lifecycle';
 

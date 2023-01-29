@@ -2,13 +2,13 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Dimension } from 'mote/base/browser/dom';
 import { URI } from 'mote/base/common/uri';
-import { BrandedService, IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
+import { BrandedService, IConstructorSignature, IInstantiationService } from "mote/platform/instantiation/common/instantiation";
+import { ILogService } from "mote/platform/log/common/log";
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { Composite, CompositeDescriptor, CompositeRegistry } from "./composite";
 import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneContainer";
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export abstract class PaneComposite extends Composite implements IPaneComposite {
 

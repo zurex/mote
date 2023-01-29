@@ -1,5 +1,5 @@
-import { generateUuid } from 'vs/base/common/uuid';
-import { OfflineError } from 'vs/base/parts/request/common/request';
+import { generateUuid } from 'mote/base/common/uuid';
+import { OfflineError } from 'mote/base/parts/request/common/request';
 
 export const config = {
 	apiDev: 'http://localhost:7071',

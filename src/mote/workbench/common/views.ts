@@ -1,17 +1,17 @@
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { flatten } from 'mote/base/common/arrays';
-import { SetMap } from 'vs/base/common/collections';
+import { SetMap } from 'mote/base/common/collections';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { getOrSet } from 'vs/base/common/map';
-import { URI } from 'vs/base/common/uri';
-import { localize } from 'vs/nls';
-import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { getOrSet } from 'mote/base/common/map';
+import { URI } from 'mote/base/common/uri';
+import { localize } from 'mote/nls';
+import { SyncDescriptor } from 'mote/platform/instantiation/common/descriptors';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IPaneComposite } from 'mote/workbench/common/panecomposite';
-import { Codicon } from 'vs/base/common/codicons';
+import { Codicon } from 'mote/base/common/codicons';
 
 export const defaultViewIcon = registerIcon('default-view-icon', Codicon.window, localize('defaultViewIcon', 'Default view icon.'));
 

@@ -3,14 +3,14 @@ import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IAddedViewDescriptorRef, IView, IViewContainerModel, IViewDescriptor, IViewDescriptorRef, IViewDescriptorService, IViewPaneContainer, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import { addDisposableListener, Dimension } from "vs/base/browser/dom";
-import { Orientation } from "vs/base/browser/ui/sash/sash";
-import { IPaneViewOptions, PaneView } from "vs/base/browser/ui/splitview/paneview";
-import { Emitter, Event } from 'vs/base/common/event';
-import { combinedDisposable, dispose, IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import { assertIsDefined } from "vs/base/common/types";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
+import { addDisposableListener, Dimension } from "mote/base/browser/dom";
+import { Orientation } from "mote/base/browser/ui/sash/sash";
+import { IPaneViewOptions, PaneView } from "mote/base/browser/ui/splitview/paneview";
+import { Emitter, Event } from 'mote/base/common/event';
+import { combinedDisposable, dispose, IDisposable, toDisposable } from "mote/base/common/lifecycle";
+import { assertIsDefined } from "mote/base/common/types";
+import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
+import { ILogService } from "mote/platform/log/common/log";
 import { IViewPaneOptions, ViewPane } from "./viewPane";
 
 export interface IViewPaneContainerOptions extends IPaneViewOptions {

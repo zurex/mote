@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import Severity from 'vs/base/common/severity';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IConfirmation, IConfirmationResult, IDialogOptions, IDialogService, IInput, IInputResult, IShowResult } from 'vs/platform/dialogs/common/dialogs';
-import { DialogsModel } from 'vs/workbench/common/dialogs';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { ILogService } from 'vs/platform/log/common/log';
+import Severity from 'mote/base/common/severity';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IConfirmation, IConfirmationResult, IDialogOptions, IDialogService, IInput, IInputResult, IShowResult } from 'mote/platform/dialogs/common/dialogs';
+import { DialogsModel } from 'mote/workbench/common/dialogs';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { IWorkbenchEnvironmentService } from 'mote/workbench/services/environment/common/environmentService';
+import { ILogService } from 'mote/platform/log/common/log';
 
 export class DialogService extends Disposable implements IDialogService {
 

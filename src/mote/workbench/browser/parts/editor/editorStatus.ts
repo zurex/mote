@@ -1,4 +1,4 @@
-import { localize } from 'vs/nls';
+import { localize } from 'mote/nls';
 import { Event } from 'mote/base/common/event';
 import { Disposable, DisposableStore, MutableDisposable } from 'mote/base/common/lifecycle';
 import { format } from 'mote/base/common/strings';

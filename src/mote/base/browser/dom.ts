@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as browser from 'mote/base/browser/browser';
-import { BrowserFeatures } from 'vs/base/browser/canIUse';
+import { BrowserFeatures } from 'mote/base/browser/canIUse';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
 import { IMouseEvent, StandardMouseEvent } from 'mote/base/browser/mouseEvent';
-import { TimeoutTimer } from 'vs/base/common/async';
-import { onUnexpectedError } from 'vs/base/common/errors';
+import { TimeoutTimer } from 'mote/base/common/async';
+import { onUnexpectedError } from 'mote/base/common/errors';
 import * as event from 'mote/base/common/event';
-import * as dompurify from 'vs/base/browser/dompurify/dompurify';
+import * as dompurify from 'mote/base/browser/dompurify/dompurify';
 import { KeyCode } from 'mote/base/common/keyCodes';
 import { Disposable, DisposableStore, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { FileAccess, RemoteAuthorities, Schemas } from 'vs/base/common/network';
+import { FileAccess, RemoteAuthorities, Schemas } from 'mote/base/common/network';
 import * as platform from 'mote/base/common/platform';
-import { withNullAsUndefined } from 'vs/base/common/types';
-import { URI } from 'vs/base/common/uri';
+import { withNullAsUndefined } from 'mote/base/common/types';
+import { URI } from 'mote/base/common/uri';
 
 export function clearNode(node: HTMLElement): void {
 	while (node.firstChild) {
@@ -123,27 +123,6 @@ export function addDisposableGenericMouseUpListener(node: EventTarget, handler: 
 	return addDisposableListener(node, platform.isIOS && BrowserFeatures.pointerEvents ? EventType.POINTER_UP : EventType.MOUSE_UP, handler, useCapture);
 }
 
-interface IRequestAnimationFrame {
-	(callback: (time: number) => void): number;
-}
-let _animationFrame: IRequestAnimationFrame | null = null;
-function doRequestAnimationFrame(callback: (time: number) => void): number {
-	if (!_animationFrame) {
-		const emulatedRequestAnimationFrame = (callback: (time: number) => void): any => {
-			return setTimeout(() => callback(new Date().getTime()), 0);
-		};
-		_animationFrame = (
-			self.requestAnimationFrame
-			|| (<any>self).msRequestAnimationFrame
-			|| (<any>self).webkitRequestAnimationFrame
-			|| (<any>self).mozRequestAnimationFrame
-			|| (<any>self).oRequestAnimationFrame
-			|| emulatedRequestAnimationFrame
-		);
-	}
-	return _animationFrame.call(self, callback);
-}
-
 /**
  * Schedule a callback to be run at the next animation frame.
  * This allows multiple parties to register callbacks that should run at the next animation frame.
@@ -232,7 +211,7 @@ class AnimationFrameQueueItem implements IDisposable {
 
 		if (!animFrameRequested) {
 			animFrameRequested = true;
-			doRequestAnimationFrame(animationFrameRunner);
+			requestAnimationFrame(animationFrameRunner);
 		}
 
 		return item;
@@ -345,16 +324,8 @@ class SizeUtils {
 	}
 
 	private static getDimension(element: HTMLElement, cssPropertyName: string, jsPropertyName: string): number {
-		const computedStyle: CSSStyleDeclaration = getComputedStyle(element);
-		let value = '0';
-		if (computedStyle) {
-			if (computedStyle.getPropertyValue) {
-				value = computedStyle.getPropertyValue(cssPropertyName);
-			} else {
-				// IE8
-				value = (<any>computedStyle).getAttribute(jsPropertyName);
-			}
-		}
+		const computedStyle = getComputedStyle(element);
+		const value = computedStyle ? computedStyle.getPropertyValue(cssPropertyName) : '0';
 		return SizeUtils.convertToPixels(element, value);
 	}
 
@@ -446,7 +417,12 @@ export class Dimension implements IDimension {
 	}
 }
 
-export function getTopLeftOffset(element: HTMLElement): { left: number; top: number } {
+export interface IDomPosition {
+	readonly left: number;
+	readonly top: number;
+}
+
+export function getTopLeftOffset(element: HTMLElement): IDomPosition {
 	// Adapted from WinJS.Utilities.getPosition
 	// and added borders to the mix
 
@@ -523,8 +499,8 @@ export function position(element: HTMLElement, top: number, right?: number, bott
 export function getDomNodePagePosition(domNode: HTMLElement): IDomNodePagePosition {
 	const bb = domNode.getBoundingClientRect();
 	return {
-		left: bb.left + StandardWindow.scrollX,
-		top: bb.top + StandardWindow.scrollY,
+		left: bb.left + window.scrollX,
+		top: bb.top + window.scrollY,
 		width: bb.width,
 		height: bb.height
 	};
@@ -548,30 +524,6 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
 	return zoom;
 }
 
-export interface IStandardWindow {
-	readonly scrollX: number;
-	readonly scrollY: number;
-}
-
-export const StandardWindow: IStandardWindow = new class implements IStandardWindow {
-	get scrollX(): number {
-		if (typeof window.scrollX === 'number') {
-			// modern browsers
-			return window.scrollX;
-		} else {
-			return document.body.scrollLeft + document.documentElement!.scrollLeft;
-		}
-	}
-
-	get scrollY(): number {
-		if (typeof window.scrollY === 'number') {
-			// modern browsers
-			return window.scrollY;
-		} else {
-			return document.body.scrollTop + document.documentElement!.scrollTop;
-		}
-	}
-};
 
 // Adapted from WinJS
 // Gets the width of the element, including margins.
@@ -873,23 +825,19 @@ export interface EventLike {
 	stopPropagation(): void;
 }
 
-export const EventHelper = {
-	stop: function (e: EventLike, cancelBubble?: boolean) {
-		if (e.preventDefault) {
-			e.preventDefault();
-		} else {
-			// IE8
-			(<any>e).returnValue = false;
-		}
+export function isEventLike(obj: unknown): obj is EventLike {
+	const candidate = obj as EventLike | undefined;
 
+	return !!(candidate && typeof candidate.preventDefault === 'function' && typeof candidate.stopPropagation === 'function');
+}
+
+export const EventHelper = {
+	stop: <T extends EventLike>(e: T, cancelBubble?: boolean): T => {
+		e.preventDefault();
 		if (cancelBubble) {
-			if (e.stopPropagation) {
-				e.stopPropagation();
-			} else {
-				// IE8
-				(<any>e).cancelBubble = true;
-			}
+			e.stopPropagation();
 		}
+		return e;
 	}
 };
 
@@ -1026,8 +974,6 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
 		throw new Error('Bad use of emmet');
 	}
 
-	attrs = { ...(attrs || {}) };
-
 	const tagName = match[1] || 'div';
 	let result: T;
 
@@ -1044,24 +990,24 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
 		result.className = match[4].replace(/\./g, ' ').trim();
 	}
 
-	Object.keys(attrs).forEach(name => {
-		const value = attrs![name];
-
-		if (typeof value === 'undefined') {
-			return;
-		}
-
-		if (/^on\w+$/.test(name)) {
-			(<any>result)[name] = value;
-		} else if (name === 'selected') {
-			if (value) {
-				result.setAttribute(name, 'true');
+	if (attrs) {
+		Object.entries(attrs).forEach(([name, value]) => {
+			if (typeof value === 'undefined') {
+				return;
 			}
 
-		} else {
-			result.setAttribute(name, value);
-		}
-	});
+			if (/^on\w+$/.test(name)) {
+				(<any>result)[name] = value;
+			} else if (name === 'selected') {
+				if (value) {
+					result.setAttribute(name, 'true');
+				}
+
+			} else {
+				result.setAttribute(name, value);
+			}
+		});
+	}
 
 	result.append(...children);
 
@@ -1131,16 +1077,10 @@ export function removeTabIndexAndUpdateFocus(node: HTMLElement): void {
 	// in the hierarchy of the parent DOM nodes.
 	if (document.activeElement === node) {
 		const parentFocusable = findParentWithAttribute(node.parentElement, 'tabIndex');
-		if (parentFocusable) {
-			parentFocusable.focus();
-		}
+		parentFocusable?.focus();
 	}
 
 	node.removeAttribute('tabindex');
-}
-
-export function getElementsByTagName(tag: string): HTMLElement[] {
-	return Array.prototype.slice.call(document.getElementsByTagName(tag), 0);
 }
 
 export function finalHandler<T extends Event>(fn: (event: T) => any): (event: T) => any {
@@ -1265,11 +1205,26 @@ export function asCSSUrl(uri: URI | null | undefined): string {
 	if (!uri) {
 		return `url('')`;
 	}
-	return `url('${FileAccess.asBrowserUri(uri).toString(true).replace(/'/g, '%27')}')`;
+	return `url('${FileAccess.uriToBrowserUri(uri).toString(true).replace(/'/g, '%27')}')`;
 }
 
 export function asCSSPropertyValue(value: string) {
 	return `'${value.replace(/'/g, '%27')}'`;
+}
+
+export function asCssValueWithDefault(cssPropertyValue: string | undefined, dflt: string): string {
+	if (cssPropertyValue !== undefined) {
+		const variableMatch = cssPropertyValue.match(/^\s*var\((.+)\)$/);
+		if (variableMatch) {
+			const varArguments = variableMatch[1].split(',', 2);
+			if (varArguments.length === 2) {
+				dflt = asCssValueWithDefault(varArguments[1].trim(), dflt);
+			}
+			return `var(${varArguments[0]}, ${dflt})`;
+		}
+		return cssPropertyValue;
+	}
+	return dflt;
 }
 
 export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void {
@@ -1301,7 +1256,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
 	setTimeout(() => document.body.removeChild(anchor));
 }
 
-export function triggerUpload(multiple = true): Promise<FileList | undefined> {
+export function triggerUpload(): Promise<FileList | undefined> {
 	return new Promise<FileList | undefined>(resolve => {
 
 		// In order to upload to the browser, create a
@@ -1310,7 +1265,7 @@ export function triggerUpload(multiple = true): Promise<FileList | undefined> {
 		const input = document.createElement('input');
 		document.body.appendChild(input);
 		input.type = 'file';
-		input.multiple = multiple;
+		input.multiple = true;
 
 		// Resolve once the input event has fired once
 		event.Event.once(event.Event.fromDOMEventEmitter(input, 'input'))(() => {
@@ -1433,19 +1388,91 @@ const defaultSafeProtocols = [
 ];
 
 /**
+ * List of safe, non-input html tags.
+ */
+export const basicMarkupHtmlTags = Object.freeze([
+	'a',
+	'abbr',
+	'b',
+	'bdo',
+	'blockquote',
+	'br',
+	'caption',
+	'cite',
+	'code',
+	'col',
+	'colgroup',
+	'dd',
+	'del',
+	'details',
+	'dfn',
+	'div',
+	'dl',
+	'dt',
+	'em',
+	'figcaption',
+	'figure',
+	'h1',
+	'h2',
+	'h3',
+	'h4',
+	'h5',
+	'h6',
+	'hr',
+	'i',
+	'img',
+	'ins',
+	'kbd',
+	'label',
+	'li',
+	'mark',
+	'ol',
+	'p',
+	'pre',
+	'q',
+	'rp',
+	'rt',
+	'ruby',
+	'samp',
+	'small',
+	'small',
+	'span',
+	'strike',
+	'strong',
+	'sub',
+	'summary',
+	'sup',
+	'table',
+	'tbody',
+	'td',
+	'tfoot',
+	'th',
+	'thead',
+	'time',
+	'tr',
+	'tt',
+	'u',
+	'ul',
+	'var',
+	'video',
+	'wbr',
+]);
+
+const defaultDomPurifyConfig = Object.freeze<dompurify.Config & { RETURN_TRUSTED_TYPE: true }>({
+	ALLOWED_TAGS: ['a', 'button', 'blockquote', 'code', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'input', 'label', 'li', 'p', 'pre', 'select', 'small', 'span', 'strong', 'textarea', 'ul', 'ol'],
+	ALLOWED_ATTR: ['href', 'data-href', 'data-command', 'target', 'title', 'name', 'src', 'alt', 'class', 'id', 'role', 'tabindex', 'style', 'data-code', 'width', 'height', 'align', 'x-dispatch', 'required', 'checked', 'placeholder', 'type'],
+	RETURN_DOM: false,
+	RETURN_DOM_FRAGMENT: false,
+	RETURN_TRUSTED_TYPE: true
+});
+
+/**
  * Sanitizes the given `value` and reset the given `node` with it.
  */
 export function safeInnerHtml(node: HTMLElement, value: string): void {
-	const options: dompurify.Config = {
-		ALLOWED_TAGS: ['a', 'button', 'blockquote', 'code', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'input', 'label', 'li', 'p', 'pre', 'select', 'small', 'span', 'strong', 'textarea', 'ul', 'ol'],
-		ALLOWED_ATTR: ['href', 'data-href', 'data-command', 'target', 'title', 'name', 'src', 'alt', 'class', 'id', 'role', 'tabindex', 'style', 'data-code', 'width', 'height', 'align', 'x-dispatch', 'required', 'checked', 'placeholder', 'type'],
-		RETURN_DOM: false,
-		RETURN_DOM_FRAGMENT: false,
-	};
-
 	const hook = hookDomPurifyHrefAndSrcSanitizer(defaultSafeProtocols);
 	try {
-		const html = dompurify.sanitize(value, { ...options, RETURN_TRUSTED_TYPE: true });
+		const html = dompurify.sanitize(value, defaultDomPurifyConfig);
 		node.innerHTML = html as unknown as string;
 	} finally {
 		hook.dispose();
@@ -1704,62 +1731,70 @@ export class DragAndDropObserver extends Disposable {
 	}
 }
 
-export function computeClippingRect(elementOrRect: HTMLElement | DOMRectReadOnly, clipper: HTMLElement) {
-	const frameRect = (elementOrRect instanceof HTMLElement ? elementOrRect.getBoundingClientRect() : elementOrRect);
-	const rootRect = clipper.getBoundingClientRect();
+type HTMLElementAttributeKeys<T> = Partial<{ [K in keyof T]: T[K] extends Function ? never : T[K] extends object ? HTMLElementAttributeKeys<T[K]> : T[K] }>;
+type ElementAttributes<T> = HTMLElementAttributeKeys<T> & Record<string, any>;
+type RemoveHTMLElement<T> = T extends HTMLElement ? never : T;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+type ArrayToObj<T extends readonly any[]> = UnionToIntersection<RemoveHTMLElement<T[number]>>;
+type HHTMLElementTagNameMap = HTMLElementTagNameMap & { '': HTMLDivElement };
 
-	const top = Math.max(rootRect.top - frameRect.top, 0);
-	const right = Math.max(frameRect.width - (frameRect.right - rootRect.right), 0);
-	const bottom = Math.max(frameRect.height - (frameRect.bottom - rootRect.bottom), 0);
-	const left = Math.max(rootRect.left - frameRect.left, 0);
+type TagToElement<T> = T extends `${infer TStart}#${string}`
+	? TStart extends keyof HHTMLElementTagNameMap
+	? HHTMLElementTagNameMap[TStart]
+	: HTMLElement
+	: T extends `${infer TStart}.${string}`
+	? TStart extends keyof HHTMLElementTagNameMap
+	? HHTMLElementTagNameMap[TStart]
+	: HTMLElement
+	: T extends keyof HTMLElementTagNameMap
+	? HTMLElementTagNameMap[T]
+	: HTMLElement;
 
-	return { top, right, bottom, left };
-}
+type TagToElementAndId<TTag> = TTag extends `${infer TTag}@${infer TId}`
+	? { element: TagToElement<TTag>; id: TId }
+	: { element: TagToElement<TTag>; id: 'root' };
 
-interface DomNodeAttributes {
-	role?: string;
-	ariaHidden?: boolean;
-	style?: StyleAttributes;
-}
+type TagToRecord<TTag> = TagToElementAndId<TTag> extends { element: infer TElement; id: infer TId }
+	? Record<(TId extends string ? TId : never) | 'root', TElement>
+	: never;
 
-interface StyleAttributes {
-	height?: number | string;
-	width?: number | string;
-}
+type Child = HTMLElement | string | Record<string, HTMLElement>;
 
-//<div role="presentation" aria-hidden="true" class="scroll-decoration"></div>
+const H_REGEX = /(?<tag>[\w\-]+)?(?:#(?<id>[\w\-]+))?(?<class>(?:\.(?:[\w\-]+))*)(?:@(?<name>(?:[\w\_])+))?/;
 
 /**
  * A helper function to create nested dom nodes.
  *
  *
  * ```ts
- * private readonly htmlElements = h('div.code-view', [
- * 	h('div.title', { $: 'title' }),
+ * const elements = h('div.code-view', [
+ * 	h('div.title@title'),
  * 	h('div.container', [
- * 		h('div.gutter', { $: 'gutterDiv' }),
- * 		h('div', { $: 'editor' }),
+ * 		h('div.gutter@gutterDiv'),
+ * 		h('div@editor'),
  * 	]),
  * ]);
- * private readonly editor = createEditor(this.htmlElements.editor);
+ * const editor = createEditor(elements.editor);
  * ```
 */
-export function h<TTag extends string, TId extends string>(
-	tag: TTag,
-	attributes: { $: TId } & DomNodeAttributes
-): Record<TId | 'root', TagToElement<TTag>>;
-export function h<TTag extends string>(tag: TTag, attributes: DomNodeAttributes): Record<'root', TagToElement<TTag>>;
-export function h<TTag extends string, T extends (HTMLElement | string | Record<string, HTMLElement>)[]>(
-	tag: TTag,
-	children: T
-): (ArrayToObj<T> & Record<'root', TagToElement<TTag>>) extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
-export function h<TTag extends string, TId extends string, T extends (HTMLElement | string | Record<string, HTMLElement>)[]>(
-	tag: TTag,
-	attributes: { $: TId } & DomNodeAttributes,
-	children: T
-): (ArrayToObj<T> & Record<TId, TagToElement<TTag>>) extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
-export function h(tag: string, ...args: [] | [attributes: { $: string } & DomNodeAttributes | Record<string, any>, children?: any[]] | [children: any[]]): Record<string, HTMLElement> {
-	let attributes: { $?: string } & DomNodeAttributes;
+export function h<TTag extends string>
+	(tag: TTag):
+	TagToRecord<TTag> extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
+
+export function h<TTag extends string, T extends Child[]>
+	(tag: TTag, children: [...T]):
+	(ArrayToObj<T> & TagToRecord<TTag>) extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
+
+export function h<TTag extends string>
+	(tag: TTag, attributes: Partial<ElementAttributes<TagToElement<TTag>>>):
+	TagToRecord<TTag> extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
+
+export function h<TTag extends string, T extends Child[]>
+	(tag: TTag, attributes: Partial<ElementAttributes<TagToElement<TTag>>>, children: [...T]):
+	(ArrayToObj<T> & TagToRecord<TTag>) extends infer Y ? { [TKey in keyof Y]: Y[TKey] } : never;
+
+export function h(tag: string, ...args: [] | [attributes: { $: string } & Partial<ElementAttributes<HTMLElement>> | Record<string, any>, children?: any[]] | [children: any[]]): Record<string, HTMLElement> {
+	let attributes: { $?: string } & Partial<ElementAttributes<HTMLElement>>;
 	let children: (Record<string, HTMLElement> | HTMLElement)[] | undefined;
 
 	if (Array.isArray(args[0])) {
@@ -1770,13 +1805,28 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & DomNod
 		children = args[1];
 	}
 
-	const [tagName, className] = tag.split('.');
+	const match = H_REGEX.exec(tag);
+
+	if (!match || !match.groups) {
+		throw new Error('Bad use of h');
+	}
+
+	const tagName = match.groups['tag'] || 'div';
 	const el = document.createElement(tagName);
-	if (className) {
-		el.className = className;
+
+	if (match.groups['id']) {
+		el.id = match.groups['id'];
+	}
+
+	if (match.groups['class']) {
+		el.className = match.groups['class'].replace(/\./g, ' ').trim();
 	}
 
 	const result: Record<string, HTMLElement> = {};
+
+	if (match.groups['name']) {
+		result[match.groups['name']] = el;
+	}
 
 	if (children) {
 		for (const c of children) {
@@ -1792,10 +1842,6 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & DomNod
 	}
 
 	for (const [key, value] of Object.entries(attributes)) {
-		if (key === '$') {
-			result[value] = el;
-			continue;
-		}
 		if (key === 'style') {
 			for (const [cssKey, cssValue] of Object.entries(value)) {
 				el.style.setProperty(
@@ -1803,9 +1849,11 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & DomNod
 					typeof cssValue === 'number' ? cssValue + 'px' : '' + cssValue
 				);
 			}
-			continue;
+		} else if (key === 'tabIndex') {
+			el.tabIndex = value;
+		} else {
+			el.setAttribute(camelCaseToHyphenCase(key), value.toString());
 		}
-		el.setAttribute(camelCaseToHyphenCase(key), value.toString());
 	}
 
 	result['root'] = el;
@@ -1816,24 +1864,3 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & DomNod
 function camelCaseToHyphenCase(str: string) {
 	return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
-
-type RemoveHTMLElement<T> = T extends HTMLElement ? never : T;
-
-type ArrayToObj<T extends any[]> = UnionToIntersection<RemoveHTMLElement<T[number]>>;
-
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
-
-type HTMLElementsByTagName = {
-	div: HTMLDivElement;
-	span: HTMLSpanElement;
-	a: HTMLAnchorElement;
-};
-
-type TagToElement<T> = T extends `${infer TStart}.${string}`
-	? TStart extends keyof HTMLElementsByTagName
-	? HTMLElementsByTagName[TStart]
-	: HTMLElement
-	: T extends keyof HTMLElementsByTagName
-	? HTMLElementsByTagName[T]
-	: HTMLElement;

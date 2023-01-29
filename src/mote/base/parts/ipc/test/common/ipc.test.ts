@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { timeout } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { canceled } from 'vs/base/common/errors';
-import { Emitter, Event } from 'vs/base/common/event';
-import { isEqual } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { ClientConnectionEvent, IChannel, IMessagePassingProtocol, IPCClient, IPCServer, IServerChannel, ProxyChannel } from 'vs/base/parts/ipc/common/ipc';
+import { timeout } from 'mote/base/common/async';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { CancellationToken, CancellationTokenSource } from 'mote/base/common/cancellation';
+import { canceled } from 'mote/base/common/errors';
+import { Emitter, Event } from 'mote/base/common/event';
+import { isEqual } from 'mote/base/common/resources';
+import { URI } from 'mote/base/common/uri';
+import { ClientConnectionEvent, IChannel, IMessagePassingProtocol, IPCClient, IPCServer, IServerChannel, ProxyChannel } from 'mote/base/parts/ipc/common/ipc';
 
 class QueueProtocol implements IMessagePassingProtocol {
 

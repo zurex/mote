@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from 'vs/base/common/buffer';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, dispose, IDisposable } from 'vs/base/common/lifecycle';
-import { IIPCLogger, IMessagePassingProtocol, IPCClient } from 'vs/base/parts/ipc/common/ipc';
+import { VSBuffer } from 'mote/base/common/buffer';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, dispose, IDisposable } from 'mote/base/common/lifecycle';
+import { IIPCLogger, IMessagePassingProtocol, IPCClient } from 'mote/base/parts/ipc/common/ipc';
 
 export const enum SocketDiagnosticsEventType {
 	Created = 'created',

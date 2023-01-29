@@ -1,9 +1,10 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
+import { ThemeIcon } from 'mote/base/common/themables';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
-import { Codicon } from 'vs/base/common/codicons';
-import { IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
-import { $, append } from 'vs/base/browser/dom';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Codicon } from 'mote/base/common/codicons';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { $, append } from 'mote/base/browser/dom';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { iconBackground } from 'mote/platform/theme/common/themeColors';
 
 const workspacesPickerIcon = registerIcon('workspace-picker', Codicon.foldDown, nls.localize('viewPaneContainerCollapsedIcon', 'Icon for a collapsed view pane container.'));

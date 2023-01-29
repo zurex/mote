@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { setFullscreen } from 'vs/base/browser/browser';
-import { addDisposableListener, addDisposableThrottledListener, detectFullscreen, EventHelper, EventType } from 'vs/base/browser/dom';
-import { DomEmitter } from 'vs/base/browser/event';
-import { timeout } from 'vs/base/common/async';
-import { Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { isIOS, isMacintosh } from 'vs/base/common/platform';
-import { registerWindowDriver } from 'vs/platform/driver/browser/driver';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { setFullscreen } from 'mote/base/browser/browser';
+import { addDisposableListener, addDisposableThrottledListener, detectFullscreen, EventHelper, EventType } from 'mote/base/browser/dom';
+import { DomEmitter } from 'mote/base/browser/event';
+import { timeout } from 'mote/base/common/async';
+import { Event } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { isIOS, isMacintosh } from 'mote/base/common/platform';
+import { registerWindowDriver } from 'mote/platform/driver/browser/driver';
+import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
 import { BrowserLifecycleService } from 'mote/workbench/services/lifecycle/browser/lifecycleService';
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';

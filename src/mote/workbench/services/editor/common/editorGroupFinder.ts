@@ -4,7 +4,7 @@ import { EditorInputCapabilities, EditorInputWithOptions, isEditorInput, isEdito
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { GroupsOrder, IEditorGroup, IEditorGroupsService, preferredSideBySideGroupDirection } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { PreferredGroup, SIDE_GROUP } from 'mote/workbench/services/editor/common/editorService';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 
 
 /**

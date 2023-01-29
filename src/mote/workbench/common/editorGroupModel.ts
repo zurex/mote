@@ -1,7 +1,7 @@
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable, DisposableStore, dispose } from 'mote/base/common/lifecycle';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { EditorCloseContext, EditorExtensions, EditorsOrder, GroupIdentifier, GroupModelChangeKind, IEditorFactoryRegistry, IMatchEditorOptions, SideBySideEditor } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';

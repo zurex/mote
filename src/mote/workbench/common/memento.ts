@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { isEmptyObject } from 'mote/base/common/types';
 import { onUnexpectedError } from 'mote/base/common/errors';
 

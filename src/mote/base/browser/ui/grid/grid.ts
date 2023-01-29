@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Orientation } from 'mote/base/browser/ui/sash/sash';
-import { equals, tail2 as tail } from 'vs/base/common/arrays';
+import { equals, tail2 as tail } from 'mote/base/common/arrays';
 import { Event } from 'mote/base/common/event';
 import { Disposable } from 'mote/base/common/lifecycle';
-import 'vs/css!./gridview';
+import 'mote/css!./gridview';
 import { Box, GridView, IBoundarySashes, IGridViewOptions, IGridViewStyles, IView as IGridViewView, IViewSize, orthogonal, Sizing as GridViewSizing } from './gridview';
 import type { GridLocation } from 'mote/base/browser/ui/grid/gridview';
 ///@ts-ignore

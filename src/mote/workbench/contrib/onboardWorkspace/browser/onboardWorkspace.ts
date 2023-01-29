@@ -10,9 +10,9 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { Dimension, $, reset, clearNode } from 'vs/base/browser/dom';
-import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { Dimension, $, reset, clearNode } from 'mote/base/browser/dom';
+import { IDialogService } from 'mote/platform/dialogs/common/dialogs';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 class OnboardContainer extends Themable {
 	create(title: string, subTitle: string | undefined, bodyDom: HTMLElement, footerDom?: HTMLElement) {

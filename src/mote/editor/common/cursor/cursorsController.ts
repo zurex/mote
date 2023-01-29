@@ -198,7 +198,7 @@ export class CursorsController extends Disposable {
 		}
 
 		const result = CommandExecutor.executeCommands(this.model, this.cursors.getSelections(), opResult.commands);
-		console.log('[Cursor] executeEditOperation', opResult, result);
+		//console.log('[Cursor] executeEditOperation', opResult, result);
 		if (result) {
 			// The commands were applied correctly
 			this._interpretCommandResult(result);

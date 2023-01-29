@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from 'vs/base/common/async';
-import { Codicon, CSSIcon } from 'vs/base/common/codicons';
+import { RunOnceScheduler } from 'mote/base/common/async';
+import { Codicon, getCodiconFontCharacters } from 'mote/base/common/codicons';
 import { Emitter, Event } from 'mote/base/common/event';
 import { IJSONSchema, IJSONSchemaMap } from 'mote/base/common/jsonSchema';
-import { isString } from 'vs/base/common/types';
+import { ThemeIcon } from 'mote/base/common/themables';
+import { isString } from 'mote/base/common/types';
 import { URI } from 'mote/base/common/uri';
-import { localize } from 'vs/nls';
+import { localize } from 'mote/nls';
 import { JSONExtensions, IJSONContributionRegistry } from 'mote/platform/jsonschemas/common/jsonContributionRegistry';
 import * as platform from 'mote/platform/registry/common/platform';
-import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 
 //  ------ API types
 
@@ -166,7 +166,7 @@ class IconRegistry implements IIconRegistry {
 		type: 'object',
 		properties: {}
 	};
-	private iconReferenceSchema: IJSONSchema & { enum: string[]; enumDescriptions: string[] } = { type: 'string', pattern: `^${CSSIcon.iconNameExpression}$`, enum: [], enumDescriptions: [] };
+	private iconReferenceSchema: IJSONSchema & { enum: string[]; enumDescriptions: string[] } = { type: 'string', pattern: `^${ThemeIcon.iconNameExpression}$`, enum: [], enumDescriptions: [] };
 
 	private iconFontsById: { [key: string]: IconFontDefinition };
 
@@ -298,8 +298,10 @@ export function getIconRegistry(): IIconRegistry {
 }
 
 function initialize() {
-	for (const icon of Codicon.getAll()) {
-		iconRegistry.registerIcon(icon.id, icon.definition, icon.description);
+	const codiconFontCharacters = getCodiconFontCharacters();
+	for (const icon in codiconFontCharacters) {
+		const fontCharacter = '\\' + codiconFontCharacters[icon].toString(16);
+		iconRegistry.registerIcon(icon, { fontCharacter });
 	}
 }
 initialize();

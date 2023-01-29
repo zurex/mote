@@ -1,7 +1,7 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import * as platform from 'mote/base/common/platform';
 import { IConfigurationPropertySchema } from 'mote/platform/configuration/common/configurationRegistry';
-import * as arrays from 'vs/base/common/arrays';
+import * as arrays from 'mote/base/common/arrays';
 import { ScrollbarVisibility } from 'mote/base/common/scrollable';
 import { FontInfo } from 'mote/editor/common/config/fontInfo';
 import { Constants } from 'mote/base/common/uint';

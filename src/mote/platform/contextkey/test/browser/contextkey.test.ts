@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as assert from 'assert';
-import { DeferredPromise } from 'vs/base/common/async';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { mock } from 'vs/base/test/common/mock';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
-import { ContextKeyService, setContext } from 'vs/platform/contextkey/browser/contextKeyService';
-import { ContextKeyExpr, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { DeferredPromise } from 'mote/base/common/async';
+import { DisposableStore } from 'mote/base/common/lifecycle';
+import { URI } from 'mote/base/common/uri';
+import { mock } from 'mote/base/test/common/mock';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { TestConfigurationService } from 'mote/platform/configuration/test/common/testConfigurationService';
+import { ContextKeyService, setContext } from 'mote/platform/contextkey/browser/contextKeyService';
+import { ContextKeyExpr, IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
+import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
+import { TestInstantiationService } from 'mote/platform/instantiation/test/common/instantiationServiceMock';
+import { ITelemetryService } from 'mote/platform/telemetry/common/telemetry';
 
 suite('ContextKeyService', () => {
 	test('updateParent', () => {

@@ -5,7 +5,7 @@ import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import * as editorCommon from 'mote/editor/common/editorCommon';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { FastDomNode } from 'mote/base/browser/fastDomNode';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { IMouseEvent } from 'mote/base/browser/mouseEvent';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { IViewModel, ViewLineRenderingData } from 'mote/editor/common/viewModel';

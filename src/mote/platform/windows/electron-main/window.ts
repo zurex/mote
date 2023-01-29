@@ -5,12 +5,12 @@ import { IProtocolMainService } from "mote/platform/protocol/electron-main/proto
 import { IThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { IAppWindow } from "mote/platform/window/electron-main/window";
-import { Disposable } from "vs/base/common/lifecycle";
-import { mark } from "vs/base/common/performance";
-import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
-import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
-import { isLaunchedFromCli } from "vs/platform/environment/node/argvHelper";
-import { ILogService } from "vs/platform/log/common/log";
+import { Disposable } from "mote/base/common/lifecycle";
+import { mark } from "mote/base/common/performance";
+import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
+import { IEnvironmentMainService } from "mote/platform/environment/electron-main/environmentMainService";
+import { isLaunchedFromCli } from "mote/platform/environment/node/argvHelper";
+import { ILogService } from "mote/platform/log/common/log";
 
 interface ILoadOptions {
 	isReload?: boolean;
@@ -90,7 +90,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 		{
 			const options: BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
 				webPreferences: {
-					preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
+					preload: FileAccess.asFileUri('mote/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
 					additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
 					enableWebSQL: false,
 					spellcheck: false,

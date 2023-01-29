@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from 'mote/base/common/event';
-import * as types from 'vs/base/common/types';
-import { URI, UriComponents } from 'vs/base/common/uri';
+import * as types from 'mote/base/common/types';
+import { URI, UriComponents } from 'mote/base/common/uri';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
-import { IWorkspaceFolder } from 'vs/platform/workspace/common/workspace';
+import { IWorkspaceFolder } from 'mote/platform/workspace/common/workspace';
 
 export const IConfigurationService = createDecorator<IConfigurationService>('configurationService');
 

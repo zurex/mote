@@ -1,4 +1,4 @@
-import 'vs/css!./media/activityaction';
+import 'mote/css!./media/activityaction';
 import { ActivityAction, ICompositeBar, ToggleCompositePinnedAction } from 'mote/workbench/browser/parts/compositeBarAction';
 import { IPaneCompositePart } from 'mote/workbench/browser/parts/paneCompositePart';
 import { IActivity } from 'mote/workbench/common/activity';

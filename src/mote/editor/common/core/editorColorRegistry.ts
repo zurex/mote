@@ -1,4 +1,4 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { editorBackground, registerColor } from 'mote/platform/theme/common/themeColors';
 import { registerThemingParticipant } from 'mote/platform/theme/common/themeService';
 import { Color } from 'mote/base/common/color';

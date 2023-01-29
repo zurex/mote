@@ -114,7 +114,7 @@
 
 		const loaderConfig = {
 			baseUrl: `${bootstrapLib.fileUriFromPath(configuration.appRoot, { isWindows: safeProcess.platform === 'win32', scheme: 'mote-file', fallbackAuthority: 'mote-app' })}/out`,
-			'vs/nls': nlsConfig,
+			'mote/nls': nlsConfig,
 			preferScriptTags: true
 		};
 
@@ -163,7 +163,7 @@
 
 		// Handle pseudo NLS
 		if (nlsConfig.pseudo) {
-			require(['vs/nls'], function (nlsPlugin) {
+			require(['mote/nls'], function (nlsPlugin) {
 				nlsPlugin.setPseudoTranslation(nlsConfig.pseudo);
 			});
 		}

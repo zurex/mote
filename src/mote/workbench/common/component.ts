@@ -1,6 +1,6 @@
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { Memento, MementoObject } from 'mote/workbench/common/memento';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 
 export class Component extends Themable {
 

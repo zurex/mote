@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
-import { IUpdatableHoverOptions } from 'vs/base/browser/ui/iconLabel/iconLabelHover';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
+import { IUpdatableHoverOptions } from 'mote/base/browser/ui/iconLabel/iconLabelHover';
+import { IMarkdownString } from 'mote/base/common/htmlContent';
+import { IDisposable } from 'mote/base/common/lifecycle';
 
 export interface IHoverDelegateTarget extends IDisposable {
 	readonly targetElements: readonly HTMLElement[];

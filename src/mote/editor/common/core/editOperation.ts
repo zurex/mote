@@ -3,7 +3,7 @@ import BlockStore from 'mote/platform/store/common/blockStore';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { Command } from 'mote/platform/transaction/common/operations';
 import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
-import { generateUuid } from 'vs/base/common/uuid';
+import { generateUuid } from 'mote/base/common/uuid';
 import { BlockType } from 'mote/platform/store/common/record';
 import { IRange } from 'mote/editor/common/core/editorRange';
 

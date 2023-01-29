@@ -1,13 +1,13 @@
-import 'vs/css!./viewLines';
+import 'mote/css!./viewLines';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { IVisibleLinesHost, VisibleLinesCollection } from 'mote/editor/browser/view/viewLayer';
 import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
-import { DomReadingContext, ViewLine, ViewLineOptions } from 'mote/editor/browser/viewParts/lines/viewLine';
+import { DomReadingContext, EmptyViewLine, ViewLine, ViewLineOptions } from 'mote/editor/browser/viewParts/lines/viewLine';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { FastDomNode } from 'mote/base/browser/fastDomNode';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { Position } from 'mote/editor/common/core/position';
 import { HorizontalPosition, VisibleRanges } from 'mote/editor/browser/view/renderingContext';
@@ -15,6 +15,7 @@ import { getDataRootInParent } from 'mote/editor/common/htmlElementUtils';
 import { IViewLineLayout } from 'mote/editor/common/viewModel';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { applyFontInfo } from 'mote/editor/browser/config/domFontInfo';
+import { clearNode } from 'mote/base/browser/dom';
 
 class LastRenderedData {
 
@@ -102,6 +103,15 @@ export class ViewLines extends ViewPart implements IViewLineLayout, IVisibleLine
 	}
 
 	public renderLines(viewportData: ViewportData) {
+		if (this.context.viewModel.getLineCount() === 0) {
+			clearNode(this.domNode.domNode);
+			const line = new EmptyViewLine(this.viewController);
+			//line.renderLine();
+			this.domNode.domNode.appendChild(line.getDomNode());
+			return;
+		} else {
+
+		}
 		// (1) render lines - ensures lines are in the DOM
 		this.visibleLines.renderLines(viewportData);
 		this.lastRenderedData.setCurrentVisibleRange(viewportData.visibleRange);

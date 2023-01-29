@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
+import { CancellationToken } from 'mote/base/common/cancellation';
 import { onUnexpectedError } from 'mote/base/common/errors';
-import { once as onceFn } from 'vs/base/common/functional';
+import { once as onceFn } from 'mote/base/common/functional';
 import { combinedDisposable, Disposable, DisposableStore, IDisposable, SafeDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { LinkedList } from 'vs/base/common/linkedList';
-import { IObservable, IObserver } from 'vs/base/common/observable';
-import { StopWatch } from 'vs/base/common/stopwatch';
+import { LinkedList } from 'mote/base/common/linkedList';
+import { IObservable, IObserver } from 'mote/base/common/observable';
+import { StopWatch } from 'mote/base/common/stopwatch';
 
 
 // -----------------------------------------------------------------------------------------------------------------------

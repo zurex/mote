@@ -1,9 +1,9 @@
+import { assertNever } from 'mote/base/common/assert';
 import { WrappingIndent } from 'mote/editor/common/config/editorOptions';
 import { FontInfo } from 'mote/editor/common/config/fontInfo';
 import { Position } from 'mote/editor/common/core/position';
 import { InjectedTextCursorStops, InjectedTextOptions, PositionAffinity } from 'mote/editor/common/model';
 import { LineInjectedText } from 'mote/editor/common/textModelEvents';
-import { assertNever } from 'vs/base/common/types';
 
 export class InjectedText {
 	constructor(public readonly options: InjectedTextOptions) { }

@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Event } from 'vs/base/common/event';
-import { Client as MessagePortClient } from 'vs/base/parts/ipc/browser/ipc.mp';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { Event } from 'mote/base/common/event';
+import { Client as MessagePortClient } from 'mote/base/parts/ipc/browser/ipc.mp';
 
 suite('IPC, MessagePorts', () => {
 

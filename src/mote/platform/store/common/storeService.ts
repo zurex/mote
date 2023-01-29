@@ -3,7 +3,7 @@ import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 import { IStoreService } from 'mote/platform/store/common/store';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { IRemoteService } from 'mote/platform/remote/common/remote';
-import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope } from 'mote/platform/storage/common/storage';
 import { isLocalUser } from 'mote/platform/user/common/user';
 
 export class StoreService implements IStoreService {

@@ -2,14 +2,14 @@ import { Button } from 'mote/base/browser/ui/button/button';
 import fonts from 'mote/base/browser/ui/fonts';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
-import { Dimension, reset, $, clearNode } from 'vs/base/browser/dom';
-import { alert } from 'vs/base/browser/ui/aria/aria';
+import { Dimension, reset, $, clearNode } from 'mote/base/browser/dom';
+import { alert } from 'mote/base/browser/ui/aria/aria';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IUserProfile } from 'mote/platform/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { CaffeineError } from 'mote/base/common/errors';
 import { IntlProvider } from 'mote/base/common/i18n';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export class LoginPage extends EditorPane {
 	public static readonly ID = 'loginPage';

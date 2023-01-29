@@ -1,6 +1,6 @@
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { Event } from 'mote/base/common/event';
+import { IDisposable } from 'mote/base/common/lifecycle';
 import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
 import { AnchorAlignment, AnchorAxisAlignment, IContextViewProvider } from 'mote/base/browser/ui/contextview/contextview';
 

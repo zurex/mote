@@ -4,54 +4,55 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { domContentLoaded, detectFullscreen, getCookieValue } from 'mote/base/browser/dom';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { ILogService, ConsoleLogger, MultiplexLogService, LogLevel } from 'vs/platform/log/common/log';
-import { ConsoleLogInAutomationLogger } from 'vs/platform/log/browser/log';
+import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
+import { ILogService, ConsoleLogger, LogLevel, ILoggerService } from 'mote/platform/log/common/log';
+import { ConsoleLogInAutomationLogger } from 'mote/platform/log/browser/log';
 import { Disposable, DisposableStore, toDisposable } from 'mote/base/common/lifecycle';
-import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { Workbench } from 'mote/workbench/browser/workbench';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { IWorkbenchEnvironmentService } from 'mote/workbench/services/environment/common/environmentService';
+import { IProductService } from 'mote/platform/product/common/productService';
 import product from 'mote/platform/product/common/product';
-import { RemoteAuthorityResolverService } from 'vs/platform/remote/browser/remoteAuthorityResolverService';
-import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver';
-import { IWorkbenchFileService } from 'vs/workbench/services/files/common/files';
-import { FileService } from 'vs/platform/files/common/fileService';
+import { RemoteAuthorityResolverService } from 'mote/platform/remote/browser/remoteAuthorityResolverService';
+import { IRemoteAuthorityResolverService } from 'mote/platform/remote/common/remoteAuthorityResolver';
+import { IWorkbenchFileService } from 'mote/workbench/services/files/common/files';
+import { FileService } from 'mote/platform/files/common/fileService';
 import { Schemas, connectionTokenCookieName } from 'mote/base/common/network';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { setFullscreen } from 'vs/base/browser/browser';
-import { URI } from 'vs/base/common/uri';
-import { ISignService } from 'vs/platform/sign/common/sign';
-import { SignService } from 'vs/platform/sign/browser/signService';
+import { onUnexpectedError } from 'mote/base/common/errors';
+import { setFullscreen } from 'mote/base/browser/browser';
+import { URI } from 'mote/base/common/uri';
+import { ISignService } from 'mote/platform/sign/common/sign';
+import { SignService } from 'mote/platform/sign/browser/signService';
 import { IWorkbenchConstructionOptions, IWorkbench } from 'mote/workbench/browser/web.api';
-import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { BufferLogService } from 'vs/platform/log/common/bufferLog';
-import { FileLogger } from 'vs/platform/log/common/fileLog';
-import { toLocalISOString } from 'vs/base/common/date';
-import { isWorkspaceToOpen, isFolderToOpen } from 'vs/platform/window/common/window';
+import { BrowserStorageService } from 'mote/workbench/services/storage/browser/storageService';
+import { IStorageService } from 'mote/platform/storage/common/storage';
+import { FileLogger, FileLoggerService } from 'mote/platform/log/common/fileLog';
+import { toLocalISOString } from 'mote/base/common/date';
+import { isWorkspaceToOpen, isFolderToOpen } from 'mote/platform/window/common/window';
 import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier } from 'mote/workbench/services/workspaces/browser/workspaces';
-import { coalesce } from 'vs/base/common/arrays';
-import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider';
-import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider';
-import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { localize } from 'vs/nls';
+import { InMemoryFileSystemProvider } from 'mote/platform/files/common/inMemoryFilesystemProvider';
+import { ICommandService } from 'mote/platform/commands/common/commands';
+import { IndexedDBFileSystemProvider } from 'mote/platform/files/browser/indexedDBFileSystemProvider';
+import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { localize } from 'mote/nls';
 import { BrowserWindow } from 'mote/workbench/browser/window';
-import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider';
-import { mixin, safeStringify } from 'vs/base/common/objects';
-import { IndexedDB } from 'vs/base/browser/indexedDB';
-import { IWorkspace } from 'vs/workbench/services/host/browser/browserHostService';
-import { WebFileSystemAccess } from 'vs/platform/files/browser/webFileSystemAccess';
-import { DelayedLogChannel } from 'vs/workbench/services/output/common/delayedLogChannel';
-import { dirname, joinPath } from 'vs/base/common/resources';
+import { HTMLFileSystemProvider } from 'mote/platform/files/browser/htmlFileSystemProvider';
+import { mixin, safeStringify } from 'mote/base/common/objects';
+import { IndexedDB } from 'mote/base/browser/indexedDB';
+import { IWorkspace } from 'mote/workbench/services/host/browser/browserHostService';
+import { WebFileSystemAccess } from 'mote/platform/files/browser/webFileSystemAccess';
+import { DelayedLogChannel } from 'mote/workbench/services/output/common/delayedLogChannel';
+import { dirname, joinPath } from 'mote/base/common/resources';
 import { UserService } from 'mote/workbench/services/user/common/userService';
 import { RemoteService } from 'mote/workbench/services/remote/browser/remoteService';
 import { IRemoteService } from 'mote/platform/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IWorkbenchConfigurationService } from 'mote/workbench/services/configuration/common/workbenchConfiguration';
 import { WorkbenchConfigurationService } from 'mote/workbench/services/configuration/browser/workbenchConfigurationService';
+import { LogService } from 'mote/platform/log/common/logService';
+import { BufferLogger } from 'mote/platform/log/common/bufferLog';
+import { rendererLogId } from 'mote/workbench/common/logConstants';
 
 export class BrowserMain extends Disposable {
 
@@ -106,7 +107,7 @@ export class BrowserMain extends Disposable {
 			//const remoteExplorerService = accessor.get(IRemoteExplorerService);
 			//const labelService = accessor.get(ILabelService);
 
-			const embedderLogger = instantiationService.createInstance(DelayedLogChannel, 'webEmbedder', productService.embedderIdentifier || localize('vscode.dev', "vscode.dev"), joinPath(dirname(environmentService.logFile), `webEmbedder.log`));
+			let logger: DelayedLogChannel | undefined = undefined;
 
 			return {
 				commands: {
@@ -123,7 +124,10 @@ export class BrowserMain extends Disposable {
 				},
 				logger: {
 					log: (level, message) => {
-						embedderLogger.log(level, message);
+						if (!logger) {
+							logger = instantiationService.createInstance(DelayedLogChannel, 'webEmbedder', productService.embedderIdentifier || productService.nameShort, joinPath(dirname(environmentService.logFile), 'webEmbedder.log'));
+						}
+						logger.log(level, message);
 					}
 				},
 				window: {
@@ -167,12 +171,15 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IBrowserWorkbenchEnvironmentService, environmentService);
 
 		// Log
-		const logService = new BufferLogService(LogLevel.Debug);//getLogLevel(environmentService);
+		const logLevel = LogLevel.Debug;
+		const bufferLogger = new BufferLogger(logLevel);
+		const otherLoggers = [new ConsoleLogger(logLevel)];
+		const logService = new LogService(bufferLogger, otherLoggers);//getLogLevel(environmentService);
 		serviceCollection.set(ILogService, logService);
 
 		// Remote
 		const connectionToken = environmentService.options.connectionToken || getCookieValue(connectionTokenCookieName);
-		const remoteAuthorityResolverService = new RemoteAuthorityResolverService(productService, connectionToken, this.configuration.resourceUriProvider);
+		const remoteAuthorityResolverService = new RemoteAuthorityResolverService(connectionToken, this.configuration.resourceUriProvider, productService, logService);
 		serviceCollection.set(IRemoteAuthorityResolverService, remoteAuthorityResolverService);
 
 		// Signing
@@ -192,7 +199,12 @@ export class BrowserMain extends Disposable {
 		// Files
 		const fileService = this._register(new FileService(logService));
 		serviceCollection.set(IWorkbenchFileService, fileService);
-		await this.registerFileSystemProviders(environmentService, fileService, logService, logsPath);
+
+		// Logger
+		const loggerService = new FileLoggerService(logLevel, fileService);
+		serviceCollection.set(ILoggerService, loggerService);
+
+		await this.registerFileSystemProviders(environmentService, fileService, bufferLogger, logService, loggerService, logsPath);
 
 		// Storage
 		const storageService = await this.createStorageService({ id: 'mote' }, logService);
@@ -231,15 +243,22 @@ export class BrowserMain extends Disposable {
 		return { serviceCollection, logService };
 	}
 
-	private async registerFileSystemProviders(environmentService: IWorkbenchEnvironmentService, fileService: IWorkbenchFileService, logService: BufferLogService, logsPath: URI): Promise<void> {
+	private async registerFileSystemProviders(
+		environmentService: IWorkbenchEnvironmentService,
+		fileService: IWorkbenchFileService,
+		bufferLogger: BufferLogger,
+		logService: ILogService,
+		loggerService: ILoggerService,
+		logsPath: URI
+	): Promise<void> {
 
 		// IndexedDB is used for logging and user data
 		let indexedDB: IndexedDB | undefined;
-		const userDataStore = 'vscode-userdata-store';
-		const logsStore = 'vscode-logs-store';
-		const handlesStore = 'vscode-filehandles-store';
+		const userDataStore = 'mote-userdata-store';
+		const logsStore = 'mote-logs-store';
+		const handlesStore = 'mote-filehandles-store';
 		try {
-			indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore, handlesStore]);
+			indexedDB = await IndexedDB.create('mote-web-db', 3, [userDataStore, logsStore, handlesStore]);
 
 			// Close onWillShutdown
 			this.onWillShutdownDisposables.add(toDisposable(() => indexedDB?.close()));
@@ -256,12 +275,7 @@ export class BrowserMain extends Disposable {
 			fileService.registerProvider(logsPath.scheme, new InMemoryFileSystemProvider());
 		}
 
-		logService.logger = new MultiplexLogService(coalesce([
-			new ConsoleLogger(logService.getLevel()),
-			new FileLogger('window', environmentService.logFile, logService.getLevel(), false, fileService),
-			// Extension development test CLI: forward everything to test runner
-			environmentService.isExtensionDevelopment && !!environmentService.extensionTestsLocationURI ? new ConsoleLogInAutomationLogger(logService.getLevel()) : undefined
-		]));
+		bufferLogger.logger = loggerService.createLogger(environmentService.logFile, { id: rendererLogId, name: localize('rendererLog', "Window") });
 
 		// User data
 		let userDataProvider;

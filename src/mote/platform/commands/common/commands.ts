@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { Iterable } from 'vs/base/common/iterator';
-import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { LinkedList } from 'vs/base/common/linkedList';
-import { TypeConstraint, validateConstraints } from 'vs/base/common/types';
-import { createDecorator, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Iterable } from 'mote/base/common/iterator';
+import { IJSONSchema } from 'mote/base/common/jsonSchema';
+import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { LinkedList } from 'mote/base/common/linkedList';
+import { TypeConstraint, validateConstraints } from 'mote/base/common/types';
+import { createDecorator, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 
 export const ICommandService = createDecorator<ICommandService>('commandService');
 

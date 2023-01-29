@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LRUCachedFunction } from 'vs/base/common/cache';
+import { LRUCachedFunction } from 'mote/base/common/cache';
 import { CharCode } from 'mote/base/common/charCode';
-import { Lazy } from 'vs/base/common/lazy';
-import { Constants } from 'vs/base/common/uint';
+import { Lazy } from 'mote/base/common/lazy';
+import { Constants } from 'mote/base/common/uint';
 
 export function isFalsyOrWhitespace(str: string | undefined): boolean {
 	if (!str || typeof str !== 'string') {
@@ -1134,7 +1134,7 @@ export class AmbiguousCharacters {
 			return result;
 		}
 
-		const data = this.ambiguousCharacterData.getValue();
+		const data = this.ambiguousCharacterData.value;
 
 		let filteredLocales = locales.filter(
 			(l) => !l.startsWith('_') && l in data
@@ -1160,12 +1160,12 @@ export class AmbiguousCharacters {
 	}
 
 	private static _locales = new Lazy<string[]>(() =>
-		Object.keys(AmbiguousCharacters.ambiguousCharacterData.getValue()).filter(
+		Object.keys(AmbiguousCharacters.ambiguousCharacterData.value).filter(
 			(k) => !k.startsWith('_')
 		)
 	);
 	public static getLocales(): string[] {
-		return AmbiguousCharacters._locales.getValue();
+		return AmbiguousCharacters._locales.value;
 	}
 
 	private constructor(

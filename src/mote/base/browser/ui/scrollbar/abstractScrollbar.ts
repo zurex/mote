@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
-import { GlobalPointerMoveMonitor } from 'vs/base/browser/globalPointerMoveMonitor';
-import { StandardWheelEvent } from 'vs/base/browser/mouseEvent';
-import { ScrollbarArrow, ScrollbarArrowOptions } from 'vs/base/browser/ui/scrollbar/scrollbarArrow';
-import { ScrollbarState } from 'vs/base/browser/ui/scrollbar/scrollbarState';
-import { ScrollbarVisibilityController } from 'vs/base/browser/ui/scrollbar/scrollbarVisibilityController';
-import { Widget } from 'vs/base/browser/ui/widget';
-import * as platform from 'vs/base/common/platform';
-import { INewScrollPosition, Scrollable, ScrollbarVisibility } from 'vs/base/common/scrollable';
+import * as dom from 'mote/base/browser/dom';
+import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
+import { GlobalPointerMoveMonitor } from 'mote/base/browser/globalPointerMoveMonitor';
+import { StandardWheelEvent } from 'mote/base/browser/mouseEvent';
+import { ScrollbarArrow, ScrollbarArrowOptions } from 'mote/base/browser/ui/scrollbar/scrollbarArrow';
+import { ScrollbarState } from 'mote/base/browser/ui/scrollbar/scrollbarState';
+import { ScrollbarVisibilityController } from 'mote/base/browser/ui/scrollbar/scrollbarVisibilityController';
+import { Widget } from 'mote/base/browser/ui/widget';
+import * as platform from 'mote/base/common/platform';
+import { INewScrollPosition, Scrollable, ScrollbarVisibility } from 'mote/base/common/scrollable';
 
 /**
  * The orthogonal distance to the slider at which dragging "resets". This implements "snapping"

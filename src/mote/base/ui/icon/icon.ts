@@ -1,4 +1,4 @@
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { Disposable, IDisposable } from "mote/base/common/lifecycle";
 
 export interface IIcon extends IDisposable {
     readonly element: HTMLElement;
@@ -14,6 +14,6 @@ export class Icon extends Disposable implements IIcon {
     }
 
     get element(): HTMLElement {
-		return this._element;
-	}
+        return this._element;
+    }
 }

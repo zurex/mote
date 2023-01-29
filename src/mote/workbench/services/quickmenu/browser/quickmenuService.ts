@@ -1,16 +1,16 @@
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IQuickMenuDelegate, IQuickMenuService } from './quickmenu';
 import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
-import { IAction } from 'vs/base/common/actions';
-import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
+import { IAction } from 'mote/base/common/actions';
+import { IMenuOptions } from 'mote/base/browser/ui/menu/menu';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { QuickMenu, QuickMenuHeight } from 'mote/base/browser/ui/menu/quickMenu';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IHoverService, IHoverTarget } from 'mote/workbench/services/hover/browser/hover';
-import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { ContextViewService } from 'mote/platform/contextview/browser/contextViewService';
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
+import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
 import { ContextViewHelper } from 'mote/platform/contextview/browser/contextViewHelper';
 
 

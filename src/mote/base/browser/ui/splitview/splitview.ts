@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { $, addDisposableListener, append, scheduleAtNextAnimationFrame } from 'mote/base/browser/dom';
-import { DomEmitter } from 'vs/base/browser/event';
+import { DomEmitter } from 'mote/base/browser/event';
 import { ISashEvent as IBaseSashEvent, Orientation, Sash, SashState } from 'mote/base/browser/ui/sash/sash';
 import { SmoothScrollableElement } from 'mote/base/browser/ui/scrollbar/scrollableElement';
-import { pushToEnd, pushToStart, range } from 'vs/base/common/arrays';
+import { pushToEnd, pushToStart, range } from 'mote/base/common/arrays';
 import { Color } from 'mote/base/common/color';
 import { Emitter, Event } from 'mote/base/common/event';
-import { combinedDisposable, Disposable, dispose, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { clamp } from 'vs/base/common/numbers';
-import { Scrollable, ScrollbarVisibility, ScrollEvent } from 'vs/base/common/scrollable';
-import * as types from 'vs/base/common/types';
-import 'vs/css!./splitview';
+import { combinedDisposable, Disposable, dispose, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
+import { clamp } from 'mote/base/common/numbers';
+import { Scrollable, ScrollbarVisibility, ScrollEvent } from 'mote/base/common/scrollable';
+import * as types from 'mote/base/common/types';
+import 'mote/css!./splitview';
 export { Orientation } from 'mote/base/browser/ui/sash/sash';
 
 export interface ISplitViewStyles {

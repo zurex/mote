@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FileAccess } from 'vs/base/common/network';
-import { globals } from 'vs/base/common/platform';
-import { env } from 'vs/base/common/process';
-import { IProductConfiguration } from 'vs/base/common/product';
-import { dirname, joinPath } from 'vs/base/common/resources';
-import { ISandboxConfiguration } from 'vs/base/parts/sandbox/common/sandboxTypes';
+import { FileAccess } from 'mote/base/common/network';
+import { globals } from 'mote/base/common/platform';
+import { env } from 'mote/base/common/process';
+import { IProductConfiguration } from 'mote/base/common/product';
+import { dirname, joinPath } from 'mote/base/common/resources';
+import { ISandboxConfiguration } from 'mote/base/parts/sandbox/common/sandboxTypes';
 
 /**
  * @deprecated You MUST use `IProductService` if possible.

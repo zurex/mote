@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./iconlabel';
-import * as dom from 'vs/base/browser/dom';
-import { HighlightedLabel } from 'vs/base/browser/ui/highlightedlabel/highlightedLabel';
-import { IHoverDelegate } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { ITooltipMarkdownString, setupCustomHover, setupNativeHover } from 'vs/base/browser/ui/iconLabel/iconLabelHover';
-import { IMatch } from 'vs/base/common/filters';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { equals } from 'vs/base/common/objects';
-import { Range } from 'vs/base/common/range';
+import 'mote/css!./iconlabel';
+import * as dom from 'mote/base/browser/dom';
+import { HighlightedLabel } from 'mote/base/browser/ui/highlightedlabel/highlightedLabel';
+import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
+import { ITooltipMarkdownString, setupCustomHover, setupNativeHover } from 'mote/base/browser/ui/iconLabel/iconLabelHover';
+import { IMatch } from 'mote/base/common/filters';
+import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
+import { equals } from 'mote/base/common/objects';
+import { Range } from 'mote/base/common/range';
 
 export interface IIconLabelCreationOptions {
 	readonly supportHighlights?: boolean;

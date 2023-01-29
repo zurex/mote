@@ -110,12 +110,25 @@ export class TokenMetadata {
 		return (metadata & MetadataConsts.BALANCED_BRACKETS_MASK) !== 0;
 	}
 
+	public static setFontStyle(metadata: number, fontStyle: FontStyle): number {
+		fontStyle = TokenMetadata.getFontStyle(metadata) | fontStyle;
+		return (fontStyle << MetadataConsts.FONT_STYLE_OFFSET) | metadata;
+	}
+
 	public static getFontStyle(metadata: number): FontStyle {
 		return (metadata & MetadataConsts.FONT_STYLE_MASK) >>> MetadataConsts.FONT_STYLE_OFFSET;
 	}
 
+	public static setForeground(metadata: number, color: ColorId): ColorId {
+		return (color << MetadataConsts.FOREGROUND_OFFSET) | metadata;
+	}
+
 	public static getForeground(metadata: number): ColorId {
 		return (metadata & MetadataConsts.FOREGROUND_MASK) >>> MetadataConsts.FOREGROUND_OFFSET;
+	}
+
+	public static setBackground(metadata: number, color: ColorId): ColorId {
+		return (color << MetadataConsts.BACKGROUND_OFFSET) | metadata;
 	}
 
 	public static getBackground(metadata: number): ColorId {

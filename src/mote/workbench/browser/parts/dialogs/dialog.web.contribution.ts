@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDialogHandler, IDialogResult, IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IDialogHandler, IDialogResult, IDialogService } from 'mote/platform/dialogs/common/dialogs';
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IProductService } from 'mote/platform/product/common/productService';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, WorkbenchExtensions } from 'mote/workbench/common/contributions';
-import { IDialogsModel, IDialogViewItem } from 'vs/workbench/common/dialogs';
+import { IDialogsModel, IDialogViewItem } from 'mote/workbench/common/dialogs';
 import { BrowserDialogHandler } from 'mote/workbench/browser/parts/dialogs/dialogHandler';
-import { DialogService } from 'vs/workbench/services/dialogs/common/dialogService';
+import { DialogService } from 'mote/workbench/services/dialogs/common/dialogService';
 import { LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 
 export class DialogHandlerContribution extends Disposable implements IWorkbenchContribution {
 	private readonly model: IDialogsModel;

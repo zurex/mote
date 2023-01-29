@@ -1,4 +1,4 @@
-import { InMemoryStorageService, IStorageService } from 'vs/platform/storage/common/storage';
+import { InMemoryStorageService, IStorageService } from 'mote/platform/storage/common/storage';
 
 export class StoreStorageProvider {
 	public static readonly INSTANCE = new StoreStorageProvider();

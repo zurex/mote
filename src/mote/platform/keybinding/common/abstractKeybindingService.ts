@@ -2,7 +2,7 @@ import { IKeybindingService, IKeyboardEvent } from 'mote/platform/keybinding/com
 import { ChordKeybinding, ResolvedKeybinding } from 'mote/base/common/keybindings';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { IContextKeyService, IContextKeyServiceTarget } from 'mote/platform/contextkey/common/contextkey';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 import { KeybindingResolver } from 'mote/platform/keybinding/common/keybindingResolver';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 

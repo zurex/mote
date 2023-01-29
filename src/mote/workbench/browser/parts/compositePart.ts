@@ -1,4 +1,4 @@
-import 'vs/css!./media/compositepart';
+import 'mote/css!./media/compositepart';
 
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { Composite, CompositeRegistry } from 'mote/workbench/browser/composite';
@@ -9,11 +9,11 @@ import { Dimension, hide, show, $, append } from 'mote/base/browser/dom';
 import { Emitter } from 'mote/base/common/event';
 import { defaultGenerator } from 'mote/base/common/idGenerator';
 import { DisposableStore, dispose, IDisposable } from 'mote/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { ILogService } from 'vs/platform/log/common/log';
-import { localize } from 'vs/nls';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
+import { ILogService } from 'mote/platform/log/common/log';
+import { localize } from 'mote/nls';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 export interface ICompositeTitleLabel {
 

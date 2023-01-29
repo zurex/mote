@@ -1,5 +1,5 @@
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable } from 'mote/base/common/lifecycle';
 import { get } from './commandFacade';
 import { Pointer, RecordValue, Role } from 'mote/platform/store/common/record';
 import RecordCacheStore from './recordCacheStore';

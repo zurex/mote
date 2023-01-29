@@ -1,4 +1,4 @@
-import 'vs/css!./textAreaHandler';
+import 'mote/css!./textAreaHandler';
 import * as browser from 'mote/base/browser/browser';
 import * as platform from 'mote/base/common/platform';
 

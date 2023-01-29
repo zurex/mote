@@ -1,4 +1,4 @@
-import { localize } from 'vs/nls';
+import { localize } from 'mote/nls';
 
 //#region < --- Status Bar --- >
 

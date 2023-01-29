@@ -1,7 +1,7 @@
 import { PaneCompositeDescriptor } from "mote/workbench/browser/panecomposite";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { ViewContainerLocation } from "mote/workbench/common/views";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { createDecorator } from "mote/platform/instantiation/common/instantiation";
 
 export const IPaneCompositePartService = createDecorator<IPaneCompositePartService>('paneCompositePartService');
 

@@ -132,12 +132,12 @@ export class EditableHandler extends ViewPart {
 				if (_debugComposition) {
 					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
-				this.viewController.compositionType(e.type, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
+				this.viewController.editableCompositionType(e.type, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
 					console.log(` => type: <<${e.type}>>`);
 				}
-				this.viewController.type(e.type);
+				this.viewController.editableType(e.type);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
@@ -162,6 +162,7 @@ export class EditableHandler extends ViewPart {
 		}));
 
 		this._register(this.editableInput.onSelectionChange((e) => {
+			e.lineNumber = e.lineNumber - 1;
 			this.viewController.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
@@ -171,7 +172,7 @@ export class EditableHandler extends ViewPart {
 				this.editable.domNode.focus();
 				const selection = this.viewController.getSelection();
 				// line number less than 0 means view controller not initialized yet
-				if (selection.startLineNumber >= 0 && selection.startColumn >= 0) {
+				if (selection.startLineNumber > 0 && selection.startColumn > 0 && this.lineNumber > 0) {
 					this.ensureSelection(selection);
 				}
 			}, 10);

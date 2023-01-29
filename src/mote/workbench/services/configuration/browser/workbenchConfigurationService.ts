@@ -4,7 +4,7 @@ import { IConfigurationChangeEvent, IConfigurationData, IConfigurationOverrides,
 import { ConfigurationExtensions, IConfigurationRegistry } from 'mote/platform/configuration/common/configurationRegistry';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IWorkbenchConfigurationService } from 'mote/workbench/services/configuration/common/workbenchConfiguration';
-import { IWorkspaceFolder } from 'vs/platform/workspace/common/workspace';
+import { IWorkspaceFolder } from 'mote/platform/workspace/common/workspace';
 
 export class WorkbenchConfigurationService extends Disposable implements IWorkbenchConfigurationService {
 

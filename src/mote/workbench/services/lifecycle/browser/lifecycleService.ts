@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ShutdownReason, ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
-import { ILogService } from 'vs/platform/log/common/log';
+import { ILogService } from 'mote/platform/log/common/log';
 import { AbstractLifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycleService';
-import { localize } from 'vs/nls';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { addDisposableListener, EventType } from 'vs/base/browser/dom';
-import { IStorageService, WillSaveStateReason } from 'vs/platform/storage/common/storage';
-import { CancellationToken } from 'vs/base/common/cancellation';
+import { localize } from 'mote/nls';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { IDisposable } from 'mote/base/common/lifecycle';
+import { addDisposableListener, EventType } from 'mote/base/browser/dom';
+import { IStorageService, WillSaveStateReason } from 'mote/platform/storage/common/storage';
+import { CancellationToken } from 'mote/base/common/cancellation';
 
 export class BrowserLifecycleService extends AbstractLifecycleService {
 

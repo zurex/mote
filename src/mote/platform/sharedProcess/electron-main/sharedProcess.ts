@@ -4,24 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { BrowserWindow, Event as ElectronEvent, IpcMainEvent, MessagePortMain } from 'electron';
-import { validatedIpcMain } from 'vs/base/parts/ipc/electron-main/ipcMain';
-import { Barrier } from 'vs/base/common/async';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { FileAccess } from 'vs/base/common/network';
-import { IProcessEnvironment } from 'vs/base/common/platform';
-import { assertIsDefined } from 'vs/base/common/types';
+import { validatedIpcMain } from 'mote/base/parts/ipc/electron-main/ipcMain';
+import { Barrier } from 'mote/base/common/async';
+import { Emitter, Event } from 'mote/base/common/event';
+import { Disposable, DisposableStore } from 'mote/base/common/lifecycle';
+import { FileAccess } from 'mote/base/common/network';
+import { IProcessEnvironment } from 'mote/base/common/platform';
+import { assertIsDefined } from 'mote/base/common/types';
 import { connect as connectMessagePort } from 'mote/base/parts/ipc/electron-main/ipc.mp';
-import { IEnvironmentMainService } from 'vs/platform/environment/electron-main/environmentMainService';
+import { IEnvironmentMainService } from 'mote/platform/environment/electron-main/environmentMainService';
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
-import { ILogService } from 'vs/platform/log/common/log';
-import product from 'vs/platform/product/common/product';
-import { IProtocolMainService } from 'vs/platform/protocol/electron-main/protocol';
-import { ISharedProcess, ISharedProcessConfiguration } from 'vs/platform/sharedProcess/node/sharedProcess';
-import { ISharedProcessWorkerConfiguration } from 'vs/platform/sharedProcess/common/sharedProcessWorkerService';
+import { ILogService } from 'mote/platform/log/common/log';
+import product from 'mote/platform/product/common/product';
+import { IProtocolMainService } from 'mote/platform/protocol/electron-main/protocol';
+import { ISharedProcess, ISharedProcessConfiguration } from 'mote/platform/sharedProcess/node/sharedProcess';
+import { ISharedProcessWorkerConfiguration } from 'mote/platform/sharedProcess/common/sharedProcessWorkerService';
 import { IThemeMainService } from 'mote/platform/theme/electron-main/themeMainService';
-import { WindowError } from 'vs/platform/window/electron-main/window';
-import { toErrorMessage } from 'vs/base/common/errorMessage';
+import { WindowError } from 'mote/platform/window/electron-main/window';
+import { toErrorMessage } from 'mote/base/common/errorMessage';
 
 export class SharedProcess extends Disposable implements ISharedProcess {
 
@@ -220,8 +220,8 @@ export class SharedProcess extends Disposable implements ISharedProcess {
 			show: false,
 			backgroundColor: this.themeMainService.getBackgroundColor(),
 			webPreferences: {
-				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
-				additionalArguments: [`--vscode-window-config=${configObjectUrl.resource.toString()}`, '--vscode-window-kind=shared-process'],
+				preload: FileAccess.asFileUri('mote/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
+				additionalArguments: [`--mote-window-config=${configObjectUrl.resource.toString()}`, '--mote-window-kind=shared-process'],
 				v8CacheOptions: this.environmentMainService.useCodeCache ? 'bypassHeatCheck' : 'none',
 				nodeIntegration: true,
 				nodeIntegrationInWorker: true,
@@ -249,7 +249,7 @@ export class SharedProcess extends Disposable implements ISharedProcess {
 		});
 
 		// Load with config
-		this.window.loadURL(FileAccess.asBrowserUri('vs/code/electron-browser/sharedProcess/sharedProcess.html', require).toString(true));
+		this.window.loadURL(FileAccess.asBrowserUri('mote/code/electron-browser/sharedProcess/sharedProcess.html', require).toString(true));
 	}
 
 	private registerWindowListeners(): void {

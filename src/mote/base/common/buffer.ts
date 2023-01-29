@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as streams from 'vs/base/common/stream';
+import * as streams from 'mote/base/common/stream';
 
 declare const Buffer: any;
 

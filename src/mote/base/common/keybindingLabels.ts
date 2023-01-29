@@ -5,7 +5,7 @@
 
 import { Modifiers } from 'mote/base/common/keybindings';
 import { OperatingSystem } from 'mote/base/common/platform';
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 
 export interface ModifierLabels {
 	readonly ctrlKey: string;

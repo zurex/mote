@@ -1,11 +1,11 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { IKeyboardEvent, StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { isMacintosh, isWindows, OperatingSystem, OS } from 'mote/base/common/platform';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { ConfigurationExtensions, IConfigurationNode, IConfigurationRegistry } from 'mote/platform/configuration/common/configurationRegistry';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { DispatchConfig, readKeyboardConfig } from 'mote/platform/keyboardLayout/common/keyboardConfig';
 import { getKeyboardLayoutId, IKeyboardLayoutInfo, IKeyboardMapping, IMacLinuxKeyboardMapping, IWindowsKeyboardMapping } from 'mote/platform/keyboardLayout/common/keyboardLayout';
 import { IKeyboardLayoutService } from 'mote/platform/keyboardLayout/common/keyboardLayoutService';
@@ -437,7 +437,7 @@ export class BrowserKeyboardMapperFactory extends BrowserKeyboardMapperFactoryBa
 
 		const platform = isWindows ? 'win' : isMacintosh ? 'darwin' : 'linux';
 
-		import('vs/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform).then((m) => {
+		import('mote/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.' + platform).then((m) => {
 			const keymapInfos: IKeymapInfo[] = m.KeyboardLayoutContribution.INSTANCE.layoutInfos;
 			this._keymapInfos.push(...keymapInfos.map(info => (new KeymapInfo(info.layout, info.secondaryLayouts, info.mapping, info.isUserKeyboardLayout))));
 			this._mru = this._keymapInfos;

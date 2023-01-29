@@ -1,4 +1,4 @@
-import 'vs/css!./media/statusbarpart';
+import 'mote/css!./media/statusbarpart';
 import { addDisposableListener, clearNode, createStyleSheet, EventType } from 'mote/base/browser/dom';
 import { EventType as TouchEventType, Gesture, GestureEvent } from 'mote/base/browser/touch';
 import { IHoverDelegate, IHoverDelegateOptions } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
@@ -8,7 +8,7 @@ import { DisposableStore, dispose, IDisposable, MutableDisposable, toDisposable 
 import { assertIsDefined } from 'mote/base/common/types';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { isHighContrast } from 'mote/platform/theme/common/theme';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { Part } from 'mote/workbench/browser/part';
@@ -19,8 +19,8 @@ import { STATUS_BAR_BACKGROUND, STATUS_BAR_BORDER, STATUS_BAR_FOCUS_BORDER, STAT
 import { IHoverService, IHoverWidget } from 'mote/workbench/services/hover/browser/hover';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
 import { isStatusbarEntryLocation, IStatusbarEntry, IStatusbarEntryAccessor, IStatusbarEntryLocation, IStatusbarService, IStatusbarStyleOverride, StatusbarAlignment } from 'mote/workbench/services/statusbar/browser/statusbar';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 import { activeContrastBorder, contrastBorder } from 'mote/platform/theme/common/themeColors';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 

@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { Event } from 'mote/base/common/event';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const ILifecycleService = createDecorator<ILifecycleService>('lifecycleService');
 

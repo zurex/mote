@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { generateUuid } from 'vs/base/common/uuid';
-import { ipcMessagePort, ipcRenderer } from 'vs/base/parts/sandbox/electron-sandbox/globals';
+import { Event } from 'mote/base/common/event';
+import { generateUuid } from 'mote/base/common/uuid';
+import { ipcMessagePort, ipcRenderer } from 'mote/base/parts/sandbox/electron-sandbox/globals';
 
 interface IMessageChannelResult {
 	nonce: string;

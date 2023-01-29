@@ -6,7 +6,7 @@ import { basename } from 'mote/base/common/path';
 import { URI } from 'mote/base/common/uri';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { getThemeTypeSelector } from 'mote/platform/theme/common/themeService';
 import { ThemeConfiguration } from 'mote/workbench/services/themes/common/themeConfiguration';
 

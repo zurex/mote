@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ipcMain as unsafeIpcMain, IpcMainEvent, IpcMainInvokeEvent } from 'electron';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { Event } from 'vs/base/common/event';
+import { onUnexpectedError } from 'mote/base/common/errors';
+import { Event } from 'mote/base/common/event';
 
 type ipcMainListener = (event: IpcMainEvent, ...args: any[]) => void;
 

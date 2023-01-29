@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { reset } from 'vs/base/browser/dom';
-import { renderLabelWithIcons } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import { reset } from 'mote/base/browser/dom';
+import { renderLabelWithIcons } from 'mote/base/browser/ui/iconLabel/iconLabels';
 
 export class SimpleIconLabel {
 

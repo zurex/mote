@@ -3,12 +3,12 @@ import { doFetch } from 'mote/base/parts/request/common/request';
 import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import RequestQueue from 'mote/workbench/services/remote/common/requestQueue';
 import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UploadData, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
-import { sha1Hex } from 'vs/base/browser/hash';
-import { generateUuid } from 'vs/base/common/uuid';
+import { sha1Hex } from 'mote/base/browser/hash';
+import { generateUuid } from 'mote/base/common/uuid';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 import { CaffeineError } from 'mote/base/common/errors';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { IProductService } from 'mote/platform/product/common/productService';
 
 
 let host: string;

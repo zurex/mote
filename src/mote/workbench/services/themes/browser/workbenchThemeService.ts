@@ -1,4 +1,4 @@
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import * as types from 'mote/base/common/types';
 import { Emitter, Event } from 'mote/base/common/event';
 import { IColorTheme, IThemingRegistry, ThemeExtensions } from 'mote/platform/theme/common/themeService';
@@ -6,14 +6,14 @@ import { IWorkbenchColorTheme, IWorkbenchProductIconTheme, IWorkbenchThemeServic
 import { registerColorThemeExtensionPoint, registerProductIconThemeExtensionPoint, ThemeRegistry } from 'mote/workbench/services/themes/common/themeExstensionPoints';
 import { ColorThemeData } from 'mote/workbench/services/themes/common/colorThemeData';
 import { ProductIconThemeData } from 'mote/workbench/services/themes/browser/productIconThemeData';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { registerColorThemeSchemas } from 'mote/workbench/services/themes/common/colorThemeSchema';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { ThemeConfiguration } from 'mote/workbench/services/themes/common/themeConfiguration';
 import { RunOnceScheduler, Sequencer } from 'mote/base/common/async';
-import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
+import { IStorageService, StorageScope } from 'mote/platform/storage/common/storage';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { isWeb } from 'mote/base/common/platform';
 import { createStyleSheet } from 'mote/base/browser/dom';
 import { getIconsStyleSheet } from 'mote/platform/theme/browser/iconsStyleSheet';

@@ -5,7 +5,7 @@ import { GroupIdentifier, IEditorIdentifier, IEditorPane, IVisibleEditorPane } f
 import { IGroupModelChangeEvent } from 'mote/workbench/common/editorGroupModel';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { ICloseEditorOptions, IEditorGroup, isEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export const IEditorService = createDecorator<IEditorService>('editorService');
 

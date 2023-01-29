@@ -5,21 +5,21 @@ import { IUpdateService } from 'mote/platform/update/common/update';
 import { DarwinUpdateService } from 'mote/platform/update/electron-main/updateService.darwin';
 import { IWindowsMainService, OpenContext } from "mote/platform/windows/electron-main/windows";
 import { WindowsMainService } from "mote/platform/windows/electron-main/windowsMainService";
-import { onUnexpectedError, setUnexpectedErrorHandler } from "vs/base/common/errors";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IEnvironmentMainService } from 'vs/platform/environment/electron-main/environmentMainService';
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { IInstantiationService, ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { ILogService } from "vs/platform/log/common/log";
+import { onUnexpectedError, setUnexpectedErrorHandler } from "mote/base/common/errors";
+import { Disposable } from "mote/base/common/lifecycle";
+import { IEnvironmentMainService } from 'mote/platform/environment/electron-main/environmentMainService';
+import { SyncDescriptor } from "mote/platform/instantiation/common/descriptors";
+import { IInstantiationService, ServicesAccessor } from "mote/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "mote/platform/instantiation/common/serviceCollection";
+import { ILogService } from "mote/platform/log/common/log";
 import { Server as ElectronIPCServer } from 'mote/base/parts/ipc/electron-main/ipc.electron';
 import { Client as MessagePortClient } from 'mote/base/parts/ipc/electron-main/ipc.mp';
-import { IStateMainService } from 'vs/platform/state/electron-main/state';
-import { IProcessEnvironment, isMacintosh } from 'vs/base/common/platform';
-import { machineIdKey } from 'vs/platform/telemetry/common/telemetry';
-import { getMachineId } from 'vs/base/node/id';
+import { IStateMainService } from 'mote/platform/state/electron-main/state';
+import { IProcessEnvironment, isMacintosh } from 'mote/base/common/platform';
+import { machineIdKey } from 'mote/platform/telemetry/common/telemetry';
+import { getMachineId } from 'mote/base/node/id';
 import { SharedProcess } from 'mote/platform/sharedProcess/electron-main/sharedProcess';
-import { WindowError } from 'vs/platform/window/electron-main/window';
+import { WindowError } from 'mote/platform/window/electron-main/window';
 
 export class MoteApplication extends Disposable {
 
@@ -222,8 +222,8 @@ export class MoteApplication extends Disposable {
 				case WindowError.UNRESPONSIVE:
 					message = 'SharedProcess: detected unresponsive window';
 					break;
-				case WindowError.CRASHED:
-					message = `SharedProcess: crashed (detail: ${details?.reason ?? '<unknown>'}, code: ${details?.exitCode ?? '<unknown>'})`;
+				case WindowError.PROCESS_GONE:
+					message = `SharedProcess: renderer process gone (detail: ${details?.reason ?? '<unknown>'}, code: ${details?.exitCode ?? '<unknown>'})`;
 					break;
 				case WindowError.LOAD:
 					message = `SharedProcess: failed to load (detail: ${details?.reason ?? '<unknown>'}, code: ${details?.exitCode ?? '<unknown>'})`;

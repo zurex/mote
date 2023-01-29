@@ -1,12 +1,12 @@
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
 import { IRequestService } from 'mote/platform/request/common/request';
 import { AvailableForDownload, IUpdateService, State, StateType, UpdateType } from 'mote/platform/update/common/update';
-import { timeout } from 'vs/base/common/async';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Emitter, Event } from 'vs/base/common/event';
-import { IEnvironmentMainService } from 'vs/platform/environment/electron-main/environmentMainService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IProductService } from 'vs/platform/product/common/productService';
+import { timeout } from 'mote/base/common/async';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { Emitter, Event } from 'mote/base/common/event';
+import { IEnvironmentMainService } from 'mote/platform/environment/electron-main/environmentMainService';
+import { ILogService } from 'mote/platform/log/common/log';
+import { IProductService } from 'mote/platform/product/common/productService';
 
 export function createUpdateURL(platform: string, quality: string, productService: IProductService): string {
 	return `${productService.updateUrl}/api/update/${platform}/${quality}/${productService.commit}`;

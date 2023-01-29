@@ -5,13 +5,13 @@
 
 import { $, append, createStyleSheet, EventHelper, EventLike } from 'mote/base/browser/dom';
 import { DomEmitter } from 'mote/base/browser/event';
-import { EventType, Gesture } from 'vs/base/browser/touch';
-import { Delayer } from 'vs/base/common/async';
-import { memoize } from 'vs/base/common/decorators';
+import { EventType, Gesture } from 'mote/base/browser/touch';
+import { Delayer } from 'mote/base/common/async';
+import { memoize } from 'mote/base/common/decorators';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable, DisposableStore, toDisposable } from 'mote/base/common/lifecycle';
-import { isMacintosh } from 'vs/base/common/platform';
-import 'vs/css!./sash';
+import { isMacintosh } from 'mote/base/common/platform';
+import 'mote/css!./sash';
 
 /**
  * Allow the sashes to be visible at runtime.

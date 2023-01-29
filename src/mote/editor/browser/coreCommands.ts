@@ -4,7 +4,7 @@ import { EditorContextKeys } from 'mote/editor/common/editorContextKeys';
 import { KeybindingWeight } from 'mote/platform/keybinding/common/keybindingsRegistry';
 import { KeyCode, KeyMod } from 'mote/base/common/keyCodes';
 import { ContextKeyExpr } from 'mote/platform/contextkey/common/contextkey';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { DeleteOperations } from 'mote/editor/common/cursor/cursorDeleteOperations';
 import { EditOperationType } from 'mote/editor/common/cursorCommon';

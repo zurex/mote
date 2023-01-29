@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as assert from 'assert';
-import { isLinux, isMacintosh, isWindows } from 'vs/base/common/platform';
-import { ContextKeyExpr, ContextKeyExpression, implies } from 'vs/platform/contextkey/common/contextkey';
+import { isLinux, isMacintosh, isWindows } from 'mote/base/common/platform';
+import { ContextKeyExpr, ContextKeyExpression, implies } from 'mote/platform/contextkey/common/contextkey';
 
 function createContext(ctx: any) {
 	return {

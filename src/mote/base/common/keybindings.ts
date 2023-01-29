@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { illegalArgument } from 'vs/base/common/errors';
+import { illegalArgument } from 'mote/base/common/errors';
 import { KeyCode, ScanCode } from 'mote/base/common/keyCodes';
 import { OperatingSystem } from 'mote/base/common/platform';
 

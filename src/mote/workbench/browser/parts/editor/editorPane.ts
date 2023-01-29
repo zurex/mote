@@ -5,7 +5,7 @@ import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'mo
 import { IEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
-import { IStorageService } from 'vs/platform/storage/common/storage';
+import { IStorageService } from 'mote/platform/storage/common/storage';
 
 /**
  * The base class of editors in the workbench. Editors register themselves for specific editor inputs.

@@ -6,13 +6,13 @@
 import { $ } from 'mote/base/browser/dom';
 import { Orientation, Sash } from 'mote/base/browser/ui/sash/sash';
 import { DistributeSizing, ISplitViewStyles, IView as ISplitView, LayoutPriority, Sizing, SplitView } from 'mote/base/browser/ui/splitview/splitview';
-import { equals as arrayEquals, tail2 as tail } from 'vs/base/common/arrays';
+import { equals as arrayEquals, tail2 as tail } from 'mote/base/common/arrays';
 import { Color } from 'mote/base/common/color';
 import { Emitter, Event, Relay } from 'mote/base/common/event';
 import { Disposable, DisposableStore, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { rot } from 'vs/base/common/numbers';
-import { isUndefined } from 'vs/base/common/types';
-import 'vs/css!./gridview';
+import { rot } from 'mote/base/common/numbers';
+import { isUndefined } from 'mote/base/common/types';
+import 'mote/css!./gridview';
 
 export { Orientation } from 'mote/base/browser/ui/sash/sash';
 export { LayoutPriority, Sizing } from 'mote/base/browser/ui/splitview/splitview';

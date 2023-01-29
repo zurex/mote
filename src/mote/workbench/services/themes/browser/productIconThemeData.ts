@@ -1,10 +1,10 @@
-import * as nls from 'vs/nls';
-import * as Paths from 'vs/base/common/path';
+import * as nls from 'mote/nls';
+import * as Paths from 'mote/base/common/path';
 import { ExtensionData, IThemeExtensionPoint, IWorkbenchProductIconTheme } from 'mote/workbench/services/themes/common/workbenchThemeService';
-import { URI } from 'vs/base/common/uri';
+import { URI } from 'mote/base/common/uri';
 import { getIconRegistry, IconContribution, IconDefinition } from 'mote/platform/theme/common/iconRegistry';
-import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { DEFAULT_PRODUCT_ICON_THEME_SETTING_VALUE } from 'mote/workbench/services/themes/common/themeConfiguration';
+import { ThemeIcon } from 'mote/base/common/themables';
 
 export const DEFAULT_PRODUCT_ICON_THEME_ID = ''; // TODO
 

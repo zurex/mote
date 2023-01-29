@@ -5,9 +5,9 @@
 
 import { foreground, regularTextColor } from 'mote/platform/theme/common/themeColors';
 import { registerThemingParticipant } from 'mote/platform/theme/common/themeService';
-import { isSafari } from 'vs/base/browser/browser';
-import { isMacintosh, isWindows } from 'vs/base/common/platform';
-import 'vs/css!./media/style';
+import { isSafari } from 'mote/base/browser/browser';
+import { isMacintosh, isWindows } from 'mote/base/common/platform';
+import 'mote/css!./media/style';
 
 
 registerThemingParticipant((theme, collector) => {

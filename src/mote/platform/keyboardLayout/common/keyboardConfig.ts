@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from 'vs/nls';
+import * as nls from 'mote/nls';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { OS, OperatingSystem } from 'mote/base/common/platform';
 import { ConfigurationScope, ConfigurationExtensions as ConfigExtensions, IConfigurationNode, IConfigurationRegistry } from 'mote/platform/configuration/common/configurationRegistry';
