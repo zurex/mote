@@ -6,7 +6,7 @@ import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { generateUuid } from 'mote/base/common/uuid';
 import { Lodash } from 'mote/base/common/lodash';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 import { IUserProfile } from 'mote/platform/user/common/user';
@@ -17,7 +17,7 @@ import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/stor
 import { StoreStorageProvider } from 'mote/platform/store/common/storeStorageProvider';
 
 const CurrentSpaceIdStorageKey = 'CurrentSpaceIdStorageKey';
-export class WorkspaceService extends Disposable implements IWorkspaceContextService {
+export class BrowserWorkspaceService extends Disposable implements IWorkspaceContextService {
 	declare _serviceBrand: undefined;
 
 	private readonly _onDidChangeWorkbenchState: Emitter<WorkbenchState> = this._register(new Emitter<WorkbenchState>());
@@ -57,7 +57,7 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		this._register(userService.onDidChangeCurrentProfile((profile) => this.onProfileChange(profile)));
 
 		if (!userService.currentProfile) {
-			editorService.openEditor(new LoginInput());
+			//editorService.openEditor(new LoginInput());
 			return;
 		}
 
@@ -150,4 +150,4 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	}
 }
 
-registerSingleton(IWorkspaceContextService, WorkspaceService as any);
+registerSingleton(IWorkspaceContextService, BrowserWorkspaceService as any, InstantiationType.Delayed);

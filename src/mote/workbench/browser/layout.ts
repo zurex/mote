@@ -164,6 +164,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
 		this.statusBarService = accessor.get(IStatusbarService);
 
+		this.registerLayoutListeners();
+
 		// State
 		this.initLayoutState(accessor.get(ILifecycleService), accessor);
 	}
@@ -345,7 +347,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 			layoutRestoredPromises.push(
 				Promise.all([
 					openEditorPromise,
-					//this.editorGroupService.whenRestored
+					this.editorGroupService.whenRestored
 				]).finally(() => {
 					// the `code/didRestoreEditors` perf mark is specifically
 					// for when visible editors have resolved, so we only mark

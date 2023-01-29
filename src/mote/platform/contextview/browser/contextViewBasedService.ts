@@ -97,7 +97,7 @@ export abstract class BrowserContextViewBasedService extends Themable implements
 		const menuDisposables = new DisposableStore();
 
 		const actionRunner = delegate.actionRunner || new ActionRunner();
-		actionRunner.onBeforeRun(this.onActionRun, this, menuDisposables);
+		actionRunner.onWillRun(this.onActionRun, this, menuDisposables);
 		actionRunner.onDidRun(this.onDidActionRun, this, menuDisposables);
 
 		const menu = this.createMenu(container, actions, { actionRunner: actionRunner });
