@@ -7,8 +7,7 @@ import { IConfigurationService } from 'mote/platform/configuration/common/config
 import { ConfigurationExtensions, IConfigurationNode, IConfigurationRegistry } from 'mote/platform/configuration/common/configurationRegistry';
 import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { DispatchConfig, readKeyboardConfig } from 'mote/platform/keyboardLayout/common/keyboardConfig';
-import { getKeyboardLayoutId, IKeyboardLayoutInfo, IKeyboardMapping, IMacLinuxKeyboardMapping, IWindowsKeyboardMapping } from 'mote/platform/keyboardLayout/common/keyboardLayout';
-import { IKeyboardLayoutService } from 'mote/platform/keyboardLayout/common/keyboardLayoutService';
+import { IKeyboardLayoutService, getKeyboardLayoutId, IKeyboardLayoutInfo, IKeyboardMapping, IMacLinuxKeyboardMapping, IWindowsKeyboardMapping } from 'mote/platform/keyboardLayout/common/keyboardLayout';
 import { CachedKeyboardMapper, IKeyboardMapper } from 'mote/platform/keyboardLayout/common/keyboardMapper';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { INavigatorWithKeyboard } from 'mote/workbench/services/keybinding/browser/navigatorKeyboard';

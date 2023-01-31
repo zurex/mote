@@ -7,7 +7,7 @@ import { Emitter, Event } from 'mote/base/common/event';
 import { addMatchMediaChangeListener } from 'mote/base/browser/browser';
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
+import { IHostColorSchemeService } from 'mote/workbench/services/themes/common/hostColorSchemeService';
 
 export class BrowserHostColorSchemeService extends Disposable implements IHostColorSchemeService {
 

@@ -24,7 +24,7 @@ import { SyncDescriptor } from "mote/platform/instantiation/common/descriptors";
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { InstantiationService } from "mote/platform/instantiation/common/instantiationService";
 import { ServiceCollection } from "mote/platform/instantiation/common/serviceCollection";
-import { ConsoleMainLogger, ILoggerService, ILogService, LogLevel } from "mote/platform/log/common/log";
+import { ConsoleMainLogger, getLogLevel, ILoggerService, ILogService, LogLevel } from "mote/platform/log/common/log";
 import product from "mote/platform/product/common/product";
 import { IProductService } from "mote/platform/product/common/productService";
 import { RequestMainService } from 'mote/platform/request/electron-main/requestMainService';
@@ -36,6 +36,9 @@ import { ConfigurationService } from 'mote/platform/configuration/common/configu
 import { IPolicyService, NullPolicyService } from 'mote/platform/policy/common/policy';
 import { URI } from 'mote/base/common/uri';
 import { LogService } from 'mote/platform/log/common/logService';
+import { ILoggerMainService, LoggerMainService } from 'mote/platform/log/electron-main/loggerService';
+import { BufferLogger } from 'mote/platform/log/common/bufferLog';
+import { DisposableStore } from 'mote/base/common/lifecycle';
 
 class MoteMain {
 
@@ -55,7 +58,7 @@ class MoteMain {
 		await instantiationService.invokeFunction(async accessor => {
 
 			const logService = accessor.get(ILogService);
-			logService.info("[MoteMain] startup...");
+			logService.info("[MoteMain] startup...", instanceEnvironment);
 
 			return instantiationService.createInstance(MoteApplication, instanceEnvironment).startup();
 		});
@@ -63,6 +66,7 @@ class MoteMain {
 
 	private createServices(): [IInstantiationService, IProcessEnvironment,] {
 		const services = new ServiceCollection();
+		const disposables = new DisposableStore();
 
 		// Product
 		const productService = { _serviceBrand: undefined, ...product };
@@ -73,7 +77,15 @@ class MoteMain {
 		const instanceEnvironment = this.patchEnvironment(environmentMainService); // Patch `process.env` with the instance's environment
 		services.set(IEnvironmentMainService, environmentMainService);
 
-		const logService = new LogService(new ConsoleMainLogger(LogLevel.Debug));
+		// Logger
+		const loggerService = new LoggerMainService(getLogLevel(environmentMainService));
+		services.set(ILoggerMainService, loggerService);
+
+		// Log: We need to buffer the spdlog logs until we are sure
+		// we are the only instance running, otherwise we'll have concurrent
+		// log file access on Windows (https://github.com/microsoft/vscode/issues/41218)
+		const bufferLogger = new BufferLogger(loggerService.getLogLevel());
+		const logService = disposables.add(new LogService(bufferLogger, [new ConsoleMainLogger(loggerService.getLogLevel())]));
 		services.set(ILogService, logService);
 
 		// Files
@@ -81,9 +93,6 @@ class MoteMain {
 		services.set(IFileService, fileService);
 		const diskFileSystemProvider = new DiskFileSystemProvider(logService);
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
-
-		// Logger
-		services.set(ILoggerService, new ConsoleLoggerService(logService));
 
 		// Policy
 		const policyService = new NullPolicyService();
@@ -115,10 +124,10 @@ class MoteMain {
 
 	private patchEnvironment(environmentMainService: IEnvironmentMainService): IProcessEnvironment {
 		const instanceEnvironment: IProcessEnvironment = {
-			VSCODE_IPC_HOOK: environmentMainService.mainIPCHandle
+			MOTE_IPC_HOOK: environmentMainService.mainIPCHandle
 		};
 
-		['VSCODE_NLS_CONFIG', 'VSCODE_PORTABLE'].forEach(key => {
+		['MOTE_NLS_CONFIG', 'MOTE_PORTABLE'].forEach(key => {
 			const value = process.env[key];
 			if (typeof value === 'string') {
 				instanceEnvironment[key] = value;

@@ -115,7 +115,7 @@
 				return Promise.resolve({ locale: locale, availableLanguages: {}, pseudo: true });
 			}
 
-			if (process.env['VSCODE_DEV']) {
+			if (process.env['MOTE_DEV']) {
 				return Promise.resolve({ locale: locale, availableLanguages: {} });
 			}
 

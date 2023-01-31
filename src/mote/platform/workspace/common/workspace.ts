@@ -2,6 +2,7 @@ import SpaceStore from 'mote/platform/store/common/spaceStore';
 import { Event } from 'mote/base/common/event';
 import { URI } from 'mote/base/common/uri';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { basename } from 'mote/base/common/path';
 
 export const enum WorkbenchState {
 	/** Current workbench is empty */
@@ -63,7 +64,41 @@ export interface IWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
 	configPath: URI;
 }
 
-export type IAnyWorkspaceIdentifier = IWorkspaceIdentifier;
+export interface IEmptyWorkspaceIdentifier extends IBaseWorkspaceIdentifier { }
+
+export type IAnyWorkspaceIdentifier = IWorkspaceIdentifier | IEmptyWorkspaceIdentifier;
+
+export const UNKNOWN_EMPTY_WINDOW_WORKSPACE: IEmptyWorkspaceIdentifier = { id: 'empty-window' };
+
+export function toWorkspaceIdentifier(workspace: IWorkspace): IAnyWorkspaceIdentifier;
+export function toWorkspaceIdentifier(backupPath: string | undefined, isExtensionDevelopment: boolean): IEmptyWorkspaceIdentifier;
+export function toWorkspaceIdentifier(arg0: IWorkspace | string | undefined, isExtensionDevelopment?: boolean): IAnyWorkspaceIdentifier {
+
+	// Empty workspace
+	if (typeof arg0 === 'string' || typeof arg0 === 'undefined') {
+		// With a backupPath, the basename is the empty workspace identifier
+		if (typeof arg0 === 'string') {
+			return {
+				id: basename(arg0)
+			};
+		}
+
+		return UNKNOWN_EMPTY_WINDOW_WORKSPACE;
+	}
+
+	const workspace = arg0;
+
+	// Empty window
+	return {
+		id: workspace.id
+	};
+}
+
+export function isWorkspaceIdentifier(obj: unknown): obj is IWorkspaceIdentifier {
+	const workspaceIdentifier = obj as IWorkspaceIdentifier | undefined;
+
+	return typeof workspaceIdentifier?.id === 'string' && URI.isUri(workspaceIdentifier.configPath);
+}
 
 export const IWorkspaceContextService = createDecorator<IWorkspaceContextService>('contextService');
 

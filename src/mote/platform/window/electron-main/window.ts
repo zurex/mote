@@ -1,15 +1,20 @@
+import { Event } from 'mote/base/common/event';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { INativeWindowConfiguration } from 'mote/platform/window/common/window';
 import { BrowserWindow } from 'electron';
 import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
 
 export interface IAppWindow extends IDisposable {
 
-	onWillLoad(arg0: (e: any) => void): any;
-
+	readonly onWillLoad: Event<ILoadEvent>;
 
 	readonly id: number;
 	readonly win: BrowserWindow | null; /* `null` after being disposed */
+	readonly config: INativeWindowConfiguration | undefined;
+
+	readonly lastFocusTime: number;
 
 	readonly isReady: boolean;
 
@@ -17,6 +22,7 @@ export interface IAppWindow extends IDisposable {
 	reload(cli?: NativeParsedArgs): void;
 
 	send(channel: string, ...args: any[]): void;
+	sendWhenReady(channel: string, token: CancellationToken, ...args: any[]): void;
 
 	close(): void;
 }
@@ -60,6 +66,11 @@ export const enum UnloadReason {
 	 * The window is loaded into a different workspace context.
 	 */
 	LOAD
+}
+
+export interface ILoadEvent {
+	readonly workspace: IWorkspaceIdentifier | undefined;
+	readonly reason: LoadReason;
 }
 
 export const enum WindowError {

@@ -28,6 +28,9 @@ import 'mote/workbench/electron-sandbox/desktop.main';
 //#region --- workbench services
 
 import 'mote/workbench/services/lifecycle/browser/lifecycleService';
+import 'mote/workbench/services/themes/electron-sandbox/nativeHostColorSchemeService';
+import 'mote/workbench/services/host/electron-sandbox/nativeHostService';
+import 'mote/workbench/services/keybinding/electron-sandbox/nativeKeyboardLayout';
 
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';

@@ -72,10 +72,10 @@ export class NativeWorkbenchEnvironmentService extends AbstractNativeEnvironment
 	get window() {
 		return {
 			id: this.configuration.windowId,
-			colorScheme: null as any,
+			colorScheme: this.configuration.colorScheme,
 			maximized: this.configuration.maximized,
 			accessibilitySupport: this.configuration.accessibilitySupport,
-			perfMarks: null as any, //this.configuration.perfMarks,
+			perfMarks: this.configuration.perfMarks,
 			isInitialStartup: true,
 			isCodeCaching: typeof this.configuration.codeCachePath === 'string'
 		};

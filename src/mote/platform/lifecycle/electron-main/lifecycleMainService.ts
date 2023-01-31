@@ -507,8 +507,8 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
 	private onBeforeUnloadWindowInRenderer(window: IAppWindow, reason: UnloadReason): Promise<boolean /* veto */> {
 		return new Promise<boolean>(resolve => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
-			const okChannel = `vscode:ok${oneTimeEventToken}`;
-			const cancelChannel = `vscode:cancel${oneTimeEventToken}`;
+			const okChannel = `mote:ok${oneTimeEventToken}`;
+			const cancelChannel = `mote:cancel${oneTimeEventToken}`;
 
 			ipcMain.once(okChannel, () => {
 				resolve(false); // no veto
@@ -518,18 +518,18 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
 				resolve(true); // veto
 			});
 
-			window.send('vscode:onBeforeUnload', { okChannel, cancelChannel, reason });
+			window.send('mote:onBeforeUnload', { okChannel, cancelChannel, reason });
 		});
 	}
 
 	private onWillUnloadWindowInRenderer(window: IAppWindow, reason: UnloadReason): Promise<void> {
 		return new Promise<void>(resolve => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
-			const replyChannel = `vscode:reply${oneTimeEventToken}`;
+			const replyChannel = `mote:reply${oneTimeEventToken}`;
 
 			ipcMain.once(replyChannel, () => resolve());
 
-			window.send('vscode:onWillUnload', { replyChannel, reason });
+			window.send('mote:onWillUnload', { replyChannel, reason });
 		});
 	}
 

@@ -36,7 +36,7 @@ else if (typeof require?.__$__nodeRequire === 'function') {
 	const pkg = require.__$__nodeRequire(joinPath(rootPath, 'package.json').fsPath) as { version: string };
 
 	// Running out of sources
-	if (env['VSCODE_DEV']) {
+	if (env['MOTE_DEV']) {
 		Object.assign(product, {
 			nameShort: `${product.nameShort} Dev`,
 			nameLong: `${product.nameLong} Dev`,

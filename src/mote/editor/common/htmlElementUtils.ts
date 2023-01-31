@@ -85,8 +85,8 @@ function getElementInParent(element: Element | null, predict: (element: Node) =>
 	return element;
 }
 
-export function getDataRootInParent(container: Element) {
-	return getElementInParent(container, isDataRootElement);
+export function getDataRootInParent(container: Node) {
+	return getElementInParent(container as Element, isDataRootElement);
 }
 
 export function getTextEquationTokenElementInParent(e: any) {

@@ -12,7 +12,7 @@
 // current working directory due to our variable
 // somehow escaping to the parent shell
 // (https://github.com/microsoft/vscode/issues/126399)
-delete process.env['VSCODE_CWD'];
+delete process.env['MOTE_CWD'];
 
 const bootstrap = require('./bootstrap');
 const bootstrapNode = require('./bootstrap-node');
@@ -28,7 +28,7 @@ bootstrapNode.configurePortable(product);
 bootstrap.enableASARSupport();
 
 // Signal processes that we got launched as CLI
-process.env['VSCODE_CLI'] = '1';
+process.env['MOTE_CLI'] = '1';
 
 // Load CLI through AMD loader
 require('./bootstrap-amd').load('mote/app/node/cli');

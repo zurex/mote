@@ -16,13 +16,13 @@ export class Server extends IPCServer {
 
 	private static getOnDidClientConnect(): Event<ClientConnectionEvent> {
 
-		// Clients connect via `vscode:createMessageChannel` to get a
+		// Clients connect via `mote:createMessageChannel` to get a
 		// `MessagePort` that is ready to be used. For every connection
 		// we create a pair of message ports and send it back.
 		//
 		// The `nonce` is included so that the main side has a chance to
 		// correlate the response back to the sender.
-		const onCreateMessageChannel = Event.fromNodeEventEmitter<string>(ipcRenderer, 'vscode:createMessageChannel', (_, nonce: string) => nonce);
+		const onCreateMessageChannel = Event.fromNodeEventEmitter<string>(ipcRenderer, 'mote:createMessageChannel', (_, nonce: string) => nonce);
 
 		return Event.map(onCreateMessageChannel, nonce => {
 
@@ -42,7 +42,7 @@ export class Server extends IPCServer {
 			// Note: we intentionally use `electron` APIs here because
 			// transferables like the `MessagePort` cannot be transferred
 			// over preload scripts when `contextIsolation: true`
-			ipcRenderer.postMessage('vscode:createMessageChannelResult', nonce, [outgoingPort]);
+			ipcRenderer.postMessage('mote:createMessageChannelResult', nonce, [outgoingPort]);
 
 			return result;
 		});

@@ -5,7 +5,7 @@
 
 import { ipcMain, session } from 'electron';
 import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
-import { TernarySearchTree } from 'mote/base/common/map';
+import { TernarySearchTree } from 'mote/base/common/ternarySearchTree';
 import { FileAccess, Schemas } from 'mote/base/common/network';
 import { extname, normalize } from 'mote/base/common/path';
 import { isLinux } from 'mote/base/common/platform';
@@ -14,6 +14,7 @@ import { generateUuid } from 'mote/base/common/uuid';
 import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
 import { ILogService } from 'mote/platform/log/common/log';
 import { IIPCObjectUrl, IProtocolMainService } from 'mote/platform/protocol/electron-main/protocol';
+import { joinPath } from 'mote/base/common/resources';
 
 type ProtocolCallback = { (result: string | Electron.FilePathWithHeaders | { error: number }): void };
 
@@ -36,7 +37,8 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 		// - storage    : all files in global and workspace storage (https://github.com/microsoft/vscode/issues/116735)
 		this.addValidFileRoot(environmentService.appRoot);
 		this.addValidFileRoot(environmentService.extensionsPath);
-		this.addValidFileRoot(environmentService.globalStorageHome.fsPath);
+		const location = environmentService.userRoamingDataHome;
+		this.addValidFileRoot(joinPath(location, 'globalStorage').fsPath);
 		this.addValidFileRoot(environmentService.workspaceStorageHome.fsPath);
 
 		// Handle protocols
@@ -115,7 +117,7 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 
 		// 2.) Use `FileAccess.asFileUri` to convert back from a
 		//     `vscode-file:` URI to a `file:` URI.
-		const unnormalizedFileUri = FileAccess.asFileUri(requestUri);
+		const unnormalizedFileUri = FileAccess.uriToFileUri(requestUri);
 
 		// 3.) Strip anything from the URI that could result in
 		//     relative paths (such as "..") by using `normalize`
@@ -131,7 +133,7 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 
 		// Create unique URI
 		const resource = URI.from({
-			scheme: 'vscode', // used for all our IPC communication (vscode:<channel>)
+			scheme: 'mote', // used for all our IPC communication (mote:<channel>)
 			path: generateUuid()
 		});
 

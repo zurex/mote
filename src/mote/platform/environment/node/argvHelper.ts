@@ -70,7 +70,7 @@ export function parseMainProcessArgv(processArgv: string[]): NativeParsedArgs {
 	let [, ...args] = processArgv;
 
 	// If dev, remove the first non-option argument: it's the app location
-	if (process.env['VSCODE_DEV']) {
+	if (process.env['MOTE_DEV']) {
 		args = stripAppPath(args) || [];
 	}
 
@@ -86,7 +86,7 @@ export function parseCLIProcessArgv(processArgv: string[]): NativeParsedArgs {
 	let [, , ...args] = processArgv; // remove the first non-option argument: it's always the app location
 
 	// If dev, remove the first non-option argument: it's the app location
-	if (process.env['VSCODE_DEV']) {
+	if (process.env['MOTE_DEV']) {
 		args = stripAppPath(args) || [];
 	}
 
@@ -108,5 +108,5 @@ export function addArg(argv: string[], ...args: string[]): string[] {
 }
 
 export function isLaunchedFromCli(env: IProcessEnvironment): boolean {
-	return env['VSCODE_CLI'] === '1';
+	return env['MOTE_CLI'] === '1';
 }

@@ -61,7 +61,7 @@
 				window.requestIdleCallback(() => {
 					const canvas = document.createElement('canvas');
 					const context = canvas.getContext('2d');
-					context.clearRect(0, 0, canvas.width, canvas.height);
+					context?.clearRect(0, 0, canvas.width, canvas.height);
 					canvas.remove();
 				}, { timeout: 50 });
 			}
@@ -71,7 +71,7 @@
 	//#region Helpers
 
 	/**
-	 * @typedef {import('../../../platform/windows/common/windows').INativeWindowConfiguration} INativeWindowConfiguration
+	 * @typedef {import('../../../platform/window/common/window').INativeWindowConfiguration} INativeWindowConfiguration
 	 * @typedef {import('../../../platform/environment/common/argv').NativeParsedArgs} NativeParsedArgs
 	 *
 	 * @returns {{
@@ -127,9 +127,9 @@
 			shellBackground = '#000000';
 			shellForeground = '#FFFFFF';
 		} else {
-			baseTheme = 'vs-dark';
+			baseTheme = 'mote-light';
 			shellBackground = '#1E1E1E';
-			shellForeground = '#CCCCCC';
+			shellForeground = '#000000';
 		}
 
 		const style = document.createElement('style');

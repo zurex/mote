@@ -1,6 +1,7 @@
 # Mote - Open Source
 [![Feature Requests](https://img.shields.io/github/issues/zurex/mote/feature-request.svg)](https://github.com/zurex/mote/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc)
 [![Bugs](https://img.shields.io/github/issues/zurex/mote/bug.svg)](https://github.com/zurex/mote/issues?utf8=✓&q=is%3Aissue+is%3Aopen+label%3Abug)
+![GitHub all releases](https://img.shields.io/github/downloads/zurex/mote/total)
 
 ## The Repository
 

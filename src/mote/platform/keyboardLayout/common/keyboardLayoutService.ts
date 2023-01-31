@@ -1,11 +1,13 @@
-import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
-import { IKeyboardMapper } from 'mote/platform/keyboardLayout/common/keyboardMapper';
+import { Event } from 'mote/base/common/event';
+import { IKeyboardLayoutInfo, IKeyboardMapping } from 'mote/platform/keyboardLayout/common/keyboardLayout';
 
-export const IKeyboardLayoutService = createDecorator<IKeyboardLayoutService>('keyboardLayoutService');
+export interface IKeyboardLayoutData {
+	keyboardLayoutInfo: IKeyboardLayoutInfo;
+	keyboardMapping: IKeyboardMapping;
+}
 
-
-export interface IKeyboardLayoutService {
+export interface INativeKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
-
-	getKeyboardMapper(): IKeyboardMapper;
+	readonly onDidChangeKeyboardLayout: Event<IKeyboardLayoutData>;
+	getKeyboardLayoutData(): Promise<IKeyboardLayoutData>;
 }

@@ -109,13 +109,13 @@ else if (typeof nodeProcess === 'object') {
 	_isCI = !!nodeProcess.env['CI'] || !!nodeProcess.env['BUILD_ARTIFACTSTAGINGDIRECTORY'];
 	_locale = LANGUAGE_DEFAULT;
 	_language = LANGUAGE_DEFAULT;
-	const rawNlsConfig = nodeProcess.env['VSCODE_NLS_CONFIG'];
+	const rawNlsConfig = nodeProcess.env['MOTE_NLS_CONFIG'];
 	if (rawNlsConfig) {
 		try {
 			const nlsConfig: NLSConfig = JSON.parse(rawNlsConfig);
 			const resolved = nlsConfig.availableLanguages['*'];
 			_locale = nlsConfig.locale;
-			// VSCode's default language is 'en'
+			// Mote's default language is 'en'
 			_language = resolved ? resolved : LANGUAGE_DEFAULT;
 			_translationsConfigFile = nlsConfig._translationsConfigFile;
 		} catch (e) {

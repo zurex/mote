@@ -17,3 +17,4 @@ vscode.db
 /.profile-oss
 local.settings.json
 /.VSCodeCounter/
+/src/vs/

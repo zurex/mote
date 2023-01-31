@@ -7,7 +7,6 @@ import { Workbench } from "mote/workbench/browser/workbench";
 import { INativeWorkbenchEnvironmentService, NativeWorkbenchEnvironmentService } from "mote/workbench/services/environment/electron-sandbox/environmentService";
 import { IProductService } from "mote/platform/product/common/productService";
 import product from "mote/platform/product/common/product";
-import { LoggerChannelClient, LogLevelChannelClient } from "mote/platform/log/common/logIpc";
 import { ILoggerService, ILogService, LogLevel } from "mote/platform/log/common/log";
 import { isCI } from "mote/base/common/platform";
 import { safeStringify } from "mote/base/common/objects";
@@ -22,6 +21,10 @@ import { RemoteService } from 'mote/workbench/services/remote/browser/remoteServ
 import { IRemoteService } from 'mote/platform/remote/common/remote';
 import { UserService } from 'mote/workbench/services/user/common/userService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
+import { LoggerChannelClient } from 'mote/platform/log/common/logIpc';
+import { WorkbenchConfigurationService } from 'mote/workbench/services/configuration/browser/workbenchConfigurationService';
+import { IWorkbenchConfigurationService } from 'mote/workbench/services/configuration/common/workbenchConfiguration';
+import { INativeKeyboardLayoutService, NativeKeyboardLayoutService } from 'mote/workbench/services/keybinding/electron-sandbox/nativeKeyboardLayoutService';
 
 export class DesktopMain extends Disposable {
 	constructor(
@@ -67,12 +70,11 @@ export class DesktopMain extends Disposable {
 		serviceCollection.set(INativeWorkbenchEnvironmentService, environmentService);
 
 		// Logger
-		const logLevelChannelClient = new LogLevelChannelClient(mainProcessService.getChannel('logLevel'));
-		const loggerService = new LoggerChannelClient(LogLevel.Debug, logLevelChannelClient.onDidChangeLogLevel, mainProcessService.getChannel('logger'));
+		const loggerService = new LoggerChannelClient(this.configuration.windowId, this.configuration.logLevel, this.configuration.loggers, mainProcessService.getChannel('logger'));
 		serviceCollection.set(ILoggerService, loggerService);
 
 		// Log
-		const logService = this._register(new NativeLogService(`renderer${this.configuration.windowId}`, LogLevel.Debug, loggerService, logLevelChannelClient, environmentService));
+		const logService = this._register(new NativeLogService(LogLevel.Debug, loggerService, environmentService));
 		serviceCollection.set(ILogService, logService);
 		logService.setLevel(LogLevel.Debug);
 		if (isCI) {
@@ -82,9 +84,25 @@ export class DesktopMain extends Disposable {
 			logService.trace('workbench#open(): with configuration', safeStringify(this.configuration));
 		}
 
-		// Storage
-		const storageService = await this.createStorageService(logService);
-		serviceCollection.set(IStorageService, storageService);
+		const [_, storageService] = await Promise.all([
+			this.createWorkspaceService().then((configurationService) => {
+				// Configuration
+				serviceCollection.set(IWorkbenchConfigurationService, configurationService);
+				return configurationService;
+			}),
+			this.createStorageService(logService).then((storageService) => {
+				// Storage
+				serviceCollection.set(IStorageService, storageService);
+				return storageService;
+			}),
+			this.createKeyboardLayoutService(mainProcessService).then(service => {
+
+				// KeyboardLayout
+				serviceCollection.set(INativeKeyboardLayoutService, service);
+
+				return service;
+			})
+		]);
 
 		// Remote
 		const remoteService = new RemoteService(productService);
@@ -100,7 +118,7 @@ export class DesktopMain extends Disposable {
 	}
 
 	private async createStorageService(logService: ILogService) {
-		const storageService = new BrowserStorageService({ id: 'mote' }, { currentProfile: '' } as any, logService);
+		const storageService = new BrowserStorageService({ id: 'mote' } as any, { currentProfile: '' } as any, logService);
 
 		try {
 			await storageService.initialize();
@@ -114,6 +132,23 @@ export class DesktopMain extends Disposable {
 		return storageService;
 	}
 
+	private async createWorkspaceService() {
+		return Promise.resolve(new WorkbenchConfigurationService());
+	}
+
+	private async createKeyboardLayoutService(mainProcessService: IMainProcessService): Promise<NativeKeyboardLayoutService> {
+		const keyboardLayoutService = new NativeKeyboardLayoutService(mainProcessService);
+
+		try {
+			await keyboardLayoutService.initialize();
+
+			return keyboardLayoutService;
+		} catch (error) {
+			onUnexpectedError(error);
+
+			return keyboardLayoutService;
+		}
+	}
 }
 
 

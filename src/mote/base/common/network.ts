@@ -51,6 +51,8 @@ export namespace Schemas {
 
 	export const vscodeRemote = 'vscode-remote';
 
+	export const moteRemote = 'mote-remote';
+
 	export const vscodeRemoteResource = 'vscode-remote-resource';
 
 	export const vscodeUserData = 'vscode-userdata';
@@ -93,7 +95,7 @@ export namespace Schemas {
 	 * Scheme used as a replacement of `file` scheme to load
 	 * files with our custom protocol handler (desktop only).
 	 */
-	export const vscodeFileResource = 'vscode-file';
+	export const moteFileResource = 'mote-file';
 
 	/**
 	 * Scheme used for temporary resources
@@ -196,7 +198,7 @@ export const nodeModulesAsarUnpackedPath: AppResourcePath = 'mote/../../node_mod
 
 class FileAccessImpl {
 
-	private static readonly FALLBACK_AUTHORITY = 'vscode-app';
+	private static readonly FALLBACK_AUTHORITY = 'mote-app';
 
 	/**
 	 * Returns a URI to use in contexts where the browser is responsible
@@ -217,11 +219,11 @@ class FileAccessImpl {
 	 */
 	uriToBrowserUri(uri: URI): URI {
 		// Handle remote URIs via `RemoteAuthorities`
-		if (uri.scheme === Schemas.vscodeRemote) {
+		if (uri.scheme === Schemas.moteRemote) {
 			return RemoteAuthorities.rewrite(uri);
 		}
 
-		// Convert to `vscode-file` resource..
+		// Convert to `mote-file` resource..
 		if (
 			// ...only ever for `file` resources
 			uri.scheme === Schemas.file &&
@@ -229,11 +231,11 @@ class FileAccessImpl {
 				// ...and we run in native environments
 				platform.isNative ||
 				// ...or web worker extensions on desktop
-				(platform.isWebWorker && platform.globals.origin === `${Schemas.vscodeFileResource}://${FileAccessImpl.FALLBACK_AUTHORITY}`)
+				(platform.isWebWorker && platform.globals.origin === `${Schemas.moteFileResource}://${FileAccessImpl.FALLBACK_AUTHORITY}`)
 			)
 		) {
 			return uri.with({
-				scheme: Schemas.vscodeFileResource,
+				scheme: Schemas.moteFileResource,
 				// We need to provide an authority here so that it can serve
 				// as origin for network and loading matters in chromium.
 				// If the URI is not coming with an authority already, we
@@ -261,8 +263,8 @@ class FileAccessImpl {
 	 * is responsible for loading.
 	 */
 	uriToFileUri(uri: URI): URI {
-		// Only convert the URI if it is `vscode-file:` scheme
-		if (uri.scheme === Schemas.vscodeFileResource) {
+		// Only convert the URI if it is `mote-file:` scheme
+		if (uri.scheme === Schemas.moteFileResource) {
 			return uri.with({
 				scheme: Schemas.file,
 				// Only preserve the `authority` if it is different from

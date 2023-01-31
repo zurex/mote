@@ -340,6 +340,9 @@ export class ViewModel extends Disposable implements IViewModel {
 	}
 
 	public getLineCount(): number {
+		if (this.model.getLineCount() === 0) {
+			return 0;
+		}
 		return this.lines.getViewLineCount();
 	}
 

@@ -16,7 +16,7 @@
 	 * @returns {true | never}
 	 */
 	function validateIPC(channel) {
-		if (!channel || !channel.startsWith('vscode:')) {
+		if (!channel || !channel.startsWith('mote:')) {
 			throw new Error(`Unsupported event IPC channel '${channel}'`);
 		}
 
@@ -50,9 +50,9 @@
 
 	/** @type {Promise<ISandboxConfiguration>} */
 	const resolveConfiguration = (async () => {
-		const windowConfigIpcChannel = parseArgv('vscode-window-config');
+		const windowConfigIpcChannel = parseArgv('mote-window-config');
 		if (!windowConfigIpcChannel) {
-			throw new Error('Preload: did not find expected vscode-window-config in renderer process arguments list.');
+			throw new Error('Preload: did not find expected mote-window-config in renderer process arguments list.');
 		}
 
 		try {
@@ -62,20 +62,20 @@
 				configuration = await ipcRenderer.invoke(windowConfigIpcChannel);
 
 				// Apply `userEnv` directly
-				Object.assign(process.env, configuration.userEnv);
+				//Object.assign(process.env, configuration?.userEnv);
 
 				// Apply zoom level early before even building the
 				// window DOM elements to avoid UI flicker. We always
 				// have to set the zoom level from within the window
 				// because Chrome has it's own way of remembering zoom
-				// settings per origin (if vscode-file:// is used) and
+				// settings per origin (if mote-file:// is used) and
 				// we want to ensure that the user configuration wins.
-				webFrame.setZoomLevel(configuration.zoomLevel ?? 0);
+				webFrame.setZoomLevel(configuration?.zoomLevel ?? 0);
 
 				return configuration;
 			}
 		} catch (error) {
-			throw new Error(`Preload: unable to fetch vscode-window-config: ${error}`);
+			throw new Error(`Preload: unable to fetch mote-window-config: ${error}`);
 		}
 	})();
 
@@ -84,7 +84,7 @@
 	//#region Resolve Shell Environment
 
 	/**
-	 * If VSCode is not run from a terminal, we should resolve additional
+	 * If Mote is not run from a terminal, we should resolve additional
 	 * shell specific environment from the OS shell to ensure we are seeing
 	 * all development related environment variables. We do this from the
 	 * main process because it may involve spawning a shell.
@@ -97,7 +97,7 @@
 		// `shellEnv` from the main side
 		const [userEnv, shellEnv] = await Promise.all([
 			(async () => (await resolveConfiguration).userEnv)(),
-			ipcRenderer.invoke('vscode:fetchShellEnv')
+			ipcRenderer.invoke('mote:fetchShellEnv')
 		]);
 
 		return { ...process.env, ...shellEnv, ...userEnv };
@@ -262,7 +262,7 @@
 			 * @returns {string}
 			 */
 			cwd() {
-				return process.env['VSCODE_CWD'] || process.execPath.substr(0, process.execPath.lastIndexOf(process.platform === 'win32' ? '\\' : '/'));
+				return process.env['MOTE_CWD'] || process.execPath.substr(0, process.execPath.lastIndexOf(process.platform === 'win32' ? '\\' : '/'));
 			},
 
 			/**

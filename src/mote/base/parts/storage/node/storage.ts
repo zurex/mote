@@ -420,7 +420,7 @@ class SQLiteStorageDatabaseLogger {
 	// to reduce lots of output, require an environment variable to enable tracing
 	// this helps when running with --verbose normally where the storage tracing
 	// might hide useful output to look at
-	static readonly VSCODE_TRACE_STORAGE = 'VSCODE_TRACE_STORAGE';
+	static readonly VSCODE_TRACE_STORAGE = 'MOTE_TRACE_STORAGE';
 
 	private readonly logTrace: ((msg: string) => void) | undefined;
 	private readonly logError: ((error: string | Error) => void) | undefined;

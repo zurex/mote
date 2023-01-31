@@ -60,7 +60,7 @@ export class EnvironmentMainService extends NativeEnvironmentService implements 
 	get crossOriginIsolated(): boolean { return !!this.args['enable-coi']; }
 
 	@memoize
-	get codeCachePath(): string | undefined { return process.env['VSCODE_CODE_CACHE_PATH'] || undefined; }
+	get codeCachePath(): string | undefined { return process.env['MOTE_CODE_CACHE_PATH'] || undefined; }
 
 	@memoize
 	get useCodeCache(): boolean { return !!this.codeCachePath; }

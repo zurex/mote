@@ -287,7 +287,7 @@ export async function main(argv: string[]): Promise<any> {
 								}
 								let suffix = '';
 								const result = await session.stop();
-								if (!process.env['VSCODE_DEV']) {
+								if (!process.env['MOTE_DEV']) {
 									// when running from a not-development-build we remove
 									// absolute filenames because we don't want to reveal anything
 									// about users. We also append the `.txt` suffix to make it
@@ -427,7 +427,7 @@ export async function main(argv: string[]): Promise<any> {
 
 			spawnArgs.push('--args', ...argv.slice(2)); // pass on our arguments
 
-			if (env['VSCODE_DEV']) {
+			if (env['MOTE_DEV']) {
 				// If we're in development mode, replace the . arg with the
 				// vscode source arg. Because the OSS app isn't bundled,
 				// it needs the full vscode source arg to launch properly.

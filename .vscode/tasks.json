@@ -165,7 +165,7 @@
 		{
 			"label": "Run Dev",
 			"type": "shell",
-			"command": "./scripts/code.sh",
+			"command": "./scripts/mote.sh",
 			"windows": {
 				"command": ".\\scripts\\code.bat"
 			},
