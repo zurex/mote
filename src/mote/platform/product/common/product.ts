@@ -29,23 +29,22 @@ if (typeof globals.vscode !== 'undefined' && typeof globals.vscode.context !== '
 else if (typeof require?.__$__nodeRequire === 'function') {
 
 	// Obtain values from product.json and package.json
-	const rootPath = dirname(FileAccess.asFileUri('', require));
+	const rootPath = dirname(FileAccess.asFileUri(''));
 
 	product = require.__$__nodeRequire(joinPath(rootPath, 'product.json').fsPath);
-	const localSettings = require.__$__nodeRequire(joinPath(rootPath, 'local.settings.json').fsPath);
 	const pkg = require.__$__nodeRequire(joinPath(rootPath, 'package.json').fsPath) as { version: string };
 
 	// Running out of sources
 	if (env['MOTE_DEV']) {
+		const localSettings = require.__$__nodeRequire(joinPath(rootPath, 'local.settings.json').fsPath);
 		Object.assign(product, {
 			nameShort: `${product.nameShort} Dev`,
 			nameLong: `${product.nameLong} Dev`,
 			dataFolderName: `${product.dataFolderName}-dev`,
 			serverDataFolderName: product.serverDataFolderName ? `${product.serverDataFolderName}-dev` : undefined
 		});
+		Object.assign(product, localSettings);
 	}
-
-	Object.assign(product, localSettings);
 
 	Object.assign(product, {
 		version: pkg.version

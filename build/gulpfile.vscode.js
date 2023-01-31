@@ -37,7 +37,7 @@ const { getSettingsSearchBuildId, shouldSetupSettingsSearch } = require('./azure
 // Build
 const vscodeEntryPoints = _.flatten([
 	buildfile.entrypoint('mote/workbench/workbench.desktop.main'),
-	buildfile.code
+	buildfile.mote
 ]);
 
 const vscodeResources = [

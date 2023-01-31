@@ -10,9 +10,8 @@ import { toErrorMessage } from 'mote/base/common/errorMessage';
 import { onUnexpectedError, setUnexpectedErrorHandler } from 'mote/base/common/errors';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { Schemas } from 'mote/base/common/network';
-import { isAbsolute, join } from 'mote/base/common/path';
+import { join } from 'mote/base/common/path';
 import { isWindows } from 'mote/base/common/platform';
-import { cwd } from 'mote/base/common/process';
 import { URI } from 'mote/base/common/uri';
 import { Promises } from 'mote/base/node/pfs';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
@@ -22,14 +21,6 @@ import { DownloadService } from 'mote/platform/download/common/downloadService';
 import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
 import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
 import { NativeEnvironmentService } from 'mote/platform/environment/node/environmentService';
-import { ExtensionGalleryServiceWithNoStorageService } from 'mote/platform/extensionManagement/common/extensionGalleryService';
-import { IExtensionGalleryService, InstallOptions } from 'mote/platform/extensionManagement/common/extensionManagement';
-import { ExtensionSignatureVerificationService, IExtensionSignatureVerificationService } from 'mote/platform/extensionManagement/node/extensionSignatureVerificationService';
-import { ExtensionManagementCLI } from 'mote/platform/extensionManagement/common/extensionManagementCLI';
-import { IExtensionsProfileScannerService } from 'mote/platform/extensionManagement/common/extensionsProfileScannerService';
-import { IExtensionsScannerService } from 'mote/platform/extensionManagement/common/extensionsScannerService';
-import { ExtensionManagementService, INativeServerExtensionManagementService } from 'mote/platform/extensionManagement/node/extensionManagementService';
-import { ExtensionsScannerService } from 'mote/platform/extensionManagement/node/extensionsScannerService';
 import { IFileService } from 'mote/platform/files/common/files';
 import { FileService } from 'mote/platform/files/common/fileService';
 import { DiskFileSystemProvider } from 'mote/platform/files/node/diskFileSystemProvider';
@@ -182,13 +173,6 @@ class CliMain extends Disposable {
 		// Download Service
 		services.set(IDownloadService, new SyncDescriptor(DownloadService, undefined, true));
 
-		// Extensions
-		services.set(IExtensionsProfileScannerService, new SyncDescriptor(ExtensionsProfileScannerService, undefined, true));
-		services.set(IExtensionsScannerService, new SyncDescriptor(ExtensionsScannerService, undefined, true));
-		services.set(IExtensionSignatureVerificationService, new SyncDescriptor(ExtensionSignatureVerificationService, undefined, true));
-		services.set(INativeServerExtensionManagementService, new SyncDescriptor(ExtensionManagementService, undefined, true));
-		services.set(IExtensionGalleryService, new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService, undefined, true));
-
 		// Localizations
 		services.set(ILanguagePackService, new SyncDescriptor(NativeLanguagePackService, undefined, false));
 
@@ -247,42 +231,15 @@ class CliMain extends Disposable {
 	}
 
 	private async doRun(environmentService: INativeEnvironmentService, fileService: IFileService, userDataProfilesService: IUserDataProfilesService, instantiationService: IInstantiationService): Promise<void> {
-		const profileLocation = (environmentService.args.profile ? userDataProfilesService.profiles.find(p => p.name === environmentService.args.profile) ?? userDataProfilesService.defaultProfile : userDataProfilesService.defaultProfile).extensionsResource;
-
 		// Install Source
 		if (this.argv['install-source']) {
 			return this.setInstallSource(environmentService, fileService, this.argv['install-source']);
-		}
-
-		// List Extensions
-		if (this.argv['list-extensions']) {
-			return instantiationService.createInstance(ExtensionManagementCLI).listExtensions(!!this.argv['show-versions'], this.argv['category'], profileLocation);
-		}
-
-		// Install Extension
-		else if (this.argv['install-extension'] || this.argv['install-builtin-extension']) {
-			const installOptions: InstallOptions = { isMachineScoped: !!this.argv['do-not-sync'], installPreReleaseVersion: !!this.argv['pre-release'], profileLocation };
-			return instantiationService.createInstance(ExtensionManagementCLI).installExtensions(this.asExtensionIdOrVSIX(this.argv['install-extension'] || []), this.argv['install-builtin-extension'] || [], installOptions, !!this.argv['force']);
-		}
-
-		// Uninstall Extension
-		else if (this.argv['uninstall-extension']) {
-			return instantiationService.createInstance(ExtensionManagementCLI).uninstallExtensions(this.asExtensionIdOrVSIX(this.argv['uninstall-extension']), !!this.argv['force'], profileLocation);
-		}
-
-		// Locate Extension
-		else if (this.argv['locate-extension']) {
-			return instantiationService.createInstance(ExtensionManagementCLI).locateExtension(this.argv['locate-extension']);
 		}
 
 		// Telemetry
 		else if (this.argv['telemetry']) {
 			console.log(await buildTelemetryMessage(environmentService.appRoot, environmentService.extensionsPath));
 		}
-	}
-
-	private asExtensionIdOrVSIX(inputs: string[]): (string | URI)[] {
-		return inputs.map(input => /\.vsix$/i.test(input) ? URI.file(isAbsolute(input) ? input : join(cwd(), input)) : input);
 	}
 
 	private async setInstallSource(environmentService: INativeEnvironmentService, fileService: IFileService, installSource: string): Promise<void> {

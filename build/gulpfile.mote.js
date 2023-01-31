@@ -37,7 +37,7 @@ const { getSettingsSearchBuildId, shouldSetupSettingsSearch } = require('./azure
 // Build
 const moteEntryPoints = _.flatten([
 	buildfile.entrypoint('mote/workbench/workbench.desktop.main'),
-	buildfile.code
+	buildfile.mote
 ]);
 
 const moteResources = [
@@ -48,18 +48,19 @@ const moteResources = [
 	'out-build/bootstrap-amd.js',
 	'out-build/bootstrap-node.js',
 	'out-build/bootstrap-window.js',
-	'out-build/vs/**/*.{svg,png,html,jpg,opus}',
 	'out-build/mote/**/*.{svg,png,html,jpg,opus}',
-	'!out-build/vs/code/browser/**/*.html',
+	'!out-build/mote/app/browser/**/*.html',
 	'!out-build/vs/editor/standalone/**/*.svg',
-	'out-build/vs/base/common/performance.js',
-	'out-build/vs/base/common/stripComments.js',
-	'out-build/vs/base/node/languagePacks.js',
-	'out-build/vs/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
-	'out-build/vs/base/browser/ui/codicons/codicon/**',
-	'out-build/vs/base/parts/sandbox/electron-browser/preload.js',
-	'out-build/vs/platform/environment/node/userDataPath.js',
-	'out-build/vs/workbench/browser/media/*-theme.css',
+	'out-build/mote/base/common/performance.js',
+	'out-build/mote/base/common/stripComments.js',
+	'out-build/mote/base/node/languagePacks.js',
+	'out-build/mote/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
+	'out-build/mote/base/browser/ui/codicons/codicon/**',
+	'out-build/mote/base/parts/sandbox/electron-browser/preload.js',
+	'out-build/mote/platform/environment/node/userDataPath.js',
+	'out-build/mote/workbench/browser/media/*-theme.css',
+	'out-build/mote/workbench/workbench.desktop.main.nls.js',
+	'out-build/vs/workbench/contrib/debug/**/*.json',
 	'out-build/vs/workbench/contrib/debug/**/*.json',
 	'out-build/vs/workbench/contrib/externalTerminal/**/*.scpt',
 	'out-build/vs/workbench/contrib/terminal/browser/media/*.ps1',
@@ -68,14 +69,11 @@ const moteResources = [
 	'out-build/vs/workbench/contrib/webview/browser/pre/*.js',
 	'out-build/vs/**/markdown.css',
 	'out-build/vs/workbench/contrib/tasks/**/*.json',
-	'out-build/vs/platform/files/**/*.exe',
-	'out-build/vs/platform/files/**/*.md',
-	'out-build/vs/code/electron-sandbox/workbench/**',
+	'out-build/mote/platform/files/**/*.exe',
+	'out-build/mote/platform/files/**/*.md',
 	'out-build/mote/app/electron-sandbox/workbench/**',
 	'out-build/mote/app/electron-browser/workbench/**',
-	'out-build/vs/code/electron-browser/sharedProcess/sharedProcess.js',
-	'out-build/vs/code/electron-sandbox/issue/issueReporter.js',
-	'out-build/vs/code/electron-sandbox/processExplorer/processExplorer.js',
+	'out-build/mote/app/electron-browser/sharedProcess/sharedProcess.js',
 	'!**/test/**'
 ];
 
@@ -156,12 +154,12 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 		const out = sourceFolderName;
 
 		const checksums = computeChecksums(out, [
-			//'vs/base/parts/sandbox/electron-browser/preload.js',
+			'mote/base/parts/sandbox/electron-browser/preload.js',
 			'mote/workbench/workbench.desktop.main.js',
 			'mote/workbench/workbench.desktop.main.css',
 			//'vs/workbench/api/node/extensionHostProcess.js',
-			//'mote/app/electron-sandbox/workbench/workbench.html',
-			//'mote/app/electron-sandbox/workbench/workbench.js'
+			'mote/app/electron-sandbox/workbench/workbench.html',
+			'mote/app/electron-sandbox/workbench/workbench.js'
 		]);
 
 		const src = gulp.src(out + '/**', { base: '.' })
@@ -213,7 +211,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 		const license = gulp.src(['LICENSES.chromium.html', product.licenseFileName, 'ThirdPartyNotices.txt', 'licenses/**'], { base: '.', allowEmpty: true });
 
 		// TODO the API should be copied to `out` during compile, not here
-		const api = gulp.src('src/vscode-dts/vscode.d.ts').pipe(rename('out/vscode-dts/vscode.d.ts'));
+		//const api = gulp.src('src/vscode-dts/vscode.d.ts').pipe(rename('out/vscode-dts/vscode.d.ts'));
 
 		const telemetry = gulp.src('.build/telemetry/**', { base: '.build/telemetry', dot: true });
 
@@ -241,7 +239,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 			packageJsonStream,
 			productJsonStream,
 			license,
-			api,
+			//api,
 			telemetry,
 			sources,
 			deps
