@@ -1,9 +1,9 @@
 /* eslint-disable code-no-unexternalized-strings */
-import { nativeTheme } from "electron";
+import { BrowserWindow, nativeTheme } from "electron";
 import { hostname, release } from 'os';
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { IAppWindow } from "mote/platform/window/electron-main/window";
-import { distinct } from "mote/base/common/arrays";
+import { distinct, firstOrDefault } from "mote/base/common/arrays";
 import { Disposable } from "mote/base/common/lifecycle";
 import { IProcessEnvironment } from "mote/base/common/platform";
 import { NativeParsedArgs } from "mote/platform/environment/common/argv";
@@ -11,8 +11,12 @@ import { IEnvironmentMainService } from "mote/platform/environment/electron-main
 import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
 import { ILogService } from "mote/platform/log/common/log";
 import product from "mote/platform/product/common/product";
-import { AppWindow } from "./window";
+import { AppWindow } from "./appWindow";
 import { IOpenConfiguration, IWindowsMainService } from "./windows";
+import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { getMarks, mark } from 'mote/base/common/performance';
+import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
 
 interface IOpenBrowserWindowOptions {
 	readonly userEnv?: IProcessEnvironment;
@@ -20,10 +24,15 @@ interface IOpenBrowserWindowOptions {
 }
 
 export class WindowsMainService extends Disposable implements IWindowsMainService {
+
+	private static readonly WINDOWS: IAppWindow[] = [];
+
 	constructor(
-		@ILogService logService: ILogService,
+		@ILogService private readonly logService: ILogService,
+		@ILoggerMainService private readonly loggerService: ILoggerMainService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
 	}
@@ -66,7 +75,9 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	}
 
 	private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
-		console.log("this.environmentMainService.userHome", this.environmentMainService.tmpDir.fsPath);
+		this.logService.debug("this.environmentMainService.userHome", this.environmentMainService.tmpDir.fsPath);
+
+		let window: IAppWindow | undefined;
 
 		// Build up the window configuration from provided options, config and environment
 		const configuration: INativeWindowConfiguration = {
@@ -85,7 +96,11 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			//perfMarks: [],
 			userEnv: { ...options.userEnv },
 
+			logLevel: this.logService.getLevel(),
+			loggers: this.loggerService.getRegisteredLoggers(),
+
 			product,
+			perfMarks: getMarks(),
 			os: { release: release(), hostname: hostname() },
 			colorScheme: {
 				dark: nativeTheme.shouldUseDarkColors,
@@ -93,13 +108,27 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			}
 		};
 
-		let window: IAppWindow | undefined;
-
 		if (!window) {
-			window = this.instantiationService.createInstance(AppWindow);
+			// Create the window
+			mark('mote/willCreateCodeWindow');
+			const createdWindow = window = this.instantiationService.createInstance(AppWindow);
+			mark('mote/didCreateCodeWindow');
+
+			// Add to our list of windows
+			WindowsMainService.WINDOWS.push(createdWindow);
+
+			// Lifecycle
+			this.lifecycleMainService.registerWindow(createdWindow);
+		}
+		// Existing window
+		else {
+			// Some configuration things get inherited if the window is being reused and we are
+			// in extension development host mode. These options are all development related.
+			const currentWindowConfig = window.config;
+			configuration.loggers = currentWindowConfig?.loggers ?? configuration.loggers;
 		}
 
-		this.doOpenInBrowserWindow(window!, configuration, options);
+		this.doOpenInBrowserWindow(window, configuration, options);
 
 		return window;
 	}
@@ -107,5 +136,40 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	private doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
 		// Load it
 		window.load(configuration);
+	}
+
+	getFocusedWindow(): IAppWindow | undefined {
+		const window = BrowserWindow.getFocusedWindow();
+		if (window) {
+			return this.getWindowById(window.id);
+		}
+
+		return undefined;
+	}
+
+	getLastActiveWindow(): IAppWindow | undefined {
+		return this.doGetLastActiveWindow(this.getWindows());
+	}
+
+	private doGetLastActiveWindow(windows: IAppWindow[]): IAppWindow | undefined {
+		const lastFocusedDate = Math.max.apply(Math, windows.map(window => window.lastFocusTime));
+
+		return windows.find(window => window.lastFocusTime === lastFocusedDate);
+	}
+
+	sendToFocused(channel: string, ...args: any[]): void {
+		const focusedWindow = this.getFocusedWindow() || this.getLastActiveWindow();
+
+		focusedWindow?.sendWhenReady(channel, CancellationToken.None, ...args);
+	}
+
+	getWindows(): IAppWindow[] {
+		return WindowsMainService.WINDOWS;
+	}
+
+	getWindowById(windowId: number): IAppWindow | undefined {
+		const windows = this.getWindows().filter(window => window.id === windowId);
+
+		return firstOrDefault(windows);
 	}
 }

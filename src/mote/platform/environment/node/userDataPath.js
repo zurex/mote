@@ -50,18 +50,18 @@
 		function doGetUserDataPath(cliArgs, productName) {
 
 			// 0. Running out of sources has a fixed productName
-			if (process.env['VSCODE_DEV']) {
+			if (process.env['MOTE_DEV']) {
 				productName = 'code-oss-dev';
 			}
 
 			// 1. Support portable mode
-			const portablePath = process.env['VSCODE_PORTABLE'];
+			const portablePath = process.env['MOTE_PORTABLE'];
 			if (portablePath) {
 				return path.join(portablePath, 'user-data');
 			}
 
 			// 2. Support global VSCODE_APPDATA environment variable
-			let appDataPath = process.env['VSCODE_APPDATA'];
+			let appDataPath = process.env['MOTE_APPDATA'];
 			if (appDataPath) {
 				return path.join(appDataPath, productName);
 			}
@@ -118,7 +118,7 @@
 		const path = require('path');
 		const os = require('os');
 
-		module.exports = factory(path, os, process.env['VSCODE_CWD'] || process.cwd()); // commonjs
+		module.exports = factory(path, os, process.env['MOTE_CWD'] || process.cwd()); // commonjs
 	} else {
 		throw new Error('Unknown context');
 	}

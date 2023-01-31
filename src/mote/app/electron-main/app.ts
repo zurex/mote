@@ -20,10 +20,17 @@ import { machineIdKey } from 'mote/platform/telemetry/common/telemetry';
 import { getMachineId } from 'mote/base/node/id';
 import { SharedProcess } from 'mote/platform/sharedProcess/electron-main/sharedProcess';
 import { WindowError } from 'mote/platform/window/electron-main/window';
+import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
+import { LoggerChannel } from 'mote/platform/log/electron-main/logIpc';
+import { INativeHostMainService, NativeHostMainService } from 'mote/platform/native/electron-main/nativeHostMainService';
+import { ProxyChannel } from 'mote/base/parts/ipc/common/ipc';
+import { DialogMainService, IDialogMainService } from 'mote/platform/dialogs/electron-main/dialogMainService';
+import { IKeyboardLayoutMainService, KeyboardLayoutMainService } from 'mote/platform/keyboardLayout/electron-main/keyboardLayoutMainService';
 
 export class MoteApplication extends Disposable {
 
 	private windowsMainService: IWindowsMainService | undefined;
+	private nativeHostMainService: INativeHostMainService | undefined;
 
 	constructor(
 		private readonly userEnv: IProcessEnvironment,
@@ -57,7 +64,7 @@ export class MoteApplication extends Disposable {
 			}
 		});
 
-		ipcMain.handle('vscode:fetchShellEnv', event => {
+		ipcMain.handle('mote:fetchShellEnv', event => {
 
 		});
 	}
@@ -107,15 +114,13 @@ export class MoteApplication extends Disposable {
 		if (error) {
 
 			// take only the message and stack property
-			/*
 			const friendlyError = {
 				message: `[uncaught exception in main]: ${error.message}`,
 				stack: error.stack
 			};
-			*/
 
 			// handle on client side
-			//this.windowsMainService?.sendToFocused('vscode:reportError', JSON.stringify(friendlyError));
+			this.windowsMainService?.sendToFocused('mote:reportError', JSON.stringify(friendlyError));
 		}
 
 		this.logService.error(`[uncaught exception in main]: ${error}`);
@@ -187,6 +192,16 @@ export class MoteApplication extends Disposable {
 		// Windows
 		services.set(IWindowsMainService, new SyncDescriptor(WindowsMainService));
 
+		// Dialogs
+		const dialogMainService = new DialogMainService(this.logService);
+		services.set(IDialogMainService, dialogMainService);
+
+		// Keyboard Layout
+		services.set(IKeyboardLayoutMainService, new SyncDescriptor(KeyboardLayoutMainService));
+
+		// Native Host
+		services.set(INativeHostMainService, new SyncDescriptor(NativeHostMainService, [sharedProcess], false /* proxied to other processes */));
+
 		return this.mainInstantiationService.createChild(services);
 	}
 
@@ -196,6 +211,24 @@ export class MoteApplication extends Disposable {
 		// launching because that is the only way the second instance
 		// can talk to the first instance. Electron IPC does not work
 		// across apps until `requestSingleInstance` APIs are adopted.
+
+		// Keyboard Layout
+		const keyboardLayoutChannel = ProxyChannel.fromService(accessor.get(IKeyboardLayoutMainService));
+		mainProcessElectronServer.registerChannel('keyboardLayout', keyboardLayoutChannel);
+
+		// Native host (main & shared process)
+		/*
+		this.nativeHostMainService = accessor.get(INativeHostMainService);
+		const nativeHostChannel = ProxyChannel.fromService(this.nativeHostMainService);
+		mainProcessElectronServer.registerChannel('nativeHost', nativeHostChannel);
+		sharedProcessClient.then(client => client.registerChannel('nativeHost', nativeHostChannel));
+		*/
+
+		// Logger
+		const loggerChannel = new LoggerChannel(accessor.get(ILoggerMainService),);
+		mainProcessElectronServer.registerChannel('logger', loggerChannel);
+		sharedProcessClient.then(client => client.registerChannel('logger', loggerChannel));
+
 	}
 
 	private openFirstWindow(accessor: ServicesAccessor) {

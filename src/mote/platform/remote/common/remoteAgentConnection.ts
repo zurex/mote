@@ -279,7 +279,7 @@ async function connectToRemoteExtensionHostAgent(options: ISimpleConnectionOptio
 
 		if (msg.type !== 'sign' || typeof msg.data !== 'string') {
 			const error: any = new Error('Unexpected handshake message');
-			error.code = 'VSCODE_CONNECTION_ERROR';
+			error.code = 'MOTE_CONNECTION_ERROR';
 			throw error;
 		}
 
@@ -288,7 +288,7 @@ async function connectToRemoteExtensionHostAgent(options: ISimpleConnectionOptio
 		const isValid = await raceWithTimeoutCancellation(options.signService.validate(message, msg.signedData), timeoutCancellationToken);
 		if (!isValid) {
 			const error: any = new Error('Refused to connect to unsupported server');
-			error.code = 'VSCODE_CONNECTION_ERROR';
+			error.code = 'MOTE_CONNECTION_ERROR';
 			throw error;
 		}
 
@@ -313,7 +313,7 @@ async function connectToRemoteExtensionHostAgent(options: ISimpleConnectionOptio
 			options.logService.error(`${logPrefix} the handshake timed out. Error:`);
 			options.logService.error(error);
 		}
-		if (error && error.code === 'VSCODE_CONNECTION_ERROR') {
+		if (error && error.code === 'MOTE_CONNECTION_ERROR') {
 			options.logService.error(`${logPrefix} received error control message when negotiating connection. Error:`);
 			options.logService.error(error);
 		}
@@ -693,7 +693,7 @@ export abstract class PersistentConnection extends Disposable {
 
 				break;
 			} catch (err) {
-				if (err.code === 'VSCODE_CONNECTION_ERROR') {
+				if (err.code === 'MOTE_CONNECTION_ERROR') {
 					this._options.logService.error(`${logPrefix} A permanent error occurred in the reconnecting loop! Will give up now! Error:`);
 					this._options.logService.error(err);
 					this._onReconnectionPermanentFailure(this.protocol.getMillisSinceLastIncomingData(), attempt + 1, false);
@@ -805,7 +805,7 @@ function safeDisposeProtocolAndSocket(protocol: PersistentProtocol): void {
 function getErrorFromMessage(msg: any): Error | null {
 	if (msg && msg.type === 'error') {
 		const error = new Error(`Connection error: ${msg.reason}`);
-		(<any>error).code = 'VSCODE_CONNECTION_ERROR';
+		(<any>error).code = 'MOTE_CONNECTION_ERROR';
 		return error;
 	}
 	return null;

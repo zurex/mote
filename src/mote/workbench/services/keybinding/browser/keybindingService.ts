@@ -15,8 +15,8 @@ import { registerSingleton } from 'mote/platform/instantiation/common/extensions
 import { ILogService } from 'mote/platform/log/common/log';
 import { BrowserFeatures, KeyboardSupport } from 'mote/base/browser/canIUse';
 import { OperatingSystem, OS } from 'mote/base/common/platform';
-import { IKeyboardLayoutService } from 'mote/platform/keyboardLayout/common/keyboardLayoutService';
 import { IKeyboardMapper } from 'mote/platform/keyboardLayout/common/keyboardMapper';
+import { IKeyboardLayoutService } from 'mote/platform/keyboardLayout/common/keyboardLayout';
 
 export class WorkbenchKeybindingService extends AbstractKeybindingService {
 

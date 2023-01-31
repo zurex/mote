@@ -26,7 +26,7 @@
 	const safeProcess = preloadGlobals.process;
 
 	/**
-	 * @typedef {import('./vs/base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration} ISandboxConfiguration
+	 * @typedef {import('./mote/base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration} ISandboxConfiguration
 	 *
 	 * @param {string[]} modulePaths
 	 * @param {(result: unknown, configuration: ISandboxConfiguration) => Promise<unknown> | undefined} resultCallback
@@ -43,7 +43,7 @@
 	 * }} [options]
 	 */
 	async function load(modulePaths, resultCallback, options) {
-		const isDev = !!safeProcess.env['VSCODE_DEV'];
+		const isDev = !!safeProcess.env['MOTE_DEV'];
 
 		// Error handler (node.js enabled renderers only)
 		let showDevtoolsOnError = isDev;
@@ -222,9 +222,9 @@
 		let listener = function (e) {
 			const key = extractKey(e);
 			if (key === TOGGLE_DEV_TOOLS_KB || key === TOGGLE_DEV_TOOLS_KB_ALT) {
-				ipcRenderer.send('vscode:toggleDevTools');
+				ipcRenderer.send('mote:toggleDevTools');
 			} else if (key === RELOAD_KB && !disallowReloadKeybinding) {
-				ipcRenderer.send('vscode:reloadWindow');
+				ipcRenderer.send('mote:reloadWindow');
 			}
 		};
 
@@ -245,7 +245,7 @@
 	function onUnexpectedError(error, showDevtoolsOnError) {
 		if (showDevtoolsOnError) {
 			const ipcRenderer = preloadGlobals.ipcRenderer;
-			ipcRenderer.send('vscode:openDevTools');
+			ipcRenderer.send('mote:openDevTools');
 		}
 
 		console.error(`[uncaught exception]: ${error}`);
@@ -264,7 +264,7 @@
 	}
 
 	/**
-	 * @return {typeof import('./vs/base/parts/sandbox/electron-sandbox/globals')}
+	 * @return {typeof import('./mote/base/parts/sandbox/electron-sandbox/globals')}
 	 */
 	function sandboxGlobals() {
 		// @ts-ignore (defined in globals.js)

@@ -160,7 +160,7 @@ const extensionKindSchema: IJSONSchema = {
 	],
 };
 
-const schemaId = 'vscode://schemas/vscode-extensions';
+const schemaId = 'mote://schemas/mote-extensions';
 export const schema: IJSONSchema = {
 	properties: {
 		engines: {
@@ -546,11 +546,11 @@ export const schema: IJSONSchema = {
 		scripts: {
 			type: 'object',
 			properties: {
-				'vscode:prepublish': {
+				'mote:prepublish': {
 					description: nls.localize('vscode.extension.scripts.prepublish', 'Script executed before the package is published as a VS Code extension.'),
 					type: 'string'
 				},
-				'vscode:uninstall': {
+				'mote:uninstall': {
 					description: nls.localize('vscode.extension.scripts.uninstall', 'Uninstall hook for VS Code extension. Script that gets executed when the extension is completely uninstalled from VS Code which is when VS Code is restarted (shutdown and start) after the extension is uninstalled. Only Node scripts are supported.'),
 					type: 'string'
 				}

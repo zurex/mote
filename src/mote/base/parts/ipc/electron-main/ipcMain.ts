@@ -103,7 +103,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 	}
 
 	private validateEvent(channel: string, event: IpcMainEvent | IpcMainInvokeEvent): boolean {
-		if (!channel || !channel.startsWith('vscode:')) {
+		if (!channel || !channel.startsWith('mote:')) {
 			onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because the channel is unknown.`);
 			return false; // unexpected channel
 		}
@@ -123,7 +123,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
 			return false; // unexpected URL
 		}
 
-		if (host !== 'vscode-app') {
+		if (host !== 'mote-app') {
 			onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because of a bad origin of '${host}'.`);
 			return false; // unexpected sender
 		}

@@ -12,7 +12,6 @@ import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { ThemeConfiguration } from 'mote/workbench/services/themes/common/themeConfiguration';
 import { RunOnceScheduler, Sequencer } from 'mote/base/common/async';
 import { IStorageService, StorageScope } from 'mote/platform/storage/common/storage';
-import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { isWeb } from 'mote/base/common/platform';
 import { createStyleSheet } from 'mote/base/browser/dom';
@@ -20,6 +19,7 @@ import { getIconsStyleSheet } from 'mote/platform/theme/browser/iconsStyleSheet'
 import { asCssVariableName, getColorRegistry } from 'mote/platform/theme/common/colorRegistry';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { Registry } from 'mote/platform/registry/common/platform';
+import { IHostColorSchemeService } from 'mote/workbench/services/themes/common/hostColorSchemeService';
 
 const DEFAULT_COLOR_THEME_ID = 'mote-dark mote-theme-defaults-themes-dark_plus-json';
 const DEFAULT_LIGHT_COLOR_THEME_ID = 'mote mote-theme-defaults-themes-light_plus-json';

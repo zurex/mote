@@ -28,7 +28,7 @@
 	// increase number of stack frames(from 10, https://github.com/v8/v8/wiki/Stack-Trace-API)
 	Error.stackTraceLimit = 100;
 
-	if (typeof process !== 'undefined' && !process.env['VSCODE_HANDLES_SIGPIPE']) {
+	if (typeof process !== 'undefined' && !process.env['MOTE_HANDLES_SIGPIPE']) {
 		// Workaround for Electron not installing a handler to ignore SIGPIPE
 		// (https://github.com/electron/electron/issues/13254)
 		process.on('SIGPIPE', () => {
@@ -156,9 +156,9 @@
 		// Get the nls configuration as early as possible.
 		const process = safeProcess();
 		let nlsConfig = { availableLanguages: {} };
-		if (process && process.env['VSCODE_NLS_CONFIG']) {
+		if (process && process.env['MOTE_NLS_CONFIG']) {
 			try {
-				nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG']);
+				nlsConfig = JSON.parse(process.env['MOTE_NLS_CONFIG']);
 			} catch (e) {
 				// Ignore
 			}
@@ -196,7 +196,7 @@
 	}
 
 	/**
-	 * @returns {typeof import('./vs/base/parts/sandbox/electron-sandbox/globals') | undefined}
+	 * @returns {typeof import('./mote/base/parts/sandbox/electron-sandbox/globals') | undefined}
 	 */
 	function safeSandboxGlobals() {
 		const globals = (typeof self === 'object' ? self : typeof global === 'object' ? global : {});
@@ -205,7 +205,7 @@
 	}
 
 	/**
-	 * @returns {import('./vs/base/parts/sandbox/electron-sandbox/globals').ISandboxNodeProcess | NodeJS.Process | undefined}
+	 * @returns {import('./mote/base/parts/sandbox/electron-sandbox/globals').ISandboxNodeProcess | NodeJS.Process | undefined}
 	 */
 	function safeProcess() {
 		const sandboxGlobals = safeSandboxGlobals();
@@ -221,7 +221,7 @@
 	}
 
 	/**
-	 * @returns {import('./vs/base/parts/sandbox/electron-sandbox/electronTypes').IpcRenderer | undefined}
+	 * @returns {import('./mote/base/parts/sandbox/electron-sandbox/electronTypes').IpcRenderer | undefined}
 	 */
 	function safeIpcRenderer() {
 		const sandboxGlobals = safeSandboxGlobals();
@@ -239,7 +239,7 @@
 	async function safeReadNlsFile(...pathSegments) {
 		const ipcRenderer = safeIpcRenderer();
 		if (ipcRenderer) {
-			return ipcRenderer.invoke('vscode:readNlsFile', ...pathSegments);
+			return ipcRenderer.invoke('mote:readNlsFile', ...pathSegments);
 		}
 
 		if (fs && path) {
@@ -257,7 +257,7 @@
 	function safeWriteNlsFile(path, content) {
 		const ipcRenderer = safeIpcRenderer();
 		if (ipcRenderer) {
-			return ipcRenderer.invoke('vscode:writeNlsFile', path, content);
+			return ipcRenderer.invoke('mote:writeNlsFile', path, content);
 		}
 
 		if (fs) {

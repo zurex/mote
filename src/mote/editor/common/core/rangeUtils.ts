@@ -201,7 +201,7 @@ export class RangeUtils {
 
 		let containerWithOffset: ContainerWithOffset;
 		// Generate containerWithOffset
-		const textMentionElement = getTextMention(container);
+		const textMentionElement = getTextMention(container as Element);
 		if (textMentionElement) {
 			const parentNode = textMentionElement.parentNode;
 			const textMentionElementIndex = Array.from(parentNode.childNodes).indexOf(textMentionElement);

@@ -397,8 +397,8 @@ function getSanitizerOptions(options: { readonly isTrusted?: boolean | MarkdownS
 		Schemas.mailto,
 		Schemas.data,
 		Schemas.file,
-		Schemas.vscodeFileResource,
-		Schemas.vscodeRemote,
+		Schemas.moteFileResource,
+		Schemas.moteRemote,
 		Schemas.vscodeRemoteResource,
 	];
 

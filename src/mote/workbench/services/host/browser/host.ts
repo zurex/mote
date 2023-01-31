@@ -1,4 +1,7 @@
-import { IWorkspaceToOpen } from 'mote/platform/window/common/window';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { IOpenEmptyWindowOptions, IOpenWindowOptions, IWindowOpenable } from 'mote/platform/window/common/window';
+
+export const IHostService = createDecorator<IHostService>('hostService');
 
 export interface IHostService {
 
@@ -8,12 +11,12 @@ export interface IHostService {
 	 * Opens an empty window. The optional parameter allows to define if
 	 * a new window should open or the existing one change to an empty.
 	 */
-	//openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
+	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
 
 	/**
 	 * Opens the provided array of openables in a window with the provided options.
 	 */
-	openWindow(toOpen: IWorkspaceToOpen, options?: any): Promise<void>;
+	openWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void>;
 
 	/**
 	 * Switch between fullscreen and normal window.

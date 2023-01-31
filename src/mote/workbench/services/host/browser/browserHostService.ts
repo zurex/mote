@@ -1,4 +1,4 @@
-import { IWorkspaceToOpen } from 'mote/platform/window/common/window';
+import { IOpenEmptyWindowOptions, IOpenWindowOptions, isWorkspaceToOpen, IWindowOpenable, IWorkspaceToOpen } from 'mote/platform/window/common/window';
 import { IHostService } from 'mote/workbench/services/host/browser/host';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
@@ -50,13 +50,41 @@ export class BrowserHostService extends Disposable implements IHostService {
 		}
 	}
 
-	openWindow(toOpen: IWorkspaceToOpen, options?: any): Promise<void> {
-		this.doOpen({ workspaceUri: toOpen.workspaceUri });
-		return Promise.resolve();
+	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
+	openWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void>;
+	openWindow(arg1?: IOpenEmptyWindowOptions | IWindowOpenable[], arg2?: IOpenWindowOptions): Promise<void> {
+		if (Array.isArray(arg1)) {
+			return this.doOpenWindow(arg1, arg2);
+		}
+
+		return this.doOpenEmptyWindow(arg1);
 	}
 
-	private doOpen(workspace: IWorkspace) {
+	private async doOpenWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void> {
+		for (const openable of toOpen) {
+			if (isWorkspaceToOpen(openable)) {
+				this.doOpen({ workspaceUri: openable.workspaceUri });
+			}
+		}
+	}
+
+	private async doOpenEmptyWindow(options?: IOpenEmptyWindowOptions): Promise<void> {
+		return this.doOpen(undefined, {
+			reuse: options?.forceReuseWindow,
+			payload: this.preservePayload(true /* empty window */)
+		});
+	}
+
+	private preservePayload(isEmptyWindow: boolean): Array<unknown> | undefined {
+		// Selectively copy payload: for now only extension debugging properties are considered
+		const newPayload: Array<unknown> = new Array();
+
+		return newPayload.length ? newPayload : undefined;
+	}
+
+	private async doOpen(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }) {
 		this.workspaceProvider.open(workspace);
+		return Promise.resolve();
 	}
 
 	toggleFullScreen(): Promise<void> {

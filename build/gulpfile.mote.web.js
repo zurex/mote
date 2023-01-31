@@ -59,6 +59,7 @@ const buildfile = require('../src/buildfile');
 
 const moteWebEntryPoints = _.flatten([
 	buildfile.entrypoint('mote/workbench/workbench.web.main'),
+	buildfile.keyboardMaps,
 	buildfile.workbenchWeb
 ]);
 exports.moteWebEntryPoints = moteWebEntryPoints;

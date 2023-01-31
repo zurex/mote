@@ -9,7 +9,7 @@ import { IStorageService } from 'mote/platform/storage/common/storage';
 import { ipcRenderer } from 'mote/base/parts/sandbox/electron-sandbox/globals';
 import { ILogService } from 'mote/platform/log/common/log';
 import { AbstractLifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycleService';
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { INativeHostService } from 'mote/platform/native/electron-sandbox/native';
 import { Promises, disposableTimeout, raceCancellation } from 'mote/base/common/async';
 import { toErrorMessage } from 'mote/base/common/errorMessage';
@@ -34,7 +34,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		const windowId = this.nativeHostService.windowId;
 
 		// Main side indicates that window is about to unload, check for vetos
-		ipcRenderer.on('vscode:onBeforeUnload', async (event: unknown, reply: { okChannel: string; cancelChannel: string; reason: ShutdownReason }) => {
+		ipcRenderer.on('mote:onBeforeUnload', async (event: unknown, reply: { okChannel: string; cancelChannel: string; reason: ShutdownReason }) => {
 			this.logService.trace(`[lifecycle] onBeforeUnload (reason: ${reply.reason})`);
 
 			// trigger onBeforeShutdown events and veto collecting
@@ -60,7 +60,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		});
 
 		// Main side indicates that we will indeed shutdown
-		ipcRenderer.on('vscode:onWillUnload', async (event: unknown, reply: { replyChannel: string; reason: ShutdownReason }) => {
+		ipcRenderer.on('mote:onWillUnload', async (event: unknown, reply: { replyChannel: string; reason: ShutdownReason }) => {
 			this.logService.trace(`[lifecycle] onWillUnload (reason: ${reply.reason})`);
 
 			// trigger onWillShutdown events and joining
@@ -192,4 +192,4 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 	}
 }
 
-registerSingleton(ILifecycleService, NativeLifecycleService);
+registerSingleton(ILifecycleService, NativeLifecycleService, InstantiationType.Eager);

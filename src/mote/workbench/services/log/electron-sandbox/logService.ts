@@ -3,37 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LogService, ConsoleLogger, MultiplexLogService, ILogger, LogLevel } from 'mote/platform/log/common/log';
+import { ConsoleLogger, ILogger, LogLevel } from 'mote/platform/log/common/log';
 import { INativeWorkbenchEnvironmentService } from 'mote/workbench/services/environment/electron-sandbox/environmentService';
-import { LogLevelChannelClient, FollowerLogService, LoggerChannelClient } from 'mote/platform/log/common/logIpc';
+import { LoggerChannelClient } from 'mote/platform/log/common/logIpc';
 import { DisposableStore } from 'mote/base/common/lifecycle';
+import { localize } from 'mote/nls';
+import { rendererLogId } from 'mote/workbench/common/logConstants';
+import { LogService } from 'mote/platform/log/common/logService';
 
 export class NativeLogService extends LogService {
 
-	constructor(name: string, logLevel: LogLevel, loggerService: LoggerChannelClient, loggerClient: LogLevelChannelClient, environmentService: INativeWorkbenchEnvironmentService) {
+	constructor(logLevel: LogLevel, loggerService: LoggerChannelClient, environmentService: INativeWorkbenchEnvironmentService) {
 
 		const disposables = new DisposableStore();
 
-		const loggers: ILogger[] = [];
+		const fileLogger = disposables.add(loggerService.createLogger(environmentService.logFile, { id: rendererLogId, name: localize('rendererLog', "Window") }));
 
-		// Always log to file
-		loggers.push(disposables.add(loggerService.createLogger(environmentService.logFile, { name })));
-
-		// Extension development test CLI: forward everything to main side
+		let consoleLogger: ILogger;
 		if (environmentService.isExtensionDevelopment && !!environmentService.extensionTestsLocationURI) {
-			loggers.push(loggerService.createConsoleMainLogger());
+			// Extension development test CLI: forward everything to main side
+			consoleLogger = loggerService.createConsoleMainLogger();
+		} else {
+			// Normal mode: Log to console
+			consoleLogger = new ConsoleLogger(logLevel);
 		}
 
-		// Normal mode: Log to console
-		else {
-			loggers.push(
-				disposables.add(new ConsoleLogger(logLevel)),
-			);
-		}
-
-		const multiplexLogger = disposables.add(new MultiplexLogService(loggers));
-		const followerLogger = disposables.add(new FollowerLogService(loggerClient, multiplexLogger));
-		super(followerLogger);
+		super(fileLogger, [consoleLogger]);
 
 		this._register(disposables);
 	}

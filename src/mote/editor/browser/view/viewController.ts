@@ -4,11 +4,8 @@ import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
-import { SelectionChangedEvent } from 'mote/editor/common/viewEventDispatcher';
-import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
 import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'mote/base/common/errors';
@@ -69,7 +66,7 @@ export class ViewController extends Disposable {
 	) {
 		super();
 
-		this.selection = { startIndex: 0, endIndex: 0, lineNumber: -1 };
+		this.selection = { startIndex: 0, endIndex: 0, lineNumber: 0 };
 		this.eventDispatcher = (viewModel as any).eventDispatcher;
 	}
 

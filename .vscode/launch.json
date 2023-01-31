@@ -223,10 +223,10 @@
 				"runtimeExecutable": "${workspaceFolder}/scripts/code.bat"
 			},
 			"osx": {
-				"runtimeExecutable": "${workspaceFolder}/scripts/code.sh"
+				"runtimeExecutable": "${workspaceFolder}/scripts/mote.sh"
 			},
 			"linux": {
-				"runtimeExecutable": "${workspaceFolder}/scripts/code.sh"
+				"runtimeExecutable": "${workspaceFolder}/scripts/mote.sh"
 			},
 			"port": 9222,
 			"timeout": 20000,

@@ -34,6 +34,8 @@ export interface IOpenConfiguration extends IBaseOpenConfiguration {
 export interface IWindowsMainService {
 
 	open(openConfig: IOpenConfiguration): IAppWindow[];
+
+	sendToFocused(channel: string, ...args: any[]): void;
 }
 
 export const IWindowsMainService = createDecorator<IWindowsMainService>('windowsMainService');

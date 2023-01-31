@@ -171,10 +171,11 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IBrowserWorkbenchEnvironmentService, environmentService);
 
 		// Log
+		//getLogLevel(environmentService);
 		const logLevel = LogLevel.Debug;
 		const bufferLogger = new BufferLogger(logLevel);
 		const otherLoggers = [new ConsoleLogger(logLevel)];
-		const logService = new LogService(bufferLogger, otherLoggers);//getLogLevel(environmentService);
+		const logService = new LogService(bufferLogger, otherLoggers);
 		serviceCollection.set(ILogService, logService);
 
 		// Remote

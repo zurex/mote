@@ -1,8 +1,8 @@
 import { nativeTheme } from 'electron';
 import { Emitter, Event } from 'mote/base/common/event';
-import { IColorScheme } from "mote/platform/window/common/window";
-import { createDecorator } from "mote/platform/instantiation/common/instantiation";
-import { IPartsSplash } from "mote/platform/theme/common/themeService";
+import { IColorScheme } from 'mote/platform/window/common/window';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { IPartsSplash } from 'mote/platform/theme/common/themeService';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { isLinux, isMacintosh, isWindows } from 'mote/base/common/platform';
 import { IStateMainService } from 'mote/platform/state/electron-main/state';

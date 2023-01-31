@@ -18,8 +18,8 @@ function setupCurrentWorkingDirectory() {
 		// for consistent lookups, but make sure to only
 		// do this once unless defined already from e.g.
 		// a parent process.
-		if (typeof process.env['VSCODE_CWD'] !== 'string') {
-			process.env['VSCODE_CWD'] = process.cwd();
+		if (typeof process.env['MOTE_CWD'] !== 'string') {
+			process.env['MOTE_CWD'] = process.cwd();
 		}
 
 		// Windows: always set application folder as current working dir
@@ -89,7 +89,7 @@ exports.removeGlobalNodeModuleLookupPaths = function () {
 /**
  * Helper to enable portable mode.
  *
- * @param {Partial<import('./vs/base/common/product').IProductConfiguration>} product
+ * @param {Partial<import('./mote/base/common/product').IProductConfiguration>} product
  * @returns {{ portableDataPath: string; isPortable: boolean; }}
  */
 exports.configurePortable = function (product) {
@@ -102,7 +102,7 @@ exports.configurePortable = function (product) {
 	 * @param {import('path')} path
 	 */
 	function getApplicationPath(path) {
-		if (process.env['VSCODE_DEV']) {
+		if (process.env['MOTE_DEV']) {
 			return appRoot;
 		}
 
@@ -117,8 +117,8 @@ exports.configurePortable = function (product) {
 	 * @param {import('path')} path
 	 */
 	function getPortableDataPath(path) {
-		if (process.env['VSCODE_PORTABLE']) {
-			return process.env['VSCODE_PORTABLE'];
+		if (process.env['MOTE_PORTABLE']) {
+			return process.env['MOTE_PORTABLE'];
 		}
 
 		if (process.platform === 'win32' || process.platform === 'linux') {
@@ -136,9 +136,9 @@ exports.configurePortable = function (product) {
 	const isTempPortable = isPortable && fs.existsSync(portableTempPath);
 
 	if (isPortable) {
-		process.env['VSCODE_PORTABLE'] = portableDataPath;
+		process.env['MOTE_PORTABLE'] = portableDataPath;
 	} else {
-		delete process.env['VSCODE_PORTABLE'];
+		delete process.env['MOTE_PORTABLE'];
 	}
 
 	if (isTempPortable) {

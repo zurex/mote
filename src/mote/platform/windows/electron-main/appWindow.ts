@@ -4,13 +4,17 @@ import { FileAccess } from "mote/base/common/network";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
 import { IThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
-import { IAppWindow } from "mote/platform/window/electron-main/window";
+import { IAppWindow, ILoadEvent } from "mote/platform/window/electron-main/window";
 import { Disposable } from "mote/base/common/lifecycle";
-import { mark } from "mote/base/common/performance";
+import { getMarks, mark } from "mote/base/common/performance";
 import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
 import { IEnvironmentMainService } from "mote/platform/environment/electron-main/environmentMainService";
 import { isLaunchedFromCli } from "mote/platform/environment/node/argvHelper";
 import { ILogService } from "mote/platform/log/common/log";
+import { CancellationToken } from 'mote/base/common/cancellation';
+import { toErrorMessage } from 'mote/base/common/errorMessage';
+import { Emitter } from 'mote/base/common/event';
+import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
 
 interface ILoadOptions {
 	isReload?: boolean;
@@ -41,6 +45,13 @@ const enum ReadyState {
 
 export class AppWindow extends Disposable implements IAppWindow {
 
+	//#region events
+
+	private readonly _onWillLoad = this._register(new Emitter<ILoadEvent>());
+	readonly onWillLoad = this._onWillLoad.event;
+
+	//#endregion
+
 	//#region Properties
 
 	private _id: number;
@@ -58,8 +69,8 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 	get remoteAuthority(): string | undefined { return undefined; }
 
-	private currentConfig: INativeWindowConfiguration | undefined;
-	get config(): INativeWindowConfiguration | undefined { return this.currentConfig; }
+	private _config: INativeWindowConfiguration | undefined;
+	get config(): INativeWindowConfiguration | undefined { return this._config; }
 
 	private hiddenTitleBarStyle: boolean | undefined;
 	get hasHiddenTitleBarStyle(): boolean { return !!this.hiddenTitleBarStyle; }
@@ -80,6 +91,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
+		@ILoggerMainService private readonly loggerMainService: ILoggerMainService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
 		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
 		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
@@ -90,8 +102,8 @@ export class AppWindow extends Disposable implements IAppWindow {
 		{
 			const options: BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
 				webPreferences: {
-					preload: FileAccess.asFileUri('mote/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
-					additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
+					preload: FileAccess.asFileUri('mote/base/parts/sandbox/electron-browser/preload.js').fsPath,
+					additionalArguments: [`--mote-window-config=${this.configObjectUrl.resource.toString()}`],
 					enableWebSQL: false,
 					spellcheck: false,
 					//nativeWindowOpen: true,
@@ -110,9 +122,6 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 		// Eventing
 		this.registerListeners();
-	}
-	onWillLoad(arg0: (e: any) => void) {
-		throw new Error('Method not implemented.');
 	}
 
 	private readyState = ReadyState.NONE;
@@ -133,17 +142,52 @@ export class AppWindow extends Disposable implements IAppWindow {
 	}
 
 	reload(cli?: NativeParsedArgs | undefined): void {
-		throw new Error('Method not implemented.');
+		// Copy our current config for reuse
+		const configuration = Object.assign({}, this._config);
+		configuration.loggers = this.loggerMainService.getRegisteredLoggers(this.id);
 	}
+
 	send(channel: string, ...args: any[]): void {
-		throw new Error('Method not implemented.');
+		if (this._win) {
+			if (this._win.isDestroyed() || this._win.webContents.isDestroyed()) {
+				this.logService.warn(`Sending IPC message to channel '${channel}' for window that is destroyed`);
+				return;
+			}
+
+			try {
+				this._win.webContents.send(channel, ...args);
+			} catch (error) {
+				this.logService.warn(`Error sending IPC message to channel '${channel}' of window ${this._id}: ${toErrorMessage(error)}`);
+			}
+		}
+	}
+
+	sendWhenReady(channel: string, token: CancellationToken, ...args: any[]): void {
+		if (this.isReady) {
+			this.send(channel, ...args);
+		} else {
+			this.ready().then(() => {
+				if (!token.isCancellationRequested) {
+					this.send(channel, ...args);
+				}
+			});
+		}
 	}
 	close(): void {
-		throw new Error('Method not implemented.');
+		this._win?.close();
 	}
 
 	private registerListeners() {
+		// Remember that we loaded
+		this._win.webContents.on('did-finish-load', () => {
 
+			// Associate properties from the load request if provided
+			if (this.pendingLoadConfig) {
+				this._config = this.pendingLoadConfig;
+
+				this.pendingLoadConfig = undefined;
+			}
+		});
 	}
 
 	get isFullScreen(): boolean { return this._win.isFullScreen() || this._win.isSimpleFullScreen(); }
@@ -158,7 +202,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 		// Also, preserve the environment if we're loading from an
 		// extension development host that had its environment set
 		// (for https://github.com/microsoft/vscode/issues/123508)
-		const currentUserEnv = (this.currentConfig ?? this.pendingLoadConfig)?.userEnv;
+		const currentUserEnv = (this._config ?? this.pendingLoadConfig)?.userEnv;
 		if (currentUserEnv) {
 			const shouldPreserveLaunchCliEnvironment = isLaunchedFromCli(currentUserEnv) && !isLaunchedFromCli(configuration.userEnv);
 			const shouldPreserveDebugEnvironmnet = this.isExtensionDevelopmentHost;
@@ -188,10 +232,10 @@ export class AppWindow extends Disposable implements IAppWindow {
 		configuration.partsSplash = this.themeMainService.getWindowSplash();
 
 		// Update with latest perf marks
-		mark('code/willOpenNewWindow');
-		//configuration.perfMarks = getMarks();
+		mark('mote/willOpenNewWindow');
+		configuration.perfMarks = getMarks();
 
-		this.logService.info("[AppWindow] configuration", configuration);
+		this.logService.debug("[AppWindow] configuration", configuration);
 		// Update in config object URL for usage in renderer
 		this.configObjectUrl.update(configuration);
 	}
@@ -204,11 +248,11 @@ export class AppWindow extends Disposable implements IAppWindow {
 		// and set it into the config object URL for usage.
 		this.updateConfiguration(config, options);
 
-		const url = FileAccess.asBrowserUri(
-			'mote/app/electron-browser/workbench/workbench.html', require
-		).toString();
+		const url = FileAccess.asBrowserUri('mote/app/electron-sandbox/workbench/workbench.html').toString();
 
 		// Load URL
 		this._win.loadURL(url);
+
+		this.logService.info(`window#load: load window (id: ${this._id}) done`, url);
 	}
 }

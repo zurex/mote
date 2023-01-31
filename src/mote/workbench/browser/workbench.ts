@@ -1,4 +1,3 @@
-/* eslint-disable code-no-unexternalized-strings */
 import 'mote/workbench/browser/style';
 import { getSingletonServiceDescriptors } from 'mote/platform/instantiation/common/extensions';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
@@ -6,7 +5,7 @@ import { InstantiationService } from 'mote/platform/instantiation/common/instant
 import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
 import { ILogService } from 'mote/platform/log/common/log';
 import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
-import { Layout } from "./layout";
+import { Layout } from './layout';
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IWorkbenchContributionsRegistry, WorkbenchExtensions } from 'mote/workbench/common/contributions';
@@ -97,9 +96,6 @@ export class Workbench extends Layout {
 		for (const [id, descriptor] of contributedServices) {
 			serviceCollection.set(id, descriptor);
 		}
-
-		// Add mock service
-		//serviceCollection.set(IThemeService, new BrowserThemeService());
 
 		const instantiationService = new InstantiationService(serviceCollection, true);
 

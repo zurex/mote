@@ -745,8 +745,8 @@ export function createStaticIPCHandle(directoryPath: string, type: string, versi
 	// XDG_RUNTIME_DIR over user data path
 	// unless portable
 	let result: string;
-	if (XDG_RUNTIME_DIR && !process.env['VSCODE_PORTABLE']) {
-		result = join(XDG_RUNTIME_DIR, `vscode-${scope.substr(0, 8)}-${version}-${type}.sock`);
+	if (XDG_RUNTIME_DIR && !process.env['MOTE_PORTABLE']) {
+		result = join(XDG_RUNTIME_DIR, `mote-${scope.substr(0, 8)}-${version}-${type}.sock`);
 	} else {
 		result = join(directoryPath, `${version}-${type}.sock`);
 	}

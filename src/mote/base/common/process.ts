@@ -25,7 +25,7 @@ else if (typeof process !== 'undefined') {
 		get platform() { return process.platform; },
 		get arch() { return process.arch; },
 		get env() { return process.env; },
-		cwd() { return process.env['VSCODE_CWD'] || process.cwd(); }
+		cwd() { return process.env['MOTE_CWD'] || process.cwd(); }
 	};
 }
 

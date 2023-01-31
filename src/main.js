@@ -70,7 +70,7 @@ if (portable && portable.isPortable) {
 // Register custom schemes with privileges
 protocol.registerSchemesAsPrivileged([
 	{
-		scheme: 'vscode-webview',
+		scheme: 'mote-webview',
 		privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, allowServiceWorkers: true, }
 	},
 	{
@@ -93,7 +93,7 @@ let nlsConfigurationPromise = undefined;
 const metaDataFile = path.join(__dirname, 'nls.metadata.json');
 const locale = getUserDefinedLocale(argvConfig);
 if (locale) {
-	const { getNLSConfiguration } = require('./vs/base/node/languagePacks');
+	const { getNLSConfiguration } = require('./mote/base/node/languagePacks');
 	nlsConfigurationPromise = getNLSConfiguration(product.commit, userDataPath, metaDataFile, locale);
 }
 
@@ -122,18 +122,18 @@ app.once('ready', function () {
 function startup(codeCachePath, nlsConfig) {
 	nlsConfig._languagePackSupport = true;
 
-	process.env['VSCODE_NLS_CONFIG'] = JSON.stringify(nlsConfig);
-	process.env['VSCODE_CODE_CACHE_PATH'] = codeCachePath || '';
+	process.env['MOTE_NLS_CONFIG'] = JSON.stringify(nlsConfig);
+	process.env['MOTE_CODE_CACHE_PATH'] = codeCachePath || '';
 
 	// Load main in AMD
-	perf.mark('code/willLoadMainBundle');
+	perf.mark('mote/willLoadMainBundle');
 	require('./bootstrap-amd').load('mote/app/electron-main/main', () => {
-		perf.mark('code/didLoadMainBundle');
+		perf.mark('mote/didLoadMainBundle');
 	});
 }
 
 async function onReady() {
-	perf.mark('code/mainAppReady');
+	perf.mark('mote/mainAppReady');
 
 	try {
 		const [, nlsConfig] = await Promise.all([mkdirpIgnoreError(codeCachePath), resolveNlsConfiguration()]);
@@ -295,16 +295,17 @@ function createDefaultArgvConfigSync(argvConfigPath) {
 }
 
 function getArgvConfigPath() {
-	const vscodePortable = process.env['VSCODE_PORTABLE'];
+	const vscodePortable = process.env['MOTE_PORTABLE'];
 	if (vscodePortable) {
 		return path.join(vscodePortable, 'argv.json');
 	}
 
 	let dataFolderName = product.dataFolderName;
-	if (process.env['VSCODE_DEV']) {
+	if (process.env['MOTE_DEV']) {
 		dataFolderName = `${dataFolderName}-dev`;
 	}
 
+	// @ts-ignore
 	return path.join(os.homedir(), dataFolderName, 'argv.json');
 }
 
@@ -392,11 +393,11 @@ function configureCrashReporter() {
 
 	// Start crash reporter for all processes
 	const productName = (product.crashReporter ? product.crashReporter.productName : undefined) || product.nameShort;
-	const companyName = (product.crashReporter ? product.crashReporter.companyName : undefined) || 'Microsoft';
-	const uploadToServer = !process.env['VSCODE_DEV'] && submitURL && !crashReporterDirectory;
+	const companyName = (product.crashReporter ? product.crashReporter.companyName : undefined) || 'Mote Team';
+	const uploadToServer = Boolean(!process.env['MOTE_DEV'] && submitURL && !crashReporterDirectory);
 	crashReporter.start({
 		companyName,
-		productName: process.env['VSCODE_DEV'] ? `${productName} Dev` : productName,
+		productName: process.env['MOTE_DEV'] ? `${productName} Dev` : productName,
 		submitURL,
 		uploadToServer,
 		compress: true
@@ -416,7 +417,7 @@ function getJSFlags(cliArgs) {
 	}
 
 	// Support max-memory flag
-	if (cliArgs['max-memory'] && !/max_old_space_size=(\d+)/g.exec(cliArgs['js-flags'])) {
+	if (cliArgs['max-memory'] && !/max_old_space_size=(\d+)/g.exec(cliArgs['js-flags'] ?? '')) {
 		jsFlags.push(`--max_old_space_size=${cliArgs['max-memory']}`);
 	}
 
@@ -494,7 +495,7 @@ function getCodeCachePath() {
 	}
 
 	// running out of sources
-	if (process.env['VSCODE_DEV']) {
+	if (process.env['MOTE_DEV']) {
 		return undefined;
 	}
 
@@ -560,7 +561,7 @@ async function resolveNlsConfiguration() {
 			// See above the comment about the loader and case sensitiveness
 			appLocale = appLocale.toLowerCase();
 
-			const { getNLSConfiguration } = require('./vs/base/node/languagePacks');
+			const { getNLSConfiguration } = require('./mote/base/node/languagePacks');
 			nlsConfiguration = await getNLSConfiguration(product.commit, userDataPath, metaDataFile, appLocale);
 			if (!nlsConfiguration) {
 				nlsConfiguration = { locale: appLocale, availableLanguages: {} };

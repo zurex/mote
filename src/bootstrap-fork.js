@@ -18,32 +18,32 @@ bootstrapNode.removeGlobalNodeModuleLookupPaths();
 // Enable ASAR in our forked processes
 bootstrap.enableASARSupport();
 
-if (process.env['VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH']) {
-	bootstrapNode.injectNodeModuleLookupPath(process.env['VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH']);
+if (process.env['MOTE_INJECT_NODE_MODULE_LOOKUP_PATH']) {
+	bootstrapNode.injectNodeModuleLookupPath(process.env['MOTE_INJECT_NODE_MODULE_LOOKUP_PATH']);
 }
 
 // Configure: pipe logging to parent process
-if (!!process.send && process.env['VSCODE_PIPE_LOGGING'] === 'true') {
+if (!!process.send && process.env['MOTE_PIPE_LOGGING'] === 'true') {
 	pipeLoggingToParent();
 }
 
 // Handle Exceptions
-if (!process.env['VSCODE_HANDLES_UNCAUGHT_ERRORS']) {
+if (!process.env['MOTE_HANDLES_UNCAUGHT_ERRORS']) {
 	handleExceptions();
 }
 
 // Terminate when parent terminates
-if (process.env['VSCODE_PARENT_PID']) {
+if (process.env['MOTE_PARENT_PID']) {
 	terminateWhenParentTerminates();
 }
 
 // Listen for message ports
-if (process.env['VSCODE_WILL_SEND_MESSAGE_PORT']) {
+if (process.env['MOTE_WILL_SEND_MESSAGE_PORT']) {
 	listenForMessagePort();
 }
 
 // Load AMD entry point
-require('./bootstrap-amd').load(process.env['VSCODE_AMD_ENTRYPOINT']);
+require('./bootstrap-amd').load(process.env['MOTE_AMD_ENTRYPOINT']);
 
 
 //#region Helpers
@@ -194,7 +194,7 @@ function pipeLoggingToParent() {
 	}
 
 	// Pass console logging to the outside so that we have it in the main side if told so
-	if (process.env['VSCODE_VERBOSE_LOGGING'] === 'true') {
+	if (process.env['MOTE_VERBOSE_LOGGING'] === 'true') {
 		wrapConsoleMethod('info', 'log');
 		wrapConsoleMethod('log', 'log');
 		wrapConsoleMethod('warn', 'warn');
@@ -224,7 +224,7 @@ function handleExceptions() {
 }
 
 function terminateWhenParentTerminates() {
-	const parentPid = Number(process.env['VSCODE_PARENT_PID']);
+	const parentPid = Number(process.env['MOTE_PARENT_PID']);
 
 	if (typeof parentPid === 'number' && !isNaN(parentPid)) {
 		setInterval(function () {
