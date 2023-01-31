@@ -71,7 +71,7 @@ exports.keyboardMaps = [
 	createModuleDescription('mote/workbench/services/keybinding/browser/keyboardLayouts/layout.contribution.win')
 ];
 
-exports.code = [
+exports.mote = [
 	createModuleDescription('mote/app/electron-main/main'),
 	createModuleDescription('mote/app/node/cli'),
 	createModuleDescription('mote/app/node/cliProcessMain', ['mote/app/node/cli']),

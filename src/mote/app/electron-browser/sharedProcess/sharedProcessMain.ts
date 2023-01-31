@@ -13,11 +13,6 @@ import { joinPath } from 'mote/base/common/resources';
 import { URI } from 'mote/base/common/uri';
 import { ProxyChannel, StaticRouter } from 'mote/base/parts/ipc/common/ipc';
 import { Server as MessagePortServer } from 'mote/base/parts/ipc/electron-browser/ipc.mp';
-import { CodeCacheCleaner } from 'mote/app/electron-browser/sharedProcess/contrib/codeCacheCleaner';
-import { LanguagePackCachedDataCleaner } from 'mote/app/electron-browser/sharedProcess/contrib/languagePackCachedDataCleaner';
-import { LocalizationsUpdater } from 'mote/app/electron-browser/sharedProcess/contrib/localizationsUpdater';
-import { LogsDataCleaner } from 'mote/app/electron-browser/sharedProcess/contrib/logsDataCleaner';
-import { UnusedWorkspaceStorageDataCleaner } from 'mote/app/electron-browser/sharedProcess/contrib/storageDataCleaner';
 import { IChecksumService } from 'mote/platform/checksum/common/checksumService';
 import { ChecksumService } from 'mote/platform/checksum/node/checksumService';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
@@ -29,10 +24,8 @@ import { DownloadService } from 'mote/platform/download/common/downloadService';
 import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
 import { SharedProcessEnvironmentService } from 'mote/platform/sharedProcess/node/sharedProcessEnvironmentService';
 import { GlobalExtensionEnablementService } from 'mote/platform/extensionManagement/common/extensionEnablementService';
-import { ExtensionGalleryService } from 'mote/platform/extensionManagement/common/extensionGalleryService';
-import { IExtensionGalleryService, IExtensionManagementService, IExtensionTipsService, IGlobalExtensionEnablementService } from 'mote/platform/extensionManagement/common/extensionManagement';
+import { IExtensionTipsService, IGlobalExtensionEnablementService } from 'mote/platform/extensionManagement/common/extensionManagement';
 import { ExtensionSignatureVerificationService, IExtensionSignatureVerificationService } from 'mote/platform/extensionManagement/node/extensionSignatureVerificationService';
-import { ExtensionManagementChannel, ExtensionTipsChannel } from 'mote/platform/extensionManagement/common/extensionManagementIpc';
 import { ExtensionTipsService } from 'mote/platform/extensionManagement/electron-sandbox/extensionTipsService';
 import { ExtensionManagementService, INativeServerExtensionManagementService } from 'mote/platform/extensionManagement/node/extensionManagementService';
 import { IExtensionRecommendationNotificationService } from 'mote/platform/extensionRecommendations/common/extensionRecommendations';
@@ -184,13 +177,6 @@ class SharedProcessMain extends Disposable {
 
 		// Instantiate Contributions
 		this._register(combinedDisposable(
-			instantiationService.createInstance(CodeCacheCleaner, this.configuration.codeCachePath),
-			instantiationService.createInstance(LanguagePackCachedDataCleaner),
-			instantiationService.createInstance(UnusedWorkspaceStorageDataCleaner),
-			instantiationService.createInstance(LogsDataCleaner),
-			instantiationService.createInstance(LocalizationsUpdater),
-			instantiationService.createInstance(ExtensionsContributions),
-			instantiationService.createInstance(UserDataProfilesCleaner)
 		));
 	}
 
@@ -330,18 +316,6 @@ class SharedProcessMain extends Disposable {
 		const customEndpointTelemetryService = new CustomEndpointTelemetryService(configurationService, telemetryService, logService, loggerService, environmentService, productService);
 		services.set(ICustomEndpointTelemetryService, customEndpointTelemetryService);
 
-		// Extension Management
-		services.set(IExtensionsProfileScannerService, new SyncDescriptor(ExtensionsProfileScannerService, undefined, true));
-		services.set(IExtensionsScannerService, new SyncDescriptor(ExtensionsScannerService, undefined, true));
-		services.set(IExtensionSignatureVerificationService, new SyncDescriptor(ExtensionSignatureVerificationService, undefined, true));
-		services.set(INativeServerExtensionManagementService, new SyncDescriptor(ExtensionManagementService, undefined, true));
-
-		// Extension Gallery
-		services.set(IExtensionGalleryService, new SyncDescriptor(ExtensionGalleryService, undefined, true));
-
-		// Extension Tips
-		services.set(IExtensionTipsService, new SyncDescriptor(ExtensionTipsService, undefined, false /* Eagerly scans and computes exe based recommendations */));
-
 		// Localizations
 		services.set(ILanguagePackService, new SyncDescriptor(NativeLanguagePackService, undefined, false /* proxied to other processes */));
 
@@ -395,69 +369,6 @@ class SharedProcessMain extends Disposable {
 	}
 
 	private initChannels(accessor: ServicesAccessor): void {
-
-		// Extensions Management
-		const channel = new ExtensionManagementChannel(accessor.get(IExtensionManagementService), () => null);
-		this.server.registerChannel('extensions', channel);
-
-		// Language Packs
-		const languagePacksChannel = ProxyChannel.fromService(accessor.get(ILanguagePackService));
-		this.server.registerChannel('languagePacks', languagePacksChannel);
-
-		// Diagnostics
-		const diagnosticsChannel = ProxyChannel.fromService(accessor.get(IDiagnosticsService));
-		this.server.registerChannel('diagnostics', diagnosticsChannel);
-
-		// Extension Tips
-		const extensionTipsChannel = new ExtensionTipsChannel(accessor.get(IExtensionTipsService));
-		this.server.registerChannel('extensionTipsService', extensionTipsChannel);
-
-		// Checksum
-		const checksumChannel = ProxyChannel.fromService(accessor.get(IChecksumService));
-		this.server.registerChannel('checksum', checksumChannel);
-
-		// Profiling
-		const profilingChannel = ProxyChannel.fromService(accessor.get(IV8InspectProfilingService));
-		this.server.registerChannel('v8InspectProfiling', profilingChannel);
-
-		// Settings Sync
-		const userDataSyncMachineChannel = new UserDataSyncMachinesServiceChannel(accessor.get(IUserDataSyncMachinesService));
-		this.server.registerChannel('userDataSyncMachines', userDataSyncMachineChannel);
-
-		// Custom Endpoint Telemetry
-		const customEndpointTelemetryChannel = ProxyChannel.fromService(accessor.get(ICustomEndpointTelemetryService));
-		this.server.registerChannel('customEndpointTelemetry', customEndpointTelemetryChannel);
-
-		const userDataSyncAccountChannel = new UserDataSyncAccountServiceChannel(accessor.get(IUserDataSyncAccountService));
-		this.server.registerChannel('userDataSyncAccount', userDataSyncAccountChannel);
-
-		const userDataSyncStoreManagementChannel = new UserDataSyncStoreManagementServiceChannel(accessor.get(IUserDataSyncStoreManagementService));
-		this.server.registerChannel('userDataSyncStoreManagement', userDataSyncStoreManagementChannel);
-
-		const userDataSyncChannel = new UserDataSyncChannel(accessor.get(IUserDataSyncService), accessor.get(IUserDataProfilesService), accessor.get(ILogService));
-		this.server.registerChannel('userDataSync', userDataSyncChannel);
-
-		const userDataAutoSync = this._register(accessor.get(IInstantiationService).createInstance(UserDataAutoSyncService));
-		const userDataAutoSyncChannel = new UserDataAutoSyncChannel(userDataAutoSync);
-		this.server.registerChannel('userDataAutoSync', userDataAutoSyncChannel);
-
-		// Terminal
-		const localPtyService = accessor.get(ILocalPtyService);
-		const localPtyChannel = ProxyChannel.fromService(localPtyService);
-		this.server.registerChannel(TerminalIpcChannels.LocalPty, localPtyChannel);
-
-		// Tunnel
-		const sharedProcessTunnelChannel = ProxyChannel.fromService(accessor.get(ISharedProcessTunnelService));
-		this.server.registerChannel(ipcSharedProcessTunnelChannelName, sharedProcessTunnelChannel);
-
-		// Worker
-		const sharedProcessWorkerChannel = ProxyChannel.fromService(accessor.get(ISharedProcessWorkerService));
-		this.server.registerChannel(ipcSharedProcessWorkerChannelName, sharedProcessWorkerChannel);
-
-		// Remote Tunnel
-		const remoteTunnelChannel = ProxyChannel.fromService(accessor.get(IRemoteTunnelService));
-		this.server.registerChannel('remoteTunnel', remoteTunnelChannel);
-
 	}
 
 	private registerErrorHandler(logService: ILogService): void {

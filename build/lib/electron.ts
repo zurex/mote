@@ -68,8 +68,8 @@ function darwinBundleDocumentType(extensions: string[], icon: string, nameOrSuff
 export const config = {
 	version: util.getElectronVersion(),
 	productAppName: product.nameLong,
-	companyName: 'Microsoft Corporation',
-	copyright: 'Copyright (C) 2022 Microsoft. All rights reserved',
+	companyName: 'Mote Team',
+	copyright: 'Copyright (C) 2023 Mote team. All rights reserved',
 	darwinIcon: 'resources/darwin/mote.icns',
 	darwinBundleIdentifier: product.darwinBundleIdentifier,
 	darwinApplicationCategoryType: 'public.app-category.developer-tools',
@@ -84,7 +84,7 @@ export const config = {
 	darwinCredits: darwinCreditsTemplate ? Buffer.from(darwinCreditsTemplate({ commit: commit, date: new Date().toISOString() })) : undefined,
 	linuxExecutableName: product.applicationName,
 	winIcon: 'resources/win32/code.ico',
-	token: process.env['VSCODE_MIXIN_PASSWORD'] || process.env['GITHUB_TOKEN'] || undefined,
+	token: process.env['MOTE_MIXIN_PASSWORD'] || process.env['GITHUB_TOKEN'] || undefined,
 	repo: product.electronRepository || undefined
 };
 
