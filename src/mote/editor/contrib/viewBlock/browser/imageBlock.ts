@@ -5,7 +5,7 @@ import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { IThemeService, Themable, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { SVGIcon } from 'mote/base/browser/ui/icon/svgicon';
 import { buttonHoverBackground, imageBlockBackground, mediumIconColor, mediumTextColor, outlineButtonBorder } from 'mote/platform/theme/common/themeColors';
@@ -21,6 +21,7 @@ import { IAction } from 'mote/base/common/actions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { isLocalUser } from 'mote/platform/user/common/user';
 import { ViewLineRenderingData } from 'mote/editor/common/viewModel';
+import { ThemeIcon } from 'mote/base/common/themables';
 
 const menuIcon = registerIcon('menu-icon', Codicon.kebabHorizontal, '');
 
@@ -211,7 +212,7 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 	}
 
 	private async handleUpload() {
-		const files = await triggerUpload(false);
+		const files = await triggerUpload();
 		if (files) {
 			const reader = new FileReader();
 			reader.readAsDataURL(files[0]);
