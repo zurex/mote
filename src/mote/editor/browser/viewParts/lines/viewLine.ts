@@ -530,7 +530,29 @@ class RenderedViewLine implements IRenderedViewLine {
 	// --- Reading from the DOM methods
 
 	protected _getReadingTarget(myDomNode: FastDomNode<HTMLElement>): HTMLElement {
-		return <HTMLSpanElement>myDomNode.domNode.firstChild;
+		let domNode: Node | null = myDomNode.domNode.firstChild;
+		while (domNode?.firstChild?.nodeName !== 'SPAN') {
+			// hit wrapper node
+			domNode?.childNodes.forEach((node) => {
+				if (node.nodeName === 'DIV') {
+					domNode = node;
+				}
+			});
+		}
+		return <HTMLSpanElement>domNode;
+	}
+
+	private _getCalcTarget(myDomNode: FastDomNode<HTMLElement>): HTMLElement {
+		let domNode: Node | null = myDomNode.domNode.firstChild;
+		while (domNode?.firstChild?.nodeName !== 'SPAN') {
+			// hit wrapper node
+			domNode?.childNodes.forEach((node) => {
+				if (node.nodeName === 'DIV') {
+					domNode = node;
+				}
+			});
+		}
+		return <HTMLSpanElement>domNode;
 	}
 
 	/**
@@ -648,7 +670,7 @@ class RenderedViewLine implements IRenderedViewLine {
 
 		const domPosition = this._characterMapping.getDomPosition(column);
 
-		const r = RangeUtil.readHorizontalRanges(this._getReadingTarget(domNode), domPosition.partIndex, domPosition.charIndex, domPosition.partIndex, domPosition.charIndex, context.clientRectDeltaLeft, context.clientRectScale, context.endNode);
+		const r = RangeUtil.readHorizontalRanges(this._getCalcTarget(domNode), domPosition.partIndex, domPosition.charIndex, domPosition.partIndex, domPosition.charIndex, context.clientRectDeltaLeft, context.clientRectScale, context.endNode);
 		if (!r || r.length === 0) {
 			return -1;
 		}

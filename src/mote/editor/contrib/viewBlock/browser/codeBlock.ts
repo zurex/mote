@@ -21,6 +21,7 @@ import { Codicon } from 'mote/base/common/codicons';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { flattenNode } from 'mote/editor/common/htmlElementUtils';
 import { TextSelection } from 'mote/editor/common/core/selectionUtils';
+import { ThemeIcon } from 'mote/base/common/themables';
 
 const defaultLanguage = 'JavaScript';
 

@@ -268,7 +268,7 @@ export class CursorsController extends Disposable {
 			return;
 		}
 
-		if (lineParts.length >= 3 && !lineParts[2]) {
+		if (lineParts.length > 3 && !lineParts[2]) {
 			// case: contentBeforeMatch|delimiter|delimiter|matchString|delimiter
 			return;
 		}
