@@ -5,6 +5,8 @@ import { Command } from "../../../platform/transaction/common/operations";
 import { annotationsEqual, combineArray, getFirstInArray, getSecondArrayInArray, IAnnotation, ISegment } from "../segmentUtils";
 import { TextSelection } from "./selectionUtils";
 import { Transaction } from "./transaction";
+import { EditorRange } from 'mote/editor/common/core/editorRange';
+import RecordStore from 'mote/platform/store/common/recordStore';
 
 export class Segment {
 
@@ -131,6 +133,31 @@ export class Segment {
 			}
 		}
 		return [...segmentsBeforeRange, ...newSegments, ...segmentsAfterRange];
+	}
+
+	public static decorate(annotation: IAnnotation, range: EditorRange, store: RecordStore, transaction: Transaction) {
+		if (!annotation) {
+			return false;
+		}
+
+		const storeValue = store.getValue();
+		if (!Array.isArray(storeValue)) {
+			return false;
+		}
+
+		const selection = { startIndex: range.startColumn - 1, endIndex: range.endColumn - 1, lineNumber: range.startLineNumber };
+		const segments = this.merge(storeValue, selection, annotation);
+
+		transaction.addOperation(store, {
+			id: store.id,
+			table: store.table,
+			path: store.path,
+			command: Command.Set,
+			args: segments
+		});
+
+		// dismiss the quick menu
+		return true;
 	}
 
 	public static update(textSelection: TextSelectionState, annotation: IAnnotation) {

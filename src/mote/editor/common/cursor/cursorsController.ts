@@ -13,6 +13,7 @@ import { ICoordinatesConverter } from 'mote/editor/common/viewModel';
 import { CursorCollection } from 'mote/editor/common/cursor/cursorCollection';
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { VerticalRevealType, ViewCursorStateChangedEvent, ViewRevealRangeRequestEvent } from 'mote/editor/common/viewEvents';
+import { ReplaceCommand } from 'mote/editor/common/commands/replaceCommand';
 
 export class CursorsController extends Disposable {
 
@@ -203,6 +204,12 @@ export class CursorsController extends Disposable {
 			// The commands were applied correctly
 			this._interpretCommandResult(result);
 
+			// Check for markdown
+			this.handleInlineMarkdown('`', ['c']);
+			this.handleInlineMarkdown('**', ['b']);
+			this.handleInlineMarkdown('*', ['i']);
+			this.handleInlineMarkdown('~', ['s']);
+
 			this._prevEditOperationType = opResult.type;
 		}
 
@@ -219,6 +226,61 @@ export class CursorsController extends Disposable {
 		this._columnSelectData = null;
 		this.cursors.setSelections(cursorState);
 		this.cursors.normalize();
+	}
+
+	//#endregion
+
+	//#region markdown part
+
+	/**
+	 * Hanlde markdown input
+	 * TODO: move this part to post processor
+	 * @param delimiter
+	 * @param annotation
+	 * @returns
+	 */
+	private handleInlineMarkdown(delimiter: string, annotation: string[]) {
+		const selection = this.getSelection();
+		const lineContent = this.model.getLineContent(selection.startLineNumber);
+
+		const parseResult = this.parseMarkdownTag(delimiter, lineContent, selection.endColumn);
+		if (!parseResult) {
+			return;
+		}
+		const markdownSelection = new EditorSelection(selection.startLineNumber, parseResult.startIndex, selection.endLineNumber, parseResult.endIndex);
+		const command = new ReplaceCommand(markdownSelection, parseResult.matchString, false, annotation);
+		this.executeEditOperation(new EditOperationResult(EditOperationType.Other, [command], {
+			shouldPushStackElementBefore: false,
+			shouldPushStackElementAfter: false
+		}));
+	}
+
+	private parseMarkdownTag(delimiter: string, lineContent: string, endColumn: number) {
+		const textValue = lineContent.substring(0, endColumn);
+		const lineParts = textValue.split(delimiter);
+		if (lineParts.length <= 2) {
+			return;
+		}
+		lineParts.reverse();
+		const [matchString] = lineParts.slice(1);
+
+		if (!matchString) {
+			return;
+		}
+
+		if (lineParts.length >= 3 && !lineParts[2]) {
+			// case: contentBeforeMatch|delimiter|delimiter|matchString|delimiter
+			return;
+		}
+
+		const startIndex = endColumn - matchString.length - 2 * delimiter.length;
+
+		return {
+			textValue: textValue,
+			matchString: matchString,
+			startIndex: startIndex,
+			endIndex: endColumn
+		};
 	}
 
 	//#endregion
@@ -505,7 +567,8 @@ class CommandExecutor {
 				range: range,
 				text: text,
 				forceMoveMarkers: forceMoveMarkers,
-				isAutoWhitespaceEdit: command.insertsAutoWhitespace
+				isAutoWhitespaceEdit: command.insertsAutoWhitespace,
+				annotation: command.annotation,
 			});
 		};
 

@@ -8,6 +8,7 @@ import BlockStore from 'mote/platform/store/common/blockStore';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
+import { Segment } from 'mote/editor/common/core/segment';
 
 export interface IValidatedEditOperation {
 	sortIndex: number;
@@ -21,6 +22,7 @@ export interface IValidatedEditOperation {
 	lastLineLength: number;
 	forceMoveMarkers: boolean;
 	isAutoWhitespaceEdit: boolean;
+	annotation: string[];
 }
 
 interface IReverseSingleEditOperation extends IValidEditOperation {
@@ -180,6 +182,7 @@ export class TextBuffer implements ITextBuffer {
 				lastLineLength: lastLineLength,
 				forceMoveMarkers: false,
 				isAutoWhitespaceEdit: false,
+				annotation: op.annotation,
 			};
 		}
 
@@ -254,6 +257,7 @@ export class TextBuffer implements ITextBuffer {
 					continue;
 				}
 
+				//console.log('[TextBuffer] doApplyEdit', op);
 				if (op.text) {
 					if (op.text === '\n') {
 						// insert new line
@@ -262,6 +266,7 @@ export class TextBuffer implements ITextBuffer {
 						// replacement
 						this.delete(op.range, transaction);
 						this.insert(op.range, op.text, transaction);
+						this.decorate(op.text, op.annotation, op.range, transaction);
 					}
 				} else {
 					// deletion
@@ -280,6 +285,20 @@ export class TextBuffer implements ITextBuffer {
 		}, this.pageStore.userId);
 
 		return contentChanges;
+	}
+
+	private decorate(text: string, annotation: segmentUtils.IAnnotation | string[], range: EditorRange, transaction: Transaction) {
+		if (range.startLineNumber === 0) {
+			// special case for header
+			return;
+		}
+		if (!annotation || annotation.length !== 1) {
+			return;
+		}
+		// hanlde for delete markdown tag
+		const markdownRange = new EditorRange(range.startLineNumber, range.startColumn, range.endLineNumber, range.startColumn + text.length);
+		const lineStore = this.getLineStore(range.startLineNumber);
+		Segment.decorate(annotation as segmentUtils.IAnnotation, markdownRange, lineStore.getTitleStore(), transaction);
 	}
 
 	private enter(range: EditorRange, transaction: Transaction) {

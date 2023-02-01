@@ -137,7 +137,9 @@ export class TokenMetadata {
 
 	public static getClassNameFromMetadata(metadata: number): string {
 		const foreground = this.getForeground(metadata);
+		const background = this.getBackground(metadata);
 		let className = 'mtk' + foreground;
+		className += ' mtb' + background;
 
 		const fontStyle = this.getFontStyle(metadata);
 		if (fontStyle & FontStyle.Italic) {

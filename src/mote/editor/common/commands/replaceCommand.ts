@@ -6,9 +6,11 @@ import { ITextModel } from 'mote/editor/common/model';
 export class ReplaceCommand implements ICommand {
 
 	public readonly insertsAutoWhitespace: boolean;
+	public readonly annotation: string[];
 
-	constructor(private readonly range: EditorRange, private readonly text: string, insertsAutoWhitespace: boolean = false) {
+	constructor(private readonly range: EditorRange, private readonly text: string, insertsAutoWhitespace: boolean = false, annotation: string[] = []) {
 		this.insertsAutoWhitespace = insertsAutoWhitespace;
+		this.annotation = annotation;
 	}
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {

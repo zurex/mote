@@ -208,7 +208,8 @@ export class TextModel extends Disposable implements ITextModel {
 			rawOperation.text,
 			rawOperation.forceMoveMarkers || false,
 			rawOperation.isAutoWhitespaceEdit || false,
-			rawOperation._isTracked || false
+			rawOperation._isTracked || false,
+			rawOperation.annotation || []
 		);
 	}
 
