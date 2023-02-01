@@ -133,12 +133,13 @@ async function runTestsInBrowser(testModules, browserType) {
 	if (argv.build) {
 		target.search = `?build=true`;
 	}
-	await page.goto(target.href);
 
 	const emitter = new events.EventEmitter();
 	await page.exposeFunction('mocha_report', (type, data1, data2) => {
 		emitter.emit(type, data1, data2);
 	});
+
+	await page.goto(target.href);
 
 	page.on('console', async msg => {
 		consoleLogFn(msg)(msg.text(), await Promise.all(msg.args().map(async arg => await arg.jsonValue())));
@@ -150,8 +151,10 @@ async function runTestsInBrowser(testModules, browserType) {
 	const failingModuleIds = [];
 	const failingTests = [];
 	emitter.on('fail', (test, err) => {
+		failingTests.push({ title: test.fullTitle, message: err.message });
+
 		if (err.stack) {
-			const regex = /(vs\/.*\.test)\.js/;
+			const regex = /(mote\/.*\.test)\.js/;
 			for (const line of String(err.stack).split('\n')) {
 				const match = regex.exec(line);
 				if (match) {
@@ -160,9 +163,6 @@ async function runTestsInBrowser(testModules, browserType) {
 				}
 			}
 		}
-
-		// We could not determine the module id
-		failingTests.push(test.fullTitle);
 	});
 
 	try {
@@ -176,11 +176,14 @@ async function runTestsInBrowser(testModules, browserType) {
 	}
 	await browser.close();
 
-	if (failingModuleIds.length > 0) {
-		return `to DEBUG, open ${browserType.toUpperCase()} and navigate to ${target.href}?${failingModuleIds.map(module => `m=${module}`).join('&')}`;
-	}
 	if (failingTests.length > 0) {
-		return `The followings tests are failing:\n - ${failingTests.join('\n - ')}`;
+		let res = `The followings tests are failing:\n - ${failingTests.map(({ title, message }) => `${title} (reason: ${message})`).join('\n - ')}`;
+
+		if (failingModuleIds.length > 0) {
+			res += `\n\nTo DEBUG, open ${browserType.toUpperCase()} and navigate to ${target.href}?${failingModuleIds.map(module => `m=${module}`).join('&')}`;
+		}
+
+		return `${res}\n`;
 	}
 }
 

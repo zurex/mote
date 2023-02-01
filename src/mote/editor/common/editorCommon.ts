@@ -62,6 +62,8 @@ export interface ICommand {
 	 */
 	readonly insertsAutoWhitespace?: boolean;
 
+	readonly annotation?: string[];
+
 	/**
 	 * Get the edit operations needed to execute this command.
 	 * @param model The model the command will execute on.

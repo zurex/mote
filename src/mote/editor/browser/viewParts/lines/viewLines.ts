@@ -244,7 +244,7 @@ export class ViewLines extends ViewPart implements IViewLineLayout, IViewLines, 
 			return null;
 		}
 
-		let column = offset + 1;// TODO: this.visibleLines.getVisibleLine(lineNumber).getColumnOfNodeOffset(lineNumber, spanNode, offset);
+		let column = this.visibleLines.getVisibleLine(lineNumber).getColumnOfNodeOffset(lineNumber, spanNode, offset);
 		const minColumn = this.context.viewModel.getLineMinColumn(lineNumber);
 		if (column < minColumn) {
 			column = minColumn;

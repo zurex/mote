@@ -344,12 +344,16 @@ export interface IIdentifiedSingleEditOperation extends ISingleEditOperation {
 	 * @internal
 	 */
 	identifier?: ISingleEditOperationIdentifier | null;
+
+	annotation?: string[];
+
 	/**
 	 * This indicates that this operation is inserting automatic whitespace
 	 * that can be removed on next model edit operation if `config.trimAutoWhitespace` is true.
 	 * @internal
 	 */
 	isAutoWhitespaceEdit?: boolean;
+
 	/**
 	 * This indicates that this operation is in a set of operations that are tracked and should not be "simplified".
 	 * @internal
@@ -388,6 +392,7 @@ export class ValidAnnotatedEditOperation implements IIdentifiedSingleEditOperati
 		public readonly forceMoveMarkers: boolean,
 		public readonly isAutoWhitespaceEdit: boolean,
 		public readonly _isTracked: boolean,
+		public readonly annotation: string[],
 	) { }
 }
 

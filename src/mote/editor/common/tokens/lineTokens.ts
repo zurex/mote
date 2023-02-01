@@ -34,15 +34,15 @@ export class LineTokens implements IViewLineTokens {
 		const binTokens = new Uint32Array(segments.length << 1);
 
 		let lineContent = '';
+
 		for (let i = 0, len = segments.length; i < len; i++) {
 			let metadata = 0;
 			const segment = segments[i];
 			const text = segment[0];
-			const offset = text.length;
 			lineContent += text;
 			const annotations = segment[1] || [];
 
-			binTokens[(i << 1)] = (i + 1 < len ? offset : lineContent.length);
+			binTokens[(i << 1)] = lineContent.length;
 
 			annotations.forEach((annotation) => {
 				switch (annotation[0]) {
@@ -57,6 +57,10 @@ export class LineTokens implements IViewLineTokens {
 						break;
 					case AnnotationType.Strike:
 						metadata = TokenMetadata.setFontStyle(metadata, FontStyle.Strikethrough);
+						break;
+					case AnnotationType.Code:
+						metadata = TokenMetadata.setForeground(metadata, 4);
+						metadata = TokenMetadata.setBackground(metadata, 14);
 						break;
 				}
 			});
