@@ -1,7 +1,7 @@
 import { CharCode } from 'mote/base/common/charCode';
 import * as strings from 'mote/base/common/strings';
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
-import { pureTextTypes } from 'mote/editor/common/blockTypes';
+import { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { StringBuilder } from 'mote/editor/common/core/stringBuilder';
 import { IViewLineTokens } from 'mote/editor/common/tokens/lineTokens';
 import { LinePart } from 'mote/editor/common/viewLayout/linePart';
@@ -473,18 +473,28 @@ function transformAndRemoveOverflowing(lineContent: string, lineContainsRTL: boo
 }
 
 export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContribution, sb: StringBuilder): RenderLineOutput {
+	const store = input.store;
+	const blockType = store.getType() || 'text';
 
 	if (input.lineContent.length === 0) {
-		// completely empty line
-		sb.appendString('<span><span></span></span>');
+		return renderEmptyTextLine(sb);
+		/* Todo: fix the empty render;
+		if (blockType === 'text') {
+			// empty and blockType == text
+			return renderEmptyTextLine(sb);
+		}
+		// for other types
+		const line = viewBlock.render(store);
+		sb.appendString('<span>');
+		sb.appendString(line);
+		sb.appendString('</span>');
 		return new RenderLineOutput(
 			new CharacterMapping(0, 0),
 			false,
 			ForeignElementType.None
 		);
+		*/
 	}
-
-	const store = input.store;
 
 	const resolvedInput = resolveRenderLineInput(input);
 	const len = resolvedInput.len;
@@ -495,7 +505,6 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 	const startVisibleColumn = resolvedInput.startVisibleColumn;
 	const parts = resolvedInput.parts;
 
-	//console.log(resolvedInput.parts);
 
 	const characterMapping = new CharacterMapping(len + 1, 0);
 	let lastCharacterMappingDefined = false;
@@ -513,94 +522,8 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 		sb.appendString('<span>');
 	}
 
-	if (pureTextTypes.has(store.getType() || '')) {
-		for (let partIndex = 0, tokensLen = parts.length; partIndex < tokensLen; partIndex++) {
-			const part = parts[partIndex];
-			const partEndIndex = part.endIndex;
-			const partType = part.type;
-			const partContainsRTL = part.containsRTL;
-			const partRendersWhitespace = false;
-			const partRendersWhitespaceWithWidth = false;
-			const partIsEmptyAndHasPseudoAfter = (charIndex === partEndIndex && part.isPseudoAfter());
-
-			charOffsetInPart = 0;
-
-			sb.appendString('<span ');
-			if (partContainsRTL) {
-				sb.appendString('style="unicode-bidi:isolate" ');
-			}
-			sb.appendString('class="');
-			sb.appendString(partRendersWhitespaceWithWidth ? 'mtkz' : partType);
-			sb.appendASCIICharCode(CharCode.DoubleQuote);
-
-			if (partRendersWhitespace) {
-
-			} else {
-				sb.appendASCIICharCode(CharCode.GreaterThan);
-
-				for (; charIndex < partEndIndex; charIndex++) {
-					characterMapping.setColumnInfo(charIndex + 1, partIndex - partDisplacement, charOffsetInPart, charHorizontalOffset);
-					partDisplacement = 0;
-					const charCode = lineContent.charCodeAt(charIndex);
-
-					const producedCharacters = 1;
-					let charWidth = 1;
-
-					switch (charCode) {
-						case CharCode.Space:
-							sb.appendCharCode(0xA0); // &nbsp;
-							break;
-
-						case CharCode.LessThan:
-							sb.appendString('&lt;');
-							break;
-
-						case CharCode.GreaterThan:
-							sb.appendString('&gt;');
-							break;
-
-						case CharCode.Ampersand:
-							sb.appendString('&amp;');
-							break;
-						default: {
-							if (strings.isFullWidthCharacter(charCode)) {
-								charWidth++;
-							}
-							sb.appendCharCode(charCode);
-						}
-					}
-
-					charOffsetInPart += producedCharacters;
-					charHorizontalOffset += charWidth;
-					if (charIndex >= fauxIndentLength) {
-						visibleColumn += charWidth;
-					}
-				}
-			}
-
-			if (partIsEmptyAndHasPseudoAfter) {
-				partDisplacement++;
-			} else {
-				partDisplacement = 0;
-			}
-
-			if (charIndex >= len && !lastCharacterMappingDefined && part.isPseudoAfter()) {
-				lastCharacterMappingDefined = true;
-				characterMapping.setColumnInfo(charIndex + 1, partIndex, charOffsetInPart, charHorizontalOffset);
-			}
-
-			sb.appendString('</span>');
-		}
-
-		if (!lastCharacterMappingDefined) {
-			// When getting client rects for the last character, we will position the
-			// text range at the end of the span, insteaf of at the beginning of next span
-			characterMapping.setColumnInfo(len + 1, parts.length - 1, charOffsetInPart, charHorizontalOffset);
-		}
-
-		sb.appendString('</span>');
-
-		return new RenderLineOutput(characterMapping, containsRTL, containsForeignElements);
+	if (pureTextTypes.has(blockType) && input.lineContent.length > 0) {
+		return renderLineWithLineParts(resolvedInput, sb);
 	}
 
 	const partIndex = 0;
@@ -635,4 +558,122 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 	sb.appendString('</span>');
 
 	return new RenderLineOutput(characterMapping, containsRTL, containsForeignElements);
+}
+
+function renderLineWithLineParts(resolvedInput: ResolvedRenderLineInput, sb: StringBuilder) {
+	const { parts, len, startVisibleColumn, lineContent, fauxIndentLength, containsRTL, containsForeignElements, tabSize } = resolvedInput;
+
+	let charIndex = 0;
+	let visibleColumn = startVisibleColumn;
+	let charOffsetInPart = 0; // the character offset in the current part
+	let charHorizontalOffset = 0; // the character horizontal position in terms of chars relative to line start
+
+	const characterMapping = new CharacterMapping(len + 1, 0);
+	let lastCharacterMappingDefined = false;
+
+	let partDisplacement = 0;
+	for (let partIndex = 0, tokensLen = parts.length; partIndex < tokensLen; partIndex++) {
+		const part = parts[partIndex];
+		const partEndIndex = part.endIndex;
+		const partType = part.type;
+		const partContainsRTL = part.containsRTL;
+		const partRendersWhitespace = false;
+		const partRendersWhitespaceWithWidth = false;
+		const partIsEmptyAndHasPseudoAfter = (charIndex === partEndIndex && part.isPseudoAfter());
+
+		charOffsetInPart = 0;
+
+		sb.appendString('<span ');
+		if (partContainsRTL) {
+			sb.appendString('style="unicode-bidi:isolate" ');
+		}
+		sb.appendString('class="');
+		sb.appendString(partRendersWhitespaceWithWidth ? 'mtkz' : partType);
+		sb.appendASCIICharCode(CharCode.DoubleQuote);
+
+		if (partRendersWhitespace) {
+
+		} else {
+			sb.appendASCIICharCode(CharCode.GreaterThan);
+
+			for (; charIndex < partEndIndex; charIndex++) {
+				characterMapping.setColumnInfo(charIndex + 1, partIndex - partDisplacement, charOffsetInPart, charHorizontalOffset);
+				partDisplacement = 0;
+				const charCode = lineContent.charCodeAt(charIndex);
+
+				let producedCharacters = 1;
+				let charWidth = 1;
+
+				switch (charCode) {
+					case CharCode.Tab:
+						producedCharacters = (tabSize - (visibleColumn % tabSize));
+						charWidth = producedCharacters;
+						for (let space = 1; space <= producedCharacters; space++) {
+							sb.appendCharCode(0xA0); // &nbsp;
+						}
+						break;
+					case CharCode.Space:
+						sb.appendCharCode(0xA0); // &nbsp;
+						break;
+
+					case CharCode.LessThan:
+						sb.appendString('&lt;');
+						break;
+
+					case CharCode.GreaterThan:
+						sb.appendString('&gt;');
+						break;
+
+					case CharCode.Ampersand:
+						sb.appendString('&amp;');
+						break;
+					default: {
+						if (strings.isFullWidthCharacter(charCode)) {
+							charWidth++;
+						}
+						sb.appendCharCode(charCode);
+					}
+				}
+
+				charOffsetInPart += producedCharacters;
+				charHorizontalOffset += charWidth;
+				if (charIndex >= fauxIndentLength) {
+					visibleColumn += charWidth;
+				}
+			}
+		}
+
+		if (partIsEmptyAndHasPseudoAfter) {
+			partDisplacement++;
+		} else {
+			partDisplacement = 0;
+		}
+
+		if (charIndex >= len && !lastCharacterMappingDefined && part.isPseudoAfter()) {
+			lastCharacterMappingDefined = true;
+			characterMapping.setColumnInfo(charIndex + 1, partIndex, charOffsetInPart, charHorizontalOffset);
+		}
+
+		sb.appendString('</span>');
+	}
+
+	if (!lastCharacterMappingDefined) {
+		// When getting client rects for the last character, we will position the
+		// text range at the end of the span, insteaf of at the beginning of next span
+		characterMapping.setColumnInfo(len + 1, parts.length - 1, charOffsetInPart, charHorizontalOffset);
+	}
+
+	sb.appendString('</span>');
+
+	return new RenderLineOutput(characterMapping, containsRTL, containsForeignElements);
+}
+
+function renderEmptyTextLine(sb: StringBuilder) {
+	// completely empty line
+	sb.appendString('<span><span></span></span>');
+	return new RenderLineOutput(
+		new CharacterMapping(0, 0),
+		false,
+		ForeignElementType.None
+	);
 }

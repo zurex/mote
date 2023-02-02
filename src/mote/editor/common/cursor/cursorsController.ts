@@ -13,7 +13,8 @@ import { ICoordinatesConverter } from 'mote/editor/common/viewModel';
 import { CursorCollection } from 'mote/editor/common/cursor/cursorCollection';
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { VerticalRevealType, ViewCursorStateChangedEvent, ViewRevealRangeRequestEvent } from 'mote/editor/common/viewEvents';
-import { ReplaceCommand } from 'mote/editor/common/commands/replaceCommand';
+import { ReplaceCommand, ReplaceCommandWithAnnotation, ReplaceCommandWithBlockType } from 'mote/editor/common/commands/replaceCommand';
+import { BlockType, BlockTypes } from 'mote/platform/store/common/record';
 
 export class CursorsController extends Disposable {
 
@@ -205,6 +206,8 @@ export class CursorsController extends Disposable {
 			this._interpretCommandResult(result);
 
 			// Check for markdown
+			this.handleBlockMarkdown(/^\[\]$/, () => BlockTypes.todo);
+			this.handleBlockMarkdown(/^[-\*\+] $/, () => BlockTypes.bulletedList);
 			this.handleInlineMarkdown('`', ['c']);
 			this.handleInlineMarkdown('**', ['b']);
 			this.handleInlineMarkdown('*', ['i']);
@@ -232,6 +235,25 @@ export class CursorsController extends Disposable {
 
 	//#region markdown part
 
+	private handleBlockMarkdown(matchRegex: RegExp, toBlockType: () => string) {
+		const selection = this.getSelection();
+		const lineContent = this.model.getLineContent(selection.startLineNumber);
+		// Try to get matched markdown tag
+		const markdownTag = matchRegex.exec(lineContent);
+		if (!markdownTag) {
+			return false;
+		}
+		const endIndex = markdownTag[0].length || 0;
+		const markdownSelection = new EditorSelection(selection.startLineNumber, 0, selection.endLineNumber, endIndex + 1);
+		const blockType = toBlockType();
+		const command = new ReplaceCommandWithBlockType(markdownSelection, '', blockType);
+		this.executeEditOperation(new EditOperationResult(EditOperationType.Other, [command], {
+			shouldPushStackElementBefore: false,
+			shouldPushStackElementAfter: false
+		}));
+		return true;
+	}
+
 	/**
 	 * Hanlde markdown input
 	 * TODO: move this part to post processor
@@ -239,7 +261,7 @@ export class CursorsController extends Disposable {
 	 * @param annotation
 	 * @returns
 	 */
-	private handleInlineMarkdown(delimiter: string, annotation: string[]) {
+	private handleInlineMarkdown(delimiter: string, annotation: [string]) {
 		const selection = this.getSelection();
 		const lineContent = this.model.getLineContent(selection.startLineNumber);
 
@@ -248,7 +270,7 @@ export class CursorsController extends Disposable {
 			return;
 		}
 		const markdownSelection = new EditorSelection(selection.startLineNumber, parseResult.startIndex, selection.endLineNumber, parseResult.endIndex);
-		const command = new ReplaceCommand(markdownSelection, parseResult.matchString, false, annotation);
+		const command = new ReplaceCommandWithAnnotation(markdownSelection, parseResult.matchString, annotation);
 		this.executeEditOperation(new EditOperationResult(EditOperationType.Other, [command], {
 			shouldPushStackElementBefore: false,
 			shouldPushStackElementAfter: false
@@ -569,6 +591,7 @@ class CommandExecutor {
 				forceMoveMarkers: forceMoveMarkers,
 				isAutoWhitespaceEdit: command.insertsAutoWhitespace,
 				annotation: command.annotation,
+				blockType: command.blockType
 			});
 		};
 

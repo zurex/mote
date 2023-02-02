@@ -24,6 +24,9 @@ export interface IAppWindow extends IDisposable {
 	send(channel: string, ...args: any[]): void;
 	sendWhenReady(channel: string, token: CancellationToken, ...args: any[]): void;
 
+	readonly isFullScreen: boolean;
+	toggleFullScreen(): void;
+
 	close(): void;
 }
 

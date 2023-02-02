@@ -345,7 +345,9 @@ export interface IIdentifiedSingleEditOperation extends ISingleEditOperation {
 	 */
 	identifier?: ISingleEditOperationIdentifier | null;
 
-	annotation?: string[];
+	annotation?: [string];
+
+	blockType?: string;
 
 	/**
 	 * This indicates that this operation is inserting automatic whitespace
@@ -392,7 +394,8 @@ export class ValidAnnotatedEditOperation implements IIdentifiedSingleEditOperati
 		public readonly forceMoveMarkers: boolean,
 		public readonly isAutoWhitespaceEdit: boolean,
 		public readonly _isTracked: boolean,
-		public readonly annotation: string[],
+		public readonly annotation?: [string],
+		public readonly blockType?: string,
 	) { }
 }
 

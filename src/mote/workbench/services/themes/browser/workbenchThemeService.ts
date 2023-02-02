@@ -6,7 +6,7 @@ import { IWorkbenchColorTheme, IWorkbenchProductIconTheme, IWorkbenchThemeServic
 import { registerColorThemeExtensionPoint, registerProductIconThemeExtensionPoint, ThemeRegistry } from 'mote/workbench/services/themes/common/themeExstensionPoints';
 import { ColorThemeData } from 'mote/workbench/services/themes/common/colorThemeData';
 import { ProductIconThemeData } from 'mote/workbench/services/themes/browser/productIconThemeData';
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { registerColorThemeSchemas } from 'mote/workbench/services/themes/common/colorThemeSchema';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { ThemeConfiguration } from 'mote/workbench/services/themes/common/themeConfiguration';
@@ -194,7 +194,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 				}
 			}
 		};
-		ruleCollector.addRule(`.workbench { forced-color-adjust: none; }`);
+		ruleCollector.addRule(`.mote-workbench { forced-color-adjust: none; }`);
 		themingRegistry.getThemingParticipants().forEach(p => p(themeData, ruleCollector, this.environmentService));
 
 		const colorVariables: string[] = [];
@@ -204,7 +204,7 @@ export class WorkbenchThemeService implements IWorkbenchThemeService {
 				colorVariables.push(`${asCssVariableName(item.id)}: ${color.toString()};`);
 			}
 		}
-		ruleCollector.addRule(`.workbench { ${colorVariables.join('\n')} }`);
+		ruleCollector.addRule(`.mote-workbench { ${colorVariables.join('\n')} }`);
 
 		_applyRules([...cssRules].join('\n'), colorThemeRulesClassName);
 	}
@@ -255,4 +255,7 @@ function _applyRules(styleSheetContent: string, rulesClassName: string) {
 
 registerColorThemeSchemas();
 
-registerSingleton(IWorkbenchThemeService, WorkbenchThemeService);
+// The WorkbenchThemeService should stay eager as the constructor restores the
+// last used colors / icons from storage. This needs to happen as quickly as possible
+// for a flicker-free startup experience.
+registerSingleton(IWorkbenchThemeService, WorkbenchThemeService, InstantiationType.Eager);

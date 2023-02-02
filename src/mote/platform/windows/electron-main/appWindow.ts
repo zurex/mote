@@ -173,6 +173,15 @@ export class AppWindow extends Disposable implements IAppWindow {
 			});
 		}
 	}
+
+	toggleFullScreen(): void {
+		this.setFullScreen(!this.isFullScreen);
+	}
+
+	private setFullScreen(fullscreen: boolean): void {
+
+	}
+
 	close(): void {
 		this._win?.close();
 	}

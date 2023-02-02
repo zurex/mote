@@ -33,10 +33,10 @@ import 'mote/workbench/services/host/electron-sandbox/nativeHostService';
 import 'mote/workbench/services/keybinding/electron-sandbox/nativeKeyboardLayout';
 
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
-import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
+import { ContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 
 
-registerSingleton(IContextMenuService, BrowserContextMenuService, InstantiationType.Delayed);
+registerSingleton(IContextMenuService, ContextMenuService, InstantiationType.Delayed);
 
 //#endregion

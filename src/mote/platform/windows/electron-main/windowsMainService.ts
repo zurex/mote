@@ -1,22 +1,22 @@
-/* eslint-disable code-no-unexternalized-strings */
-import { BrowserWindow, nativeTheme } from "electron";
+import { BrowserWindow, nativeTheme } from 'electron';
 import { hostname, release } from 'os';
-import { INativeWindowConfiguration } from "mote/platform/window/common/window";
-import { IAppWindow } from "mote/platform/window/electron-main/window";
-import { distinct, firstOrDefault } from "mote/base/common/arrays";
-import { Disposable } from "mote/base/common/lifecycle";
-import { IProcessEnvironment } from "mote/base/common/platform";
-import { NativeParsedArgs } from "mote/platform/environment/common/argv";
-import { IEnvironmentMainService } from "mote/platform/environment/electron-main/environmentMainService";
-import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
-import { ILogService } from "mote/platform/log/common/log";
-import product from "mote/platform/product/common/product";
-import { AppWindow } from "./appWindow";
-import { IOpenConfiguration, IWindowsMainService } from "./windows";
+import { INativeWindowConfiguration, IOpenEmptyWindowOptions } from 'mote/platform/window/common/window';
+import { IAppWindow } from 'mote/platform/window/electron-main/window';
+import { distinct, firstOrDefault } from 'mote/base/common/arrays';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { IProcessEnvironment } from 'mote/base/common/platform';
+import { NativeParsedArgs } from 'mote/platform/environment/common/argv';
+import { IEnvironmentMainService } from 'mote/platform/environment/electron-main/environmentMainService';
+import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
+import { ILogService } from 'mote/platform/log/common/log';
+import product from 'mote/platform/product/common/product';
+import { AppWindow } from 'mote/platform/windows/electron-main/appWindow';
+import { IOpenConfiguration, IOpenEmptyConfiguration, IWindowsCountChangedEvent, IWindowsMainService } from 'mote/platform/windows/electron-main/windows';
 import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
 import { CancellationToken } from 'mote/base/common/cancellation';
 import { getMarks, mark } from 'mote/base/common/performance';
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
+import { Emitter } from 'mote/base/common/event';
 
 interface IOpenBrowserWindowOptions {
 	readonly userEnv?: IProcessEnvironment;
@@ -27,6 +27,21 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 
 	private static readonly WINDOWS: IAppWindow[] = [];
 
+	private readonly _onDidOpenWindow = this._register(new Emitter<IAppWindow>());
+	readonly onDidOpenWindow = this._onDidOpenWindow.event;
+
+	private readonly _onDidSignalReadyWindow = this._register(new Emitter<IAppWindow>());
+	readonly onDidSignalReadyWindow = this._onDidSignalReadyWindow.event;
+
+	private readonly _onDidDestroyWindow = this._register(new Emitter<IAppWindow>());
+	readonly onDidDestroyWindow = this._onDidDestroyWindow.event;
+
+	private readonly _onDidChangeWindowsCount = this._register(new Emitter<IWindowsCountChangedEvent>());
+	readonly onDidChangeWindowsCount = this._onDidChangeWindowsCount.event;
+
+	private readonly _onDidTriggerSystemContextMenu = this._register(new Emitter<{ window: IAppWindow; x: number; y: number }>());
+	readonly onDidTriggerSystemContextMenu = this._onDidTriggerSystemContextMenu.event;
+
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILoggerMainService private readonly loggerService: ILoggerMainService,
@@ -35,6 +50,16 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
+	}
+
+	openEmptyWindow(openConfig: IOpenEmptyConfiguration, options?: IOpenEmptyWindowOptions): Promise<IAppWindow[]> {
+		const cli = this.environmentMainService.args;
+		const remoteAuthority = options?.remoteAuthority || undefined;
+		const forceEmpty = true;
+		const forceReuseWindow = options?.forceReuseWindow;
+		const forceNewWindow = !forceReuseWindow;
+
+		return this.open({ ...openConfig, cli, forceEmpty, forceNewWindow, forceReuseWindow, remoteAuthority });
 	}
 
 	open(openConfig: IOpenConfiguration): IAppWindow[] {
@@ -75,7 +100,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	}
 
 	private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
-		this.logService.debug("this.environmentMainService.userHome", this.environmentMainService.tmpDir.fsPath);
+		this.logService.debug('this.environmentMainService.userHome', this.environmentMainService.tmpDir.fsPath);
 
 		let window: IAppWindow | undefined;
 
@@ -165,6 +190,10 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 
 	getWindows(): IAppWindow[] {
 		return WindowsMainService.WINDOWS;
+	}
+
+	getWindowCount(): number {
+		return this.getWindows().length;
 	}
 
 	getWindowById(windowId: number): IAppWindow | undefined {

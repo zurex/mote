@@ -8,7 +8,13 @@ import { IDisposable } from 'mote/base/common/lifecycle';
 import { IThemable, styleFn } from 'mote/base/common/styler';
 import * as themeColors from 'mote/platform/theme/common/themeColors';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
-import { ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';
+import { asCssVariable, ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';
+import { IMenuStyles } from 'mote/base/browser/ui/menu/menu';
+import { menuBackground, menuBorder, menuForeground, menuSelectionBackground, menuSelectionForeground, widgetShadow } from 'mote/platform/theme/common/themeColors';
+
+export type IStyleOverride<T> = {
+	[P in keyof T]?: ColorIdentifier;
+};
 
 export interface IStyleOverrides {
 	[color: string]: ColorIdentifier | undefined;
@@ -178,12 +184,24 @@ export interface IMenuStyleOverrides extends IColorMapping {
 	separatorColor?: ColorIdentifier;
 }
 
-export const defaultMenuStyles = <IMenuStyleOverrides>{
-	shadowColor: themeColors.widgetShadow,
-	borderColor: themeColors.menuBorder,
-	foregroundColor: themeColors.menuForeground,
-	backgroundColor: themeColors.menuBackground,
-};
+export const defaultMenuStyles = getMenuStyles({});
+
+export function getMenuStyles(override: IStyleOverride<IMenuStyles>): IMenuStyles {
+	return {
+		shadowColor: asCssVariable(override.shadowColor ?? widgetShadow),
+		borderColor: asCssVariable(override.borderColor ?? menuBorder),
+		foregroundColor: asCssVariable(override.foregroundColor ?? menuForeground),
+		backgroundColor: asCssVariable(override.backgroundColor ?? menuBackground),
+		selectionForegroundColor: asCssVariable(override.selectionForegroundColor ?? menuSelectionForeground),
+		selectionBackgroundColor: asCssVariable(override.selectionBackgroundColor ?? menuSelectionBackground),
+		selectionBorderColor: asCssVariable(override.selectionBorderColor ?? themeColors.menuSelectionBorder),
+		separatorColor: asCssVariable(override.separatorColor ?? themeColors.menuSeparatorBackground),
+		scrollbarShadow: asCssVariable(override.scrollbarShadow ?? themeColors.scrollbarShadow),
+		scrollbarSliderBackground: asCssVariable(override.scrollbarSliderBackground ?? themeColors.scrollbarSliderBackground),
+		scrollbarSliderHoverBackground: asCssVariable(override.scrollbarSliderHoverBackground ?? themeColors.scrollbarSliderHoverBackground),
+		scrollbarSliderActiveBackground: asCssVariable(override.scrollbarSliderActiveBackground ?? themeColors.scrollbarSliderActiveBackground)
+	};
+}
 
 export function attachMenuStyler(widget: IThemable, themeService: IThemeService, style?: IMenuStyleOverrides): IDisposable {
 	return attachStyler(themeService, { ...defaultMenuStyles, ...style }, widget);

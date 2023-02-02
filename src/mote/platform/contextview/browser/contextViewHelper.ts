@@ -1,6 +1,6 @@
 import { Event } from 'mote/base/common/event';
 import { AnchorAlignment, AnchorAxisAlignment, AnchorPosition, IAnchor, IContextViewProvider } from 'mote/base/browser/ui/contextview/contextview';
-import { attachMenuStyler } from 'mote/platform/theme/common/styler';
+import { attachMenuStyler } from 'mote/platform/theme/browser/defaultStyles';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { DisposableStore } from 'mote/base/common/lifecycle';
 import { IThemable } from 'mote/base/common/styler';

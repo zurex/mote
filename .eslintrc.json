@@ -200,7 +200,7 @@
 						// - electron-browser
 						"when": "hasBrowser",
 						"allow": [
-							"vs/css!./**/*"
+							"mote/css!./**/*"
 						]
 					},
 					{
@@ -263,7 +263,7 @@
 						// imports that are allowed in all /test/ files
 						"when": "test",
 						"allow": [
-							"vs/css.build",
+							"mote/css.build",
 							"assert",
 							"sinon",
 							"sinon-test"

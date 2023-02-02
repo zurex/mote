@@ -22,7 +22,8 @@ export interface IValidatedEditOperation {
 	lastLineLength: number;
 	forceMoveMarkers: boolean;
 	isAutoWhitespaceEdit: boolean;
-	annotation: string[];
+	annotation?: [string];
+	blockType?: string;
 }
 
 interface IReverseSingleEditOperation extends IValidEditOperation {
@@ -183,6 +184,7 @@ export class TextBuffer implements ITextBuffer {
 				forceMoveMarkers: false,
 				isAutoWhitespaceEdit: false,
 				annotation: op.annotation,
+				blockType: op.blockType
 			};
 		}
 
@@ -266,11 +268,18 @@ export class TextBuffer implements ITextBuffer {
 						// replacement
 						this.delete(op.range, transaction);
 						this.insert(op.range, op.text, transaction);
-						this.decorate(op.text, op.annotation, op.range, transaction);
+						if (op.annotation) {
+							// decorate
+							this.decorate(op.text, op.annotation, op.range, transaction);
+						}
 					}
 				} else {
 					// deletion
 					this.delete(op.range, transaction);
+					if (op.blockType) {
+						// turn into
+						this.turnInto(op.blockType, op.range, transaction);
+					}
 				}
 
 				const contentChangeRange = new EditorRange(startLineNumber, startColumn, endLineNumber, endColumn);
@@ -287,7 +296,15 @@ export class TextBuffer implements ITextBuffer {
 		return contentChanges;
 	}
 
-	private decorate(text: string, annotation: segmentUtils.IAnnotation | string[], range: EditorRange, transaction: Transaction) {
+	private turnInto(blockType: string, range: EditorRange, transaction: Transaction) {
+		if (!blockType) {
+			return;
+		}
+		const lineStore = this.getLineStore(range.startLineNumber);
+		EditOperation.turnInto(lineStore, blockType as any, transaction);
+	}
+
+	private decorate(text: string, annotation: [string], range: EditorRange, transaction: Transaction) {
 		if (range.startLineNumber === 0) {
 			// special case for header
 			return;
@@ -308,11 +325,21 @@ export class TextBuffer implements ITextBuffer {
 		} else {
 			let type = 'text';
 			const lineStore = this.getLineStore(range.startLineNumber);
+			const lineContent = this.getLineContent(range.startLineNumber);
 			if (keepLineTypes.has(lineStore.getType() || '')) {
 				// Some blocks required keep same styles in next line
 				// Just like todo, list
-				type = lineStore.getType()!;
+				if (lineContent) {
+					// if it's not empty, then create a new line with same blockType
+					type = lineStore.getType()!;
+				} else {
+					// it it's empty line, turn into text
+					// fix me to insert line count change
+					//EditOperation.turnInto(lineStore, BlockTypes.text as any, transaction);
+					//return;
+				}
 			}
+			// else: just create a new line
 			const child: BlockStore = EditOperation.createBlockStore(type, transaction, this.contentStore);
 			EditOperation.insertChildAfterTarget(
 				this.contentStore, child, lineStore, transaction);
@@ -325,15 +352,10 @@ export class TextBuffer implements ITextBuffer {
 			return;
 		}
 		const store = this.getLineStore(range.endLineNumber);
-		const record = store.getValue();
-		if (range.startLineNumber !== range.endLineNumber) {
+		if (range.startLineNumber !== range.endLineNumber && range.endColumn === 1) {
 			// delete block
-			if (textBasedTypes.has(record.type)) {
-				// turnInto text for rich type
-				EditOperation.turnInto(store, BlockTypes.text as any, transaction);
-			} else {
-				EditOperation.removeChild(this.contentStore, store, transaction);
-			}
+			EditOperation.removeChild(this.contentStore, store, transaction);
+			// TODO: add turn into support
 		} else {
 			// delete current block content
 			const titleStore = store.getTitleStore();

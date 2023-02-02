@@ -33,9 +33,9 @@ import 'mote/workbench/services/themes/browser/browserHostColorSchemeService';
 
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
-import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
+import { ContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
 
-registerSingleton(IContextMenuService, BrowserContextMenuService, InstantiationType.Delayed);
+registerSingleton(IContextMenuService, ContextMenuService, InstantiationType.Delayed);
 
 //#endregion
 

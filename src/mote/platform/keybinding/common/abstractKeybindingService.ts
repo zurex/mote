@@ -1,3 +1,4 @@
+import * as arrays from 'mote/base/common/arrays';
 import { IKeybindingService, IKeyboardEvent } from 'mote/platform/keybinding/common/keybinding';
 import { ChordKeybinding, ResolvedKeybinding } from 'mote/base/common/keybindings';
 import { Disposable } from 'mote/base/common/lifecycle';
@@ -43,6 +44,21 @@ export abstract class AbstractKeybindingService extends Disposable implements IK
 	resolveUserBinding(userBinding: string): ResolvedKeybinding[] {
 		throw new Error('Method not implemented.');
 	}
+
+	public lookupKeybindings(commandId: string): ResolvedKeybinding[] {
+		return arrays.coalesce(
+			this.getResolver().lookupKeybindings(commandId).map(item => item.resolvedKeybinding)
+		);
+	}
+
+	public lookupKeybinding(commandId: string, context?: IContextKeyService): ResolvedKeybinding | undefined {
+		const result = this.getResolver().lookupPrimaryKeybinding(commandId, context || this.contextKeyService);
+		if (!result) {
+			return undefined;
+		}
+		return result.resolvedKeybinding;
+	}
+
 	dispatchEvent(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
 		throw new Error('Method not implemented.');
 	}

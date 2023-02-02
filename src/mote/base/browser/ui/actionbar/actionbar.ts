@@ -25,7 +25,7 @@ export interface IActionViewItem extends IDisposable {
 }
 
 export interface IActionViewItemProvider {
-	(action: IAction): IActionViewItem | undefined;
+	(action: IAction, options: IActionViewItemOptions): IActionViewItem | undefined;
 }
 
 export const enum ActionsOrientation {
