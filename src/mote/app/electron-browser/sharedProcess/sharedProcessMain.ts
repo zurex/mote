@@ -23,13 +23,6 @@ import { IDownloadService } from 'mote/platform/download/common/download';
 import { DownloadService } from 'mote/platform/download/common/downloadService';
 import { INativeEnvironmentService } from 'mote/platform/environment/common/environment';
 import { SharedProcessEnvironmentService } from 'mote/platform/sharedProcess/node/sharedProcessEnvironmentService';
-import { GlobalExtensionEnablementService } from 'mote/platform/extensionManagement/common/extensionEnablementService';
-import { IExtensionTipsService, IGlobalExtensionEnablementService } from 'mote/platform/extensionManagement/common/extensionManagement';
-import { ExtensionSignatureVerificationService, IExtensionSignatureVerificationService } from 'mote/platform/extensionManagement/node/extensionSignatureVerificationService';
-import { ExtensionTipsService } from 'mote/platform/extensionManagement/electron-sandbox/extensionTipsService';
-import { ExtensionManagementService, INativeServerExtensionManagementService } from 'mote/platform/extensionManagement/node/extensionManagementService';
-import { IExtensionRecommendationNotificationService } from 'mote/platform/extensionRecommendations/common/extensionRecommendations';
-import { ExtensionRecommendationNotificationServiceChannelClient } from 'mote/platform/extensionRecommendations/electron-sandbox/extensionRecommendationsIpc';
 import { IFileService } from 'mote/platform/files/common/files';
 import { FileService } from 'mote/platform/files/common/fileService';
 import { DiskFileSystemProvider } from 'mote/platform/files/node/diskFileSystemProvider';
@@ -57,32 +50,9 @@ import { TelemetryLogAppender } from 'mote/platform/telemetry/common/telemetryLo
 import { TelemetryService } from 'mote/platform/telemetry/common/telemetryService';
 import { supportsTelemetry, ITelemetryAppender, NullAppender, NullTelemetryService, getPiiPathsFromEnvironment, isInternalTelemetry } from 'mote/platform/telemetry/common/telemetryUtils';
 import { CustomEndpointTelemetryService } from 'mote/platform/telemetry/node/customEndpointTelemetryService';
-import { LocalReconnectConstants, TerminalIpcChannels, TerminalSettingId } from 'mote/platform/terminal/common/terminal';
-import { ILocalPtyService } from 'mote/platform/terminal/electron-sandbox/terminal';
-import { PtyHostService } from 'mote/platform/terminal/node/ptyHostService';
-import { ExtensionStorageService, IExtensionStorageService } from 'mote/platform/extensionManagement/common/extensionStorage';
-import { IgnoredExtensionsManagementService, IIgnoredExtensionsManagementService } from 'mote/platform/userDataSync/common/ignoredExtensions';
-import { IUserDataSyncBackupStoreService, IUserDataSyncLogService, IUserDataSyncEnablementService, IUserDataSyncService, IUserDataSyncStoreManagementService, IUserDataSyncStoreService, IUserDataSyncUtilService, registerConfiguration as registerUserDataSyncConfiguration, IUserDataSyncResourceProviderService } from 'mote/platform/userDataSync/common/userDataSync';
-import { IUserDataSyncAccountService, UserDataSyncAccountService } from 'mote/platform/userDataSync/common/userDataSyncAccount';
-import { UserDataSyncBackupStoreService } from 'mote/platform/userDataSync/common/userDataSyncBackupStoreService';
-import { UserDataAutoSyncChannel, UserDataSyncAccountServiceChannel, UserDataSyncMachinesServiceChannel, UserDataSyncStoreManagementServiceChannel, UserDataSyncUtilServiceClient } from 'mote/platform/userDataSync/common/userDataSyncIpc';
-import { UserDataSyncLogService } from 'mote/platform/userDataSync/common/userDataSyncLog';
-import { IUserDataSyncMachinesService, UserDataSyncMachinesService } from 'mote/platform/userDataSync/common/userDataSyncMachines';
-import { UserDataSyncEnablementService } from 'mote/platform/userDataSync/common/userDataSyncEnablementService';
-import { UserDataSyncService } from 'mote/platform/userDataSync/common/userDataSyncService';
-import { UserDataSyncChannel } from 'mote/platform/userDataSync/common/userDataSyncServiceIpc';
-import { UserDataSyncStoreManagementService, UserDataSyncStoreService } from 'mote/platform/userDataSync/common/userDataSyncStoreService';
-import { UserDataAutoSyncService } from 'mote/platform/userDataSync/electron-sandbox/userDataAutoSyncService';
-import { UserDataProfileStorageService } from 'mote/platform/userDataProfile/electron-sandbox/userDataProfileStorageService';
-import { IUserDataProfileStorageService } from 'mote/platform/userDataProfile/common/userDataProfileStorageService';
-import { ActiveWindowManager } from 'mote/platform/windows/node/windowTracker';
 import { ISignService } from 'mote/platform/sign/common/sign';
 import { SignService } from 'mote/platform/sign/node/signService';
-import { ISharedTunnelsService } from 'mote/platform/tunnel/common/tunnel';
-import { SharedTunnelsService } from 'mote/platform/tunnel/node/tunnelService';
-import { ipcSharedProcessTunnelChannelName, ISharedProcessTunnelService } from 'mote/platform/remote/common/sharedProcessTunnelService';
-import { SharedProcessTunnelService } from 'mote/platform/tunnel/node/sharedProcessTunnelService';
-import { ipcSharedProcessWorkerChannelName, ISharedProcessWorkerConfiguration, ISharedProcessWorkerService } from 'mote/platform/sharedProcess/common/sharedProcessWorkerService';
+import { ISharedProcessWorkerConfiguration, ISharedProcessWorkerService } from 'mote/platform/sharedProcess/common/sharedProcessWorkerService';
 import { SharedProcessWorkerService } from 'mote/platform/sharedProcess/electron-browser/sharedProcessWorkerService';
 import { IUriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentity';
 import { UriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentityService';
@@ -91,22 +61,13 @@ import { FileUserDataProvider } from 'mote/platform/userData/common/fileUserData
 import { DiskFileSystemProviderClient, LOCAL_FILE_SYSTEM_CHANNEL_NAME } from 'mote/platform/files/common/diskFileSystemProviderClient';
 import { InspectProfilingService as V8InspectProfilingService } from 'mote/platform/profiling/node/profilingService';
 import { IV8InspectProfilingService } from 'mote/platform/profiling/common/profiling';
-import { IExtensionsScannerService } from 'mote/platform/extensionManagement/common/extensionsScannerService';
-import { ExtensionsScannerService } from 'mote/platform/extensionManagement/node/extensionsScannerService';
 import { IUserDataProfilesService } from 'mote/platform/userDataProfile/common/userDataProfile';
-import { IExtensionsProfileScannerService } from 'mote/platform/extensionManagement/common/extensionsProfileScannerService';
 import { PolicyChannelClient } from 'mote/platform/policy/common/policyIpc';
 import { IPolicyService, NullPolicyService } from 'mote/platform/policy/common/policy';
 import { UserDataProfilesNativeService } from 'mote/platform/userDataProfile/electron-sandbox/userDataProfile';
 import { SharedProcessRequestService } from 'mote/platform/request/electron-browser/sharedProcessRequestService';
 import { OneDataSystemAppender } from 'mote/platform/telemetry/node/1dsAppender';
-import { UserDataProfilesCleaner } from 'mote/app/electron-browser/sharedProcess/contrib/userDataProfilesCleaner';
-import { RemoteTunnelService } from 'mote/platform/remoteTunnel/electron-browser/remoteTunnelService';
-import { IRemoteTunnelService } from 'mote/platform/remoteTunnel/common/remoteTunnel';
 import { ISharedProcessLifecycleService, SharedProcessLifecycleService } from 'mote/platform/lifecycle/electron-browser/sharedProcessLifecycleService';
-import { UserDataSyncResourceProviderService } from 'mote/platform/userDataSync/common/userDataSyncResourceProvider';
-import { ExtensionsContributions } from 'mote/app/electron-browser/sharedProcess/contrib/extensions';
-import { ExtensionsProfileScannerService } from 'mote/platform/extensionManagement/electron-sandbox/extensionsProfileScannerService';
 import { localize } from 'mote/nls';
 import { LogService } from 'mote/platform/log/common/logService';
 
@@ -278,11 +239,6 @@ class SharedProcessMain extends Disposable {
 		// Download
 		services.set(IDownloadService, new SyncDescriptor(DownloadService, undefined, true));
 
-		// Extension recommendations
-		const activeWindowManager = this._register(new ActiveWindowManager(nativeHostService));
-		const activeWindowRouter = new StaticRouter(ctx => activeWindowManager.getActiveClientId().then(id => ctx === id));
-		services.set(IExtensionRecommendationNotificationService, new ExtensionRecommendationNotificationServiceChannelClient(this.server.getChannel('extensionRecommendationNotification', activeWindowRouter)));
-
 		// Telemetry
 		let telemetryService: ITelemetryService;
 		const appenders: ITelemetryAppender[] = [];
@@ -322,48 +278,8 @@ class SharedProcessMain extends Disposable {
 		// Diagnostics
 		services.set(IDiagnosticsService, new SyncDescriptor(DiagnosticsService, undefined, false /* proxied to other processes */));
 
-		// Settings Sync
-		services.set(IUserDataSyncAccountService, new SyncDescriptor(UserDataSyncAccountService, undefined, true));
-		services.set(IUserDataSyncLogService, new SyncDescriptor(UserDataSyncLogService, undefined, true));
-		services.set(IUserDataSyncUtilService, new UserDataSyncUtilServiceClient(this.server.getChannel('userDataSyncUtil', client => client.ctx !== 'main')));
-		services.set(IGlobalExtensionEnablementService, new SyncDescriptor(GlobalExtensionEnablementService, undefined, false /* Eagerly resets installed extensions */));
-		services.set(IIgnoredExtensionsManagementService, new SyncDescriptor(IgnoredExtensionsManagementService, undefined, true));
-		services.set(IExtensionStorageService, new SyncDescriptor(ExtensionStorageService));
-		services.set(IUserDataSyncStoreManagementService, new SyncDescriptor(UserDataSyncStoreManagementService, undefined, true));
-		services.set(IUserDataSyncStoreService, new SyncDescriptor(UserDataSyncStoreService, undefined, true));
-		services.set(IUserDataSyncMachinesService, new SyncDescriptor(UserDataSyncMachinesService, undefined, true));
-		services.set(IUserDataSyncBackupStoreService, new SyncDescriptor(UserDataSyncBackupStoreService, undefined, false /* Eagerly cleans up old backups */));
-		services.set(IUserDataSyncEnablementService, new SyncDescriptor(UserDataSyncEnablementService, undefined, true));
-		services.set(IUserDataSyncService, new SyncDescriptor(UserDataSyncService, undefined, false /* Initializes the Sync State */));
-		services.set(IUserDataProfileStorageService, new SyncDescriptor(UserDataProfileStorageService, undefined, true));
-		services.set(IUserDataSyncResourceProviderService, new SyncDescriptor(UserDataSyncResourceProviderService, undefined, true));
-
-		// Terminal
-
-		const ptyHostService = new PtyHostService({
-			graceTime: LocalReconnectConstants.GraceTime,
-			shortGraceTime: LocalReconnectConstants.ShortGraceTime,
-			scrollback: configurationService.getValue<number>(TerminalSettingId.PersistentSessionScrollback) ?? 100
-		},
-			localize('ptyHost', "Pty Host"),
-			configurationService,
-			environmentService,
-			logService,
-			loggerService
-		);
-		ptyHostService.initialize();
-
-		services.set(ILocalPtyService, this._register(ptyHostService));
-
 		// Signing
 		services.set(ISignService, new SyncDescriptor(SignService, undefined, false /* proxied to other processes */));
-
-		// Tunnel
-		services.set(ISharedTunnelsService, new SyncDescriptor(SharedTunnelsService));
-		services.set(ISharedProcessTunnelService, new SyncDescriptor(SharedProcessTunnelService));
-
-		// Remote Tunnel
-		services.set(IRemoteTunnelService, new SyncDescriptor(RemoteTunnelService));
 
 		return new InstantiationService(services);
 	}

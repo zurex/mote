@@ -14,7 +14,6 @@ import { BlockTypes } from 'mote/platform/store/common/record';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { createFastDomNode, FastDomNode } from 'mote/base/browser/fastDomNode';
 import { Codicon } from 'mote/base/common/codicons';
-import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { ImageBlock } from 'mote/editor/contrib/viewBlock/browser/imageBlock';
 
 const bulleteIcon = registerIcon('bullete', Codicon.circleFilled, nls.localize('diffInsertIcon', 'Line decoration for inserts in the diff editor.'));
@@ -256,6 +255,12 @@ class BulletedListBlock extends ViewBlock {
 
 		bulleteContainer.appendChild(bullete);
 		parent.appendChild(bulleteContainer);
+	}
+
+	override render(store: BlockStore): string {
+		this.init();
+		this.setValue(store);
+		return this.getDomNode().domNode.outerHTML;
 	}
 
 	override getPlaceholder() {

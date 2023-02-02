@@ -8,7 +8,6 @@ import { Registry } from 'mote/platform/registry/common/platform';
 
 //  ------ API types
 
-
 export type ColorIdentifier = string;
 
 export interface ColorContribution {
@@ -27,6 +26,14 @@ export interface ColorContribution {
  */
 export function asCssVariableName(colorIdent: ColorIdentifier): string {
 	return `--mote-${colorIdent.replace(/\./g, '-')}`;
+}
+
+export function asCssVariable(color: ColorIdentifier): string {
+	return `var(${asCssVariableName(color)})`;
+}
+
+export function asCssVariableWithDefault(color: ColorIdentifier, defaultCssValue: string): string {
+	return `var(${asCssVariableName(color)}, ${defaultCssValue})`;
 }
 
 export const enum ColorTransformType {

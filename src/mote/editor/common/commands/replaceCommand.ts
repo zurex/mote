@@ -6,11 +6,10 @@ import { ITextModel } from 'mote/editor/common/model';
 export class ReplaceCommand implements ICommand {
 
 	public readonly insertsAutoWhitespace: boolean;
-	public readonly annotation: string[];
 
-	constructor(private readonly range: EditorRange, private readonly text: string, insertsAutoWhitespace: boolean = false, annotation: string[] = []) {
+
+	constructor(private readonly range: EditorRange, private readonly text: string, insertsAutoWhitespace: boolean = false) {
 		this.insertsAutoWhitespace = insertsAutoWhitespace;
-		this.annotation = annotation;
 	}
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
@@ -21,6 +20,18 @@ export class ReplaceCommand implements ICommand {
 		const inverseEditOperations = helper.getInverseEditOperations();
 		const srcRange = inverseEditOperations[0].range;
 		return EditorSelection.fromPositions(srcRange.getEndPosition());
+	}
+}
+
+export class ReplaceCommandWithBlockType extends ReplaceCommand {
+	constructor(range: EditorRange, text: string, public readonly blockType: string) {
+		super(range, text);
+	}
+}
+
+export class ReplaceCommandWithAnnotation extends ReplaceCommand {
+	constructor(range: EditorRange, text: string, public readonly annotation: [string]) {
+		super(range, text);
 	}
 }
 

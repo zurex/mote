@@ -6,7 +6,6 @@
 import { domContentLoaded, detectFullscreen, getCookieValue } from 'mote/base/browser/dom';
 import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
 import { ILogService, ConsoleLogger, LogLevel, ILoggerService } from 'mote/platform/log/common/log';
-import { ConsoleLogInAutomationLogger } from 'mote/platform/log/browser/log';
 import { Disposable, DisposableStore, toDisposable } from 'mote/base/common/lifecycle';
 import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { Workbench } from 'mote/workbench/browser/workbench';
@@ -26,7 +25,7 @@ import { SignService } from 'mote/platform/sign/browser/signService';
 import { IWorkbenchConstructionOptions, IWorkbench } from 'mote/workbench/browser/web.api';
 import { BrowserStorageService } from 'mote/workbench/services/storage/browser/storageService';
 import { IStorageService } from 'mote/platform/storage/common/storage';
-import { FileLogger, FileLoggerService } from 'mote/platform/log/common/fileLog';
+import { FileLoggerService } from 'mote/platform/log/common/fileLog';
 import { toLocalISOString } from 'mote/base/common/date';
 import { isWorkspaceToOpen, isFolderToOpen } from 'mote/platform/window/common/window';
 import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier } from 'mote/workbench/services/workspaces/browser/workspaces';

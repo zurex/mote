@@ -32,7 +32,7 @@
 }
 
 .monaco-icon-label-container.disabled {
-	color: var(--vscode-disabledForeground);
+	color: var(--mote-disabledForeground);
 }
 .monaco-icon-label > .monaco-icon-label-container {
 	min-width: 0;

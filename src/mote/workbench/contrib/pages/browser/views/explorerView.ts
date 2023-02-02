@@ -20,7 +20,7 @@ import { IDisposable } from 'mote/base/common/lifecycle';
 import { IWorkbenchThemeService } from 'mote/workbench/services/themes/common/workbenchThemeService';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { buttonHoverBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
-import { attachListStyler } from 'mote/platform/theme/common/styler';
+import { attachListStyler } from 'mote/platform/theme/browser/defaultStyles';
 
 const OUTLINER_HEIGHT = 31;
 

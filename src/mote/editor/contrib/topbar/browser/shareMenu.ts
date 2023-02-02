@@ -10,7 +10,7 @@ import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { Codicon } from 'mote/base/common/codicons';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { ItemContainer } from 'mote/base/browser/ui/item/itemContainer';
-import { attachItemContainerStyler, attachSwitchButtonStyler } from 'mote/platform/theme/common/styler';
+import { attachItemContainerStyler, attachSwitchButtonStyler } from 'mote/platform/theme/browser/defaultStyles';
 import { Button, SwitchButton } from 'mote/base/browser/ui/button/button';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';

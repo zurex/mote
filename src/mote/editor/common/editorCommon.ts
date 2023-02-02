@@ -62,7 +62,9 @@ export interface ICommand {
 	 */
 	readonly insertsAutoWhitespace?: boolean;
 
-	readonly annotation?: string[];
+	readonly annotation?: [string];
+
+	readonly blockType?: string;
 
 	/**
 	 * Get the edit operations needed to execute this command.

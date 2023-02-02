@@ -11,7 +11,7 @@ import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
 import { KeybindingResolver } from 'mote/platform/keybinding/common/keybindingResolver';
 import { IKeybindingItem, KeybindingsRegistry } from 'mote/platform/keybinding/common/keybindingsRegistry';
 import { ResolvedKeybindingItem } from 'mote/platform/keybinding/common/resolvedKeybindingItem';
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { ILogService } from 'mote/platform/log/common/log';
 import { BrowserFeatures, KeyboardSupport } from 'mote/base/browser/canIUse';
 import { OperatingSystem, OS } from 'mote/base/common/platform';
@@ -150,5 +150,4 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 	}
 }
 
-
-registerSingleton(IKeybindingService, WorkbenchKeybindingService);
+registerSingleton(IKeybindingService, WorkbenchKeybindingService, InstantiationType.Eager);

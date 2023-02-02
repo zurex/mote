@@ -20,6 +20,7 @@ import 'mote/workbench/browser/parts/views/viewsService';
 
 //#region --- workbench services
 
+import 'mote/platform/actions/common/actions.contribution';
 import 'mote/workbench/services/themes/browser/workbenchThemeService';
 import 'mote/workbench/services/hover/browser/hoverService';
 import 'mote/workbench/services/commands/common/commandService';
@@ -33,6 +34,7 @@ import 'mote/workbench/services/editor/browser/editorResolverService';
 import 'mote/workbench/services/editor/browser/editorService';
 import 'mote/workbench/services/editor/browser/moteEditorService';
 import 'mote/workbench/services/keybinding/browser/keybindingService';
+import 'mote/workbench/services/notification/common/notificationService';
 
 //#endregion
 

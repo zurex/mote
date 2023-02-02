@@ -2,7 +2,6 @@
 import { app } from "electron";
 import { Schemas } from "mote/base/common/network";
 import { ILifecycleMainService, LifecycleMainService } from "mote/platform/lifecycle/electron-main/lifecycleMainService";
-import { ConsoleLoggerService } from "mote/platform/log/common/consoleLog";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
 import { ProtocolMainService } from "mote/platform/protocol/electron-main/protocolMainService";
 import { IRequestService } from 'mote/platform/request/common/request';

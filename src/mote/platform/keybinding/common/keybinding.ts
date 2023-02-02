@@ -1,6 +1,6 @@
 import { Keybinding, ResolvedKeybinding } from 'mote/base/common/keybindings';
 import { KeyCode } from 'mote/base/common/keyCodes';
-import { IContextKeyServiceTarget } from 'mote/platform/contextkey/common/contextkey';
+import { IContextKeyService, IContextKeyServiceTarget } from 'mote/platform/contextkey/common/contextkey';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 
 export interface IKeyboardEvent {
@@ -33,4 +33,16 @@ export interface IKeybindingService {
 	 * Resolve and dispatch `keyboardEvent` and invoke the command.
 	 */
 	dispatchEvent(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean;
+
+	/**
+	 * Look up keybindings for a command.
+	 * Use `lookupKeybinding` if you are interested in the preferred keybinding.
+	 */
+	lookupKeybindings(commandId: string): ResolvedKeybinding[];
+
+	/**
+	 * Look up the preferred (last defined) keybinding for a command.
+	 * @returns The preferred keybinding or null if the command is not bound.
+	 */
+	lookupKeybinding(commandId: string, context?: IContextKeyService): ResolvedKeybinding | undefined;
 }

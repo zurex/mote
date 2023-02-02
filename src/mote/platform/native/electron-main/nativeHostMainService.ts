@@ -38,7 +38,6 @@ import { IAppWindow } from 'mote/platform/window/electron-main/window';
 import { IColorScheme, IOpenedWindow, IOpenEmptyWindowOptions, IOpenWindowOptions, IWindowOpenable } from 'mote/platform/window/common/window';
 import { IWindowsMainService, OpenContext } from 'mote/platform/windows/electron-main/windows';
 import { isWorkspaceIdentifier, toWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
-import { IWorkspacesManagementMainService } from 'mote/platform/workspaces/electron-main/workspacesManagementMainService';
 import { VSBuffer } from 'mote/base/common/buffer';
 import { hasWSLFeatureInstalled } from 'mote/platform/remote/node/wsl';
 import { WindowProfiler } from 'mote/platform/profiling/electron-main/windowProfiling';

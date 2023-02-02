@@ -1,6 +1,6 @@
 import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
-import { attachMenuStyler } from 'mote/platform/theme/common/styler';
+import { attachMenuStyler } from 'mote/platform/theme/browser/defaultStyles';
 import { contextViewBackground, regularTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { $, addDisposableListener, EventType, isHTMLElement } from 'mote/base/browser/dom';
