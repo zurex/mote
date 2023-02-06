@@ -18,3 +18,8 @@ vscode.db
 local.settings.json
 /.VSCodeCounter/
 /src/vs/
+
+/ios/build/
+# Ruby / CocoaPods
+/ios/Pods/
+/vendor/bundle/
