@@ -96,7 +96,7 @@ export class RemoteService implements IRemoteService {
 		@IProductService productService: IProductService,
 	) {
 
-		host = productService.updateUrl || 'http://localhost:7071';
+		host = productService.updateUrl || 'https://caffeine-function-edog.azurewebsites.net';
 		setInterval(() => this.applyTransactions(), this.timeout);
 		RemoteService.INSTANCE = this;
 	}

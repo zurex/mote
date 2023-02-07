@@ -18,3 +18,14 @@ vscode.db
 local.settings.json
 /.VSCodeCounter/
 /src/vs/
+
+# Xcode
+#
+xcuserdata
+*.xcuserstate
+ios/.xcode.env.local
+
+/ios/build/
+# Ruby / CocoaPods
+/ios/Pods/
+/vendor/bundle/
