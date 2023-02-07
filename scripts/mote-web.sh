@@ -7,7 +7,7 @@ else
 	ROOT=$(dirname $(dirname $(readlink -f $0)))
 fi
 
-function code() {
+function mote() {
 	cd $ROOT
 
 	# Sync built-in extensions
@@ -21,7 +21,7 @@ function code() {
 
 	NODE=$(node build/lib/node.js)
 
-	$NODE ./scripts/code-web.js "$@"
+	$NODE ./scripts/mote-web.js "$@"
 }
 
-code "$@"
+mote "$@"

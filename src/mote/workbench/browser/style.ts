@@ -15,7 +15,7 @@ registerThemingParticipant((theme, collector) => {
 	// Foreground
 	const windowForeground = theme.getColor(foreground);
 	if (windowForeground) {
-		collector.addRule(`.workbench { color: ${windowForeground}; }`);
+		collector.addRule(`.mote-workbench { color: ${windowForeground}; }`);
 	}
 
 	const viewLineTextColor = theme.getColor(regularTextColor);
@@ -24,14 +24,14 @@ registerThemingParticipant((theme, collector) => {
 	}
 
 	// We disable user select on the root element, however on Safari this seems
-	// to prevent any text selection in the monaco editor. As a workaround we
-	// allow to select text in monaco editor instances.
+	// to prevent any text selection in the mote editor. As a workaround we
+	// allow to select text in mote editor instances.
 	if (isSafari) {
 		collector.addRule(`
 			body.web {
 				touch-action: none;
 			}
-			.workbench .editor .view-lines {
+			.mote-workbench .mote-editor .view-lines {
 				user-select: text;
 				-webkit-user-select: text;
 			}

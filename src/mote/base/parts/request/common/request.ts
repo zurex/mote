@@ -46,7 +46,7 @@ export interface IRequestContext {
 
 export const config = {
 	apiDev: 'http://localhost:7071',
-	apiProd: 'https://caffeine-function.azurewebsites.net',
+	apiProd: 'https://caffeine-function-edog.azurewebsites.net',
 	apiDomain: '',
 };
 
