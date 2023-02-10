@@ -658,7 +658,7 @@ export class Configuration {
 		private _localUserConfiguration: ConfigurationModel,
 		private _remoteUserConfiguration: ConfigurationModel = new ConfigurationModel(),
 		private _workspaceConfiguration: ConfigurationModel = new ConfigurationModel(),
-		private _folderConfigurations: ResourceMap<ConfigurationModel> = new ResourceMap<ConfigurationModel>(),
+		private _pageConfigurations: ResourceMap<ConfigurationModel> = new ResourceMap<ConfigurationModel>(),
 		private _memoryConfiguration: ConfigurationModel = new ConfigurationModel(),
 		private _memoryConfigurationByResource: ResourceMap<ConfigurationModel> = new ResourceMap<ConfigurationModel>(),
 		private _freeze: boolean = true) {
@@ -694,7 +694,7 @@ export class Configuration {
 
 	inspect<C>(key: string, overrides: IConfigurationOverrides, workspace: Workspace | undefined): IConfigurationValue<C> {
 		const consolidateConfigurationModel = this.getConsolidatedConfigurationModel(key, overrides, workspace);
-		const folderConfigurationModel = this.getFolderConfigurationModelForResource(overrides.resource, workspace);
+		const folderConfigurationModel = this.getPageConfigurationModelForResource(overrides.resource, workspace);
 		const memoryConfigurationModel = overrides.resource ? this._memoryConfigurationByResource.get(overrides.resource) || this._memoryConfiguration : this._memoryConfiguration;
 		const overrideIdentifiers = new Set<string>();
 		for (const override of consolidateConfigurationModel.overrides) {
@@ -729,7 +729,7 @@ export class Configuration {
 		workspace: string[];
 		workspaceFolder: string[];
 	} {
-		const folderConfigurationModel = this.getFolderConfigurationModelForResource(undefined, workspace);
+		const folderConfigurationModel = this.getPageConfigurationModelForResource(undefined, workspace);
 		return {
 			default: this._defaultConfiguration.freeze().keys,
 			user: this.userConfiguration.freeze().keys,
@@ -775,7 +775,7 @@ export class Configuration {
 	}
 
 	updateFolderConfiguration(resource: URI, configuration: ConfigurationModel): void {
-		this._folderConfigurations.set(resource, configuration);
+		this._pageConfigurations.set(resource, configuration);
 		this._foldersConsolidatedConfigurations.delete(resource);
 	}
 
@@ -903,7 +903,7 @@ export class Configuration {
 	}
 
 	protected get folderConfigurations(): ResourceMap<ConfigurationModel> {
-		return this._folderConfigurations;
+		return this._pageConfigurations;
 	}
 
 	private getConsolidatedConfigurationModel(section: string | undefined, overrides: IConfigurationOverrides, workspace: Workspace | undefined): ConfigurationModel {
@@ -921,7 +921,7 @@ export class Configuration {
 		let consolidateConfiguration = this.getWorkspaceConsolidatedConfiguration();
 
 		if (workspace && resource) {
-			const root = workspace.getFolder(resource);
+			const root = workspace.getPage(resource);
 			if (root) {
 				consolidateConfiguration = this.getFolderConsolidatedConfiguration(root.uri) || consolidateConfiguration;
 			}
@@ -948,7 +948,7 @@ export class Configuration {
 		let folderConsolidatedConfiguration = this._foldersConsolidatedConfigurations.get(folder);
 		if (!folderConsolidatedConfiguration) {
 			const workspaceConsolidateConfiguration = this.getWorkspaceConsolidatedConfiguration();
-			const folderConfiguration = this._folderConfigurations.get(folder);
+			const folderConfiguration = this._pageConfigurations.get(folder);
 			if (folderConfiguration) {
 				folderConsolidatedConfiguration = workspaceConsolidateConfiguration.merge(folderConfiguration);
 				if (this._freeze) {
@@ -962,11 +962,11 @@ export class Configuration {
 		return folderConsolidatedConfiguration;
 	}
 
-	private getFolderConfigurationModelForResource(resource: URI | null | undefined, workspace: Workspace | undefined): ConfigurationModel | undefined {
+	private getPageConfigurationModelForResource(resource: URI | null | undefined, workspace: Workspace | undefined): ConfigurationModel | undefined {
 		if (workspace && resource) {
-			const root = workspace.getFolder(resource);
+			const root = workspace.getPage(resource);
 			if (root) {
-				return this._folderConfigurations.get(root.uri);
+				return this._pageConfigurations.get(root.uri);
 			}
 		}
 		return undefined;
@@ -999,9 +999,9 @@ export class Configuration {
 				overrides: this._workspaceConfiguration.overrides,
 				keys: this._workspaceConfiguration.keys
 			},
-			folders: [...this._folderConfigurations.keys()].reduce<[UriComponents, IConfigurationModel][]>((result, folder) => {
-				const { contents, overrides, keys } = this._folderConfigurations.get(folder)!;
-				result.push([folder, { contents, overrides, keys }]);
+			pages: [...this._pageConfigurations.keys()].reduce<[UriComponents, IConfigurationModel][]>((result, page) => {
+				const { contents, overrides, keys } = this._pageConfigurations.get(page)!;
+				result.push([page, { contents, overrides, keys }]);
 				return result;
 			}, [])
 		};
@@ -1012,7 +1012,7 @@ export class Configuration {
 		this._defaultConfiguration.freeze().keys.forEach(key => keys.add(key));
 		this.userConfiguration.freeze().keys.forEach(key => keys.add(key));
 		this._workspaceConfiguration.freeze().keys.forEach(key => keys.add(key));
-		this._folderConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.freeze().keys.forEach(key => keys.add(key)));
+		this._pageConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.freeze().keys.forEach(key => keys.add(key)));
 		return [...keys.values()];
 	}
 
@@ -1021,7 +1021,7 @@ export class Configuration {
 		this._defaultConfiguration.freeze().getAllOverrideIdentifiers().forEach(key => keys.add(key));
 		this.userConfiguration.freeze().getAllOverrideIdentifiers().forEach(key => keys.add(key));
 		this._workspaceConfiguration.freeze().getAllOverrideIdentifiers().forEach(key => keys.add(key));
-		this._folderConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.freeze().getAllOverrideIdentifiers().forEach(key => keys.add(key)));
+		this._pageConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.freeze().getAllOverrideIdentifiers().forEach(key => keys.add(key)));
 		return [...keys.values()];
 	}
 
@@ -1030,7 +1030,7 @@ export class Configuration {
 		this._defaultConfiguration.getKeysForOverrideIdentifier(overrideIdentifier).forEach(key => keys.add(key));
 		this.userConfiguration.getKeysForOverrideIdentifier(overrideIdentifier).forEach(key => keys.add(key));
 		this._workspaceConfiguration.getKeysForOverrideIdentifier(overrideIdentifier).forEach(key => keys.add(key));
-		this._folderConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.getKeysForOverrideIdentifier(overrideIdentifier).forEach(key => keys.add(key)));
+		this._pageConfigurations.forEach(folderConfiguraiton => folderConfiguraiton.getKeysForOverrideIdentifier(overrideIdentifier).forEach(key => keys.add(key)));
 		return [...keys.values()];
 	}
 
@@ -1040,7 +1040,7 @@ export class Configuration {
 		const applicationConfiguration = this.parseConfigurationModel(data.application);
 		const userConfiguration = this.parseConfigurationModel(data.user);
 		const workspaceConfiguration = this.parseConfigurationModel(data.workspace);
-		const folders: ResourceMap<ConfigurationModel> = data.folders.reduce((result, value) => {
+		const folders: ResourceMap<ConfigurationModel> = data.pages.reduce((result, value) => {
 			result.set(URI.revive(value[0]), this.parseConfigurationModel(value[1]));
 			return result;
 		}, new ResourceMap<ConfigurationModel>());

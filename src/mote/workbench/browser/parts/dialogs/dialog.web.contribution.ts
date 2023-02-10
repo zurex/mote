@@ -33,7 +33,7 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 	) {
 		super();
 
-		this.impl = new BrowserDialogHandler(logService, layoutService, themeService, instantiationService, productService);
+		this.impl = new BrowserDialogHandler(logService, layoutService, themeService, instantiationService, productService, null);
 
 		this.model = (this.dialogService as DialogService).model;
 

@@ -565,6 +565,11 @@ Registry.add(Extensions.ViewsRegistry, new ViewsRegistry());
 
 export const IViewDescriptorService = createDecorator<IViewDescriptorService>('viewDescriptorService');
 
+export enum ViewVisibilityState {
+	Default = 0,
+	Expand = 1
+}
+
 export interface IViewDescriptorService {
 	readonly _serviceBrand: undefined;
 
@@ -579,6 +584,13 @@ export interface IViewDescriptorService {
 	getViewContainerLocation(viewContainer: ViewContainer): ViewContainerLocation | null;
 	getViewContainersByLocation(location: ViewContainerLocation): ViewContainer[];
 	getViewContainerModel(viewContainer: ViewContainer): IViewContainerModel;
+
+	readonly onDidChangeContainer: Event<{ views: IViewDescriptor[]; from: ViewContainer; to: ViewContainer }>;
+	moveViewsToContainer(views: IViewDescriptor[], viewContainer: ViewContainer, visibilityState?: ViewVisibilityState): void;
+
+	readonly onDidChangeLocation: Event<{ views: IViewDescriptor[]; from: ViewContainerLocation; to: ViewContainerLocation }>;
+	moveViewToLocation(view: IViewDescriptor, location: ViewContainerLocation): void;
+
 }
 
 Registry.add(Extensions.ViewContainersRegistry, new ViewContainersRegistryImpl());

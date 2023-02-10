@@ -8,6 +8,8 @@ import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
 import { Disposable, IDisposable } from 'mote/base/common/lifecycle';
 import { mixin } from 'mote/base/common/objects';
 import { IThemable } from 'mote/base/common/styler';
+import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
+import { KeyCode } from 'mote/base/common/keyCodes';
 
 export interface IButton extends IDisposable {
 	readonly element: HTMLElement;
@@ -19,11 +21,15 @@ export interface IButtonOptions extends IButtonStyles {
 	hoverStyle?: CSSProperties;
 }
 
-interface IButtonStyles {
-	buttonBackground?: Color;
-	buttonHoverBackground?: Color;
-	buttonForeground?: Color;
-	buttonBorderColor?: Color;
+export interface IButtonStyles {
+	readonly buttonBackground: string | undefined;
+	readonly buttonHoverBackground: string | undefined;
+	readonly buttonForeground: string | undefined;
+	readonly buttonSeparator: string | undefined;
+	readonly buttonSecondaryBackground: string | undefined;
+	readonly buttonSecondaryHoverBackground: string | undefined;
+	readonly buttonSecondaryForeground: string | undefined;
+	readonly buttonBorder: string | undefined;
 }
 
 const defaultOptions: IButtonStyles = {
@@ -31,6 +37,10 @@ const defaultOptions: IButtonStyles = {
 	buttonHoverBackground: Color.fromHex('#37352f14'),
 	buttonForeground: Color.white,
 };
+
+export interface IButtonWithDescription extends IButton {
+	description: string;
+}
 
 export class Button extends Disposable implements IButton {
 
@@ -237,5 +247,122 @@ export class SwitchButton extends Disposable implements IThemable {
 
 	getContainer() {
 		return this.button.element;
+	}
+}
+
+export class ButtonWithDescription implements IButtonWithDescription {
+	private _button: Button;
+	private _element: HTMLElement;
+	private _descriptionElement: HTMLElement;
+
+	constructor(container: HTMLElement, private readonly options: IButtonOptions) {
+		this._element = document.createElement('div');
+		this._element.classList.add('monaco-description-button');
+		this._button = new Button(this._element, options);
+
+		this._descriptionElement = document.createElement('div');
+		this._descriptionElement.classList.add('monaco-button-description');
+		this._element.appendChild(this._descriptionElement);
+
+		container.appendChild(this._element);
+	}
+
+	get onDidClick(): BaseEvent<Event | undefined> {
+		return this._button.onDidClick;
+	}
+
+	get element(): HTMLElement {
+		return this._element;
+	}
+
+	set label(value: string) {
+		this._button.label = value;
+	}
+
+	set icon(icon: ThemeIcon) {
+		this._button.icon = icon;
+	}
+
+	get enabled(): boolean {
+		return this._button.enabled;
+	}
+
+	set enabled(enabled: boolean) {
+		this._button.enabled = enabled;
+	}
+
+	focus(): void {
+		this._button.focus();
+	}
+	hasFocus(): boolean {
+		return this._button.hasFocus();
+	}
+	dispose(): void {
+		this._button.dispose();
+	}
+
+	set description(value: string) {
+		if (this.options.supportIcons) {
+			reset(this._descriptionElement, ...renderLabelWithIcons(value));
+		} else {
+			this._descriptionElement.textContent = value;
+		}
+	}
+}
+
+export class ButtonBar extends Disposable {
+
+	private _buttons: IButton[] = [];
+
+	constructor(private readonly container: HTMLElement) {
+		super();
+	}
+
+	get buttons(): IButton[] {
+		return this._buttons;
+	}
+
+	addButton(options: IButtonOptions): IButton {
+		const button = this._register(new Button(this.container, options));
+		this.pushButton(button);
+		return button;
+	}
+
+	addButtonWithDescription(options: IButtonOptions): IButtonWithDescription {
+		const button = this._register(new ButtonWithDescription(this.container, options));
+		this.pushButton(button);
+		return button;
+	}
+
+	addButtonWithDropdown(options: IButtonWithDropdownOptions): IButton {
+		const button = this._register(new ButtonWithDropdown(this.container, options));
+		this.pushButton(button);
+		return button;
+	}
+
+	private pushButton(button: IButton): void {
+		this._buttons.push(button);
+
+		const index = this._buttons.length - 1;
+		this._register(addDisposableListener(button.element, EventType.KEY_DOWN, e => {
+			const event = new StandardKeyboardEvent(e);
+			let eventHandled = true;
+
+			// Next / Previous Button
+			let buttonIndexToFocus: number | undefined;
+			if (event.equals(KeyCode.LeftArrow)) {
+				buttonIndexToFocus = index > 0 ? index - 1 : this._buttons.length - 1;
+			} else if (event.equals(KeyCode.RightArrow)) {
+				buttonIndexToFocus = index === this._buttons.length - 1 ? 0 : index + 1;
+			} else {
+				eventHandled = false;
+			}
+
+			if (eventHandled && typeof buttonIndexToFocus === 'number') {
+				this._buttons[buttonIndexToFocus].focus();
+				EventHelper.stop(e, true);
+			}
+
+		}));
 	}
 }

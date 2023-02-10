@@ -253,11 +253,10 @@ export function ifDefinedThenElse(ifArg: ColorIdentifier, thenArg: ColorValue, e
 	return { op: ColorTransformType.IfDefinedThenElse, if: ifArg, then: thenArg, else: elseArg };
 }
 
-/*
-function lessProminent(colorValue: ColorValue, backgroundColorValue: ColorValue, factor: number, transparency: number): ColorTransform {
+
+export function lessProminent(colorValue: ColorValue, backgroundColorValue: ColorValue, factor: number, transparency: number): ColorTransform {
 	return { op: ColorTransformType.LessProminent, value: colorValue, background: backgroundColorValue, factor, transparency };
 }
-*/
 
 // ----- implementation
 

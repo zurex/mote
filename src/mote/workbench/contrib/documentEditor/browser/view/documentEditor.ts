@@ -20,6 +20,7 @@ import { assertIsDefined } from 'mote/base/common/types';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { IMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { IStorageService } from 'mote/platform/storage/common/storage';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 
 
 export class DocumentEditor extends EditorPane {
@@ -38,6 +39,10 @@ export class DocumentEditor extends EditorPane {
 		@IStorageService storageService: IStorageService,
 	) {
 		super(DocumentEditor.ID, themeService, storageService);
+	}
+
+	override get scopedContextKeyService(): IContextKeyService | undefined {
+		return this.editorControl?.invokeWithinContext(accessor => accessor.get(IContextKeyService));
 	}
 
 	protected createEditor(parent: HTMLElement): void {

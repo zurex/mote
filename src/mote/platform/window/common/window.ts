@@ -7,6 +7,8 @@ import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { FileType } from 'mote/platform/files/common/files';
 import { ILoggerResource, LogLevel } from 'mote/platform/log/common/log';
 import { IAnyWorkspaceIdentifier, IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { isLinux, isMacintosh, isNative, isWeb } from 'mote/base/common/platform';
 
 export interface IPathData<T = IEditorOptions> {
 
@@ -140,7 +142,7 @@ export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
 	readonly forceTempProfile?: boolean;
 }
 
-export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
+export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IPageToOpen;
 
 export interface IBaseWindowOpenable {
 	label?: string;
@@ -154,8 +156,8 @@ export interface IFolderToOpen extends IBaseWindowOpenable {
 	readonly folderUri: URI;
 }
 
-export interface IFileToOpen extends IBaseWindowOpenable {
-	readonly fileUri: URI;
+export interface IPageToOpen extends IBaseWindowOpenable {
+	readonly pageUri: URI;
 }
 
 export function isWorkspaceToOpen(uriToOpen: IWindowOpenable): uriToOpen is IWorkspaceToOpen {
@@ -164,4 +166,54 @@ export function isWorkspaceToOpen(uriToOpen: IWindowOpenable): uriToOpen is IWor
 
 export function isFolderToOpen(uriToOpen: IWindowOpenable): uriToOpen is IFolderToOpen {
 	return !!(uriToOpen as IFolderToOpen).folderUri;
+}
+
+export type MenuBarVisibility = 'classic' | 'visible' | 'toggle' | 'hidden' | 'compact';
+
+export function getMenuBarVisibility(configurationService: IConfigurationService): MenuBarVisibility {
+	const titleBarStyle = getTitleBarStyle(configurationService);
+	const menuBarVisibility = configurationService.getValue<MenuBarVisibility | 'default'>('window.menuBarVisibility');
+
+	if (menuBarVisibility === 'default' || (titleBarStyle === 'native' && menuBarVisibility === 'compact') || (isMacintosh && isNative)) {
+		return 'classic';
+	} else {
+		return menuBarVisibility;
+	}
+}
+
+export interface IWindowsConfiguration {
+	readonly window: IWindowSettings;
+}
+
+export interface IWindowSettings {
+	readonly zoomLevel: number;
+	readonly titleBarStyle: 'native' | 'custom';
+	readonly nativeTabs: boolean;
+	readonly nativeFullScreen: boolean;
+}
+
+export function getTitleBarStyle(configurationService: IConfigurationService): 'native' | 'custom' {
+	if (isWeb) {
+		return 'custom';
+	}
+
+	const configuration = configurationService.getValue<IWindowSettings | undefined>('window');
+	if (configuration) {
+		const useNativeTabs = isMacintosh && configuration.nativeTabs === true;
+		if (useNativeTabs) {
+			return 'native'; // native tabs on sierra do not work with custom title style
+		}
+
+		const useSimpleFullScreen = isMacintosh && configuration.nativeFullScreen === false;
+		if (useSimpleFullScreen) {
+			return 'native'; // simple fullscreen does not work well with custom title style (https://github.com/microsoft/vscode/issues/63291)
+		}
+
+		const style = configuration.titleBarStyle;
+		if (style === 'native' || style === 'custom') {
+			return style;
+		}
+	}
+
+	return isLinux ? 'native' : 'custom'; // default to custom on all macOS and Windows
 }

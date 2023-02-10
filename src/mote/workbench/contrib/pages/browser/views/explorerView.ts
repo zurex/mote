@@ -19,7 +19,7 @@ import { IntlProvider } from 'mote/base/common/i18n';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { IWorkbenchThemeService } from 'mote/workbench/services/themes/common/workbenchThemeService';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { buttonHoverBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
+import { listActiveSelectionBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
 import { attachListStyler } from 'mote/platform/theme/browser/defaultStyles';
 
 const OUTLINER_HEIGHT = 31;
@@ -66,7 +66,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 		item.icon = icon.element as any;
 		item.create();
 
-		item.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground, true)! });
+		item.style({ hoverBackground: this.themeService.getColorTheme().getColor(listActiveSelectionBackground, true)! });
 
 		reset(templateData);
 
@@ -155,7 +155,7 @@ export class ExplorerView extends ViewPane {
 		addPageBtn.child = child as any;
 		addPageBtn.icon = icon.element as any;
 		addPageBtn.create();
-		addPageBtn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground, true)! });
+		addPageBtn.style({ hoverBackground: this.themeService.getColorTheme().getColor(listActiveSelectionBackground, true)! });
 		addPageBtn.onDidClick((e) => {
 			const spaceStore = this.contextService.getSpaceStore();
 			if (!spaceStore) {

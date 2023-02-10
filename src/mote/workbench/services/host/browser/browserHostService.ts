@@ -2,6 +2,7 @@ import { IOpenEmptyWindowOptions, IOpenWindowOptions, isWorkspaceToOpen, IWindow
 import { IHostService } from 'mote/workbench/services/host/browser/host';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 
 /**
  * A workspace to open in the workbench can either be:
@@ -104,3 +105,5 @@ export class BrowserHostService extends Disposable implements IHostService {
 	}
 
 }
+
+registerSingleton(IHostService, BrowserHostService, InstantiationType.Delayed);

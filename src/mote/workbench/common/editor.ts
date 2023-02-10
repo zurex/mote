@@ -7,11 +7,12 @@ import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { URI } from 'mote/base/common/uri';
-import { IConstructorSignature, IInstantiationService, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
+import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { IPathData } from 'mote/platform/window/common/window';
 import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycle';
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { Registry } from 'mote/platform/registry/common/platform';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 
 export type GroupIdentifier = number;
 
@@ -35,6 +36,12 @@ export interface IEditorControl extends ICompositeControl { }
 export interface IEditorPane extends IComposite {
 
 	/**
+	 * The context key service for this editor. Should be overridden by
+	 * editors that have their own ScopedContextKeyService
+	 */
+	readonly scopedContextKeyService: IContextKeyService | undefined;
+
+	/**
 	 * Returns the underlying control of this editor. Callers need to cast
 	 * the control to a specific instance as needed, e.g. by using the
 	 * `isCodeEditor` helper method to access the text code editor.
@@ -55,6 +62,16 @@ export interface IVisibleEditorPane extends IEditorPane {
 
 export interface IEditorFactoryRegistry {
 	/**
+	 * Registers a editor serializer for the given editor to the registry.
+	 * An editor serializer is capable of serializing and deserializing editor
+	 * from string data.
+	 *
+	 * @param editorTypeId the type identifier of the editor
+	 * @param serializer the editor serializer for serialization/deserialization
+	 */
+	registerEditorSerializer<Services extends BrandedService[]>(editorTypeId: string, ctor: { new(...Services: Services): IEditorSerializer }): IDisposable;
+
+	/**
 	 * Returns the editor serializer for the given editor.
 	 */
 	getEditorSerializer(editor: EditorInput): IEditorSerializer | undefined;
@@ -68,6 +85,11 @@ export interface IEditorFactoryRegistry {
 
 export interface IEditorSerializer {
 	/**
+	 * Determines whether the given editor can be serialized by the serializer.
+	 */
+	canSerialize(editor: EditorInput): boolean;
+
+	/**
 	 * Returns a string representation of the provided editor that contains enough information
 	 * to deserialize back to the original editor from the deserialize() method.
 	 */
@@ -78,6 +100,177 @@ export interface IEditorSerializer {
 	 * the value returned from the serialize() method.
 	 */
 	deserialize(instantiationService: IInstantiationService, serializedEditor: string): EditorInput | undefined;
+}
+
+export const enum Verbosity {
+	SHORT,
+	MEDIUM,
+	LONG
+}
+
+export const enum SaveReason {
+
+	/**
+	 * Explicit user gesture.
+	 */
+	EXPLICIT = 1,
+
+	/**
+	 * Auto save after a timeout.
+	 */
+	AUTO = 2,
+
+	/**
+	 * Auto save after editor focus change.
+	 */
+	FOCUS_CHANGE = 3,
+
+	/**
+	 * Auto save after window change.
+	 */
+	WINDOW_CHANGE = 4
+}
+
+export type SaveSource = string;
+
+interface ISaveSourceDescriptor {
+	source: SaveSource;
+	label: string;
+}
+
+class SaveSourceFactory {
+
+	private readonly mapIdToSaveSource = new Map<SaveSource, ISaveSourceDescriptor>();
+
+	/**
+	 * Registers a `SaveSource` with an identifier and label
+	 * to the registry so that it can be used in save operations.
+	 */
+	registerSource(id: string, label: string): SaveSource {
+		let sourceDescriptor = this.mapIdToSaveSource.get(id);
+		if (!sourceDescriptor) {
+			sourceDescriptor = { source: id, label };
+			this.mapIdToSaveSource.set(id, sourceDescriptor);
+		}
+
+		return sourceDescriptor.source;
+	}
+
+	getSourceLabel(source: SaveSource): string {
+		return this.mapIdToSaveSource.get(source)?.label ?? source;
+	}
+}
+
+export const SaveSourceRegistry = new SaveSourceFactory();
+
+
+export interface ISaveOptions {
+
+	/**
+	 * An indicator how the save operation was triggered.
+	 */
+	reason?: SaveReason;
+
+	/**
+	 * An indicator about the source of the save operation.
+	 *
+	 * Must use `SaveSourceRegistry.registerSource()` to obtain.
+	 */
+	readonly source?: SaveSource;
+
+	/**
+	 * Forces to save the contents of the working copy
+	 * again even if the working copy is not dirty.
+	 */
+	readonly force?: boolean;
+
+	/**
+	 * Instructs the save operation to skip any save participants.
+	 */
+	readonly skipSaveParticipants?: boolean;
+
+	/**
+	 * A hint as to which file systems should be available for saving.
+	 */
+	readonly availableFileSystems?: string[];
+}
+
+export interface IRevertOptions {
+
+	/**
+	 * Forces to load the contents of the working copy
+	 * again even if the working copy is not dirty.
+	 */
+	readonly force?: boolean;
+
+	/**
+	 * A soft revert will clear dirty state of a working copy
+	 * but will not attempt to load it from its persisted state.
+	 *
+	 * This option may be used in scenarios where an editor is
+	 * closed and where we do not require to load the contents.
+	 */
+	readonly soft?: boolean;
+}
+
+export interface IMoveResult {
+	editor: EditorInput;
+	options?: IEditorOptions;
+}
+
+export const enum EditorInputCapabilities {
+
+	/**
+	 * Signals no specific capability for the input.
+	 */
+	None = 0,
+
+	/**
+	 * Signals that the input is readonly.
+	 */
+	Readonly = 1 << 1,
+
+	/**
+	 * Signals that the input is untitled.
+	 */
+	Untitled = 1 << 2,
+
+	/**
+	 * Signals that the input can only be shown in one group
+	 * and not be split into multiple groups.
+	 */
+	Singleton = 1 << 3,
+
+	/**
+	 * Signals that the input requires workspace trust.
+	 */
+	RequiresTrust = 1 << 4,
+
+	/**
+	 * Signals that the editor can split into 2 in the same
+	 * editor group.
+	 */
+	CanSplitInGroup = 1 << 5,
+
+	/**
+	 * Signals that the editor wants it's description to be
+	 * visible when presented to the user. By default, a UI
+	 * component may decide to hide the description portion
+	 * for brevity.
+	 */
+	ForceDescription = 1 << 6,
+
+	/**
+	 * Signals that the editor supports dropping into the
+	 * editor by holding shift.
+	 */
+	CanDropIntoEditor = 1 << 7,
+
+	/**
+	 * Signals that the editor is composed of multiple editors
+	 * within.
+	 */
+	MultipleEditors = 1 << 8
 }
 
 export interface IEditorDescriptor<T extends IEditorPane> {
@@ -339,67 +532,40 @@ export async function pathToEditor(path: IPathData, accessor: ServicesAccessor) 
 	return Promise.resolve({ resource, store: blockStore });
 }
 
-export const enum EditorInputCapabilities {
-
-	/**
-	 * Signals no specific capability for the input.
-	 */
-	None = 0,
-
-	/**
-	 * Signals that the input is readonly.
-	 */
-	Readonly = 1 << 1,
-
-	/**
-	 * Signals that the input is untitled.
-	 */
-	Untitled = 1 << 2,
-
-	/**
-	 * Signals that the input can only be shown in one group
-	 * and not be split into multiple groups.
-	 */
-	Singleton = 1 << 3,
-
-	/**
-	 * Signals that the input requires workspace trust.
-	 */
-	RequiresTrust = 1 << 4,
-
-	/**
-	 * Signals that the editor can split into 2 in the same
-	 * editor group.
-	 */
-	CanSplitInGroup = 1 << 5,
-
-	/**
-	 * Signals that the editor wants it's description to be
-	 * visible when presented to the user. By default, a UI
-	 * component may decide to hide the description portion
-	 * for brevity.
-	 */
-	ForceDescription = 1 << 6,
-
-	/**
-	 * Signals that the editor supports dropping into the
-	 * editor by holding shift.
-	 */
-	CanDropIntoEditor = 1 << 7,
-
-	/**
-	 * Signals that the editor is composed of multiple editors
-	 * within.
-	 */
-	MultipleEditors = 1 << 8
-}
-
 export abstract class AbstractEditorInput extends Disposable {
 	// Marker class for implementing `isEditorInput`
 }
 
 export function isEditorInput(editor: unknown): editor is EditorInput {
 	return editor instanceof AbstractEditorInput;
+}
+
+export interface EditorInputWithPreferredResource {
+
+	/**
+	 * An editor may provide an additional preferred resource alongside
+	 * the `resource` property. While the `resource` property serves as
+	 * unique identifier of the editor that should be used whenever we
+	 * compare to other editors, the `preferredResource` should be used
+	 * in places where e.g. the resource is shown to the user.
+	 *
+	 * For example: on Windows and macOS, the same URI with different
+	 * casing may point to the same file. The editor may chose to
+	 * "normalize" the URIs so that only one editor opens for different
+	 * URIs. But when displaying the editor label to the user, the
+	 * preferred URI should be used.
+	 *
+	 * Not all editors have a `preferredResource`. The `EditorResourceAccessor`
+	 * utility can be used to always get the right resource without having
+	 * to do instanceof checks.
+	 */
+	readonly preferredResource: URI;
+}
+
+export function isEditorInputWithPreferredResource(editor: unknown): editor is EditorInputWithPreferredResource {
+	const candidate = editor as EditorInputWithPreferredResource | undefined;
+
+	return URI.isUri(candidate?.preferredResource);
 }
 
 export interface ISideBySideEditorInput extends EditorInput {

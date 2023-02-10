@@ -1,10 +1,27 @@
 import { localize } from 'mote/nls';
-
-//#region SidebarPart
-
-import { activeContrastBorder, contrastBorder, editorForeground, editorWarningForeground, errorForeground, registerColor } from 'mote/platform/theme/common/themeColors';
+import { activeContrastBorder, contrastBorder, editorForeground, editorWarningForeground, errorForeground, registerColor, toolbarHoverBackground } from 'mote/platform/theme/common/themeColors';
 import { darken, transparent } from 'mote/platform/theme/common/colorRegistry';
 import { Color } from 'mote/base/common/color';
+import { IColorTheme } from 'mote/platform/theme/common/themeService';
+import { ColorScheme } from 'mote/platform/theme/common/theme';
+
+// < --- Workbench (not customizable) --- >
+
+export function WORKBENCH_BACKGROUND(theme: IColorTheme): Color {
+	switch (theme.type) {
+		case ColorScheme.LIGHT:
+			return Color.fromHex('#F3F3F3');
+		case ColorScheme.HIGH_CONTRAST_LIGHT:
+			return Color.fromHex('#FFFFFF');
+		case ColorScheme.HIGH_CONTRAST_DARK:
+			return Color.fromHex('#000000');
+		default:
+			return Color.fromHex('#252526');
+	}
+}
+
+
+//#region SidebarPart
 
 export const SIDE_BAR_BACKGROUND = registerColor('sideBar.background', {
 	dark: '#252526',
@@ -12,6 +29,70 @@ export const SIDE_BAR_BACKGROUND = registerColor('sideBar.background', {
 	hcDark: '#000000',
 	hcLight: '#FFFFFF'
 }, localize('sideBarBackground', "Side bar background color. The side bar is the container for views like explorer and search."));
+
+//#endregion
+
+//#region Title Bar
+
+export const TITLE_BAR_ACTIVE_FOREGROUND = registerColor('titleBar.activeForeground', {
+	dark: '#CCCCCC',
+	light: '#333333',
+	hcDark: '#FFFFFF',
+	hcLight: '#292929'
+}, localize('titleBarActiveForeground', "Title bar foreground when the window is active."));
+
+export const TITLE_BAR_INACTIVE_FOREGROUND = registerColor('titleBar.inactiveForeground', {
+	dark: transparent(TITLE_BAR_ACTIVE_FOREGROUND, 0.6),
+	light: transparent(TITLE_BAR_ACTIVE_FOREGROUND, 0.6),
+	hcDark: null,
+	hcLight: '#292929'
+}, localize('titleBarInactiveForeground', "Title bar foreground when the window is inactive."));
+
+export const TITLE_BAR_ACTIVE_BACKGROUND = registerColor('titleBar.activeBackground', {
+	dark: '#3C3C3C',
+	light: '#DDDDDD',
+	hcDark: '#000000',
+	hcLight: '#FFFFFF'
+}, localize('titleBarActiveBackground', "Title bar background when the window is active."));
+
+export const TITLE_BAR_INACTIVE_BACKGROUND = registerColor('titleBar.inactiveBackground', {
+	dark: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 0.6),
+	light: transparent(TITLE_BAR_ACTIVE_BACKGROUND, 0.6),
+	hcDark: null,
+	hcLight: null,
+}, localize('titleBarInactiveBackground', "Title bar background when the window is inactive."));
+
+export const TITLE_BAR_BORDER = registerColor('titleBar.border', {
+	dark: null,
+	light: null,
+	hcDark: contrastBorder,
+	hcLight: contrastBorder
+}, localize('titleBarBorder', "Title bar border color."));
+
+//#endregion
+
+//#region Menubar
+
+export const MENUBAR_SELECTION_FOREGROUND = registerColor('menubar.selectionForeground', {
+	dark: TITLE_BAR_ACTIVE_FOREGROUND,
+	light: TITLE_BAR_ACTIVE_FOREGROUND,
+	hcDark: TITLE_BAR_ACTIVE_FOREGROUND,
+	hcLight: TITLE_BAR_ACTIVE_FOREGROUND,
+}, localize('menubarSelectionForeground', "Foreground color of the selected menu item in the menubar."));
+
+export const MENUBAR_SELECTION_BACKGROUND = registerColor('menubar.selectionBackground', {
+	dark: toolbarHoverBackground,
+	light: toolbarHoverBackground,
+	hcDark: null,
+	hcLight: null,
+}, localize('menubarSelectionBackground', "Background color of the selected menu item in the menubar."));
+
+export const MENUBAR_SELECTION_BORDER = registerColor('menubar.selectionBorder', {
+	dark: null,
+	light: null,
+	hcDark: activeContrastBorder,
+	hcLight: activeContrastBorder,
+}, localize('menubarSelectionBorder', "Border color of the selected menu item in the menubar."));
 
 //#endregion
 

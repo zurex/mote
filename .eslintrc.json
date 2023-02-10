@@ -549,45 +549,14 @@
 						"target": "src/mote/workbench/contrib/*/~",
 						"restrictions": [
 							"mote/base/~",
-							"vs/base/~",
-							"vs/base/parts/*/~",
+
+							"mote/base/parts/*/~",
 							"mote/platform/*/~",
-							"vs/platform/*/~",
 							"mote/editor/~",
-							"vs/editor/~",
-							"vs/editor/contrib/*/~",
+							"mote/editor/contrib/*/~",
 							"mote/workbench/~",
-							"vs/workbench/~",
 							"mote/workbench/services/*/~",
-							"vs/workbench/services/*/~",
 							"mote/workbench/contrib/*/~",
-							"vs/workbench/contrib/*/~",
-							"vscode-notebook-renderer", // Type only import
-							{
-								"when": "hasBrowser",
-								"pattern": "xterm"
-							}, // node module allowed even in /browser/
-							{
-								"when": "hasBrowser",
-								"pattern": "xterm-addon-*"
-							}, // node module allowed even in /browser/
-							{
-								"when": "hasBrowser",
-								"pattern": "vscode-textmate"
-							} // node module allowed even in /browser/
-						]
-					},
-					{
-						"target": "src/vs/workbench/contrib/*/~",
-						"restrictions": [
-							"vs/base/~",
-							"vs/base/parts/*/~",
-							"vs/platform/*/~",
-							"vs/editor/~",
-							"vs/editor/contrib/*/~",
-							"vs/workbench/~",
-							"vs/workbench/services/*/~",
-							"vs/workbench/contrib/*/~",
 							"vscode-notebook-renderer", // Type only import
 							{
 								"when": "hasBrowser",
@@ -616,35 +585,6 @@
 								"when": "hasBrowser",
 								"pattern": "vs/workbench/workbench.web.main"
 							}
-						]
-					},
-					{
-						"target": "src/mote/client/~",
-						"restrictions": [
-							"mote/base/~",
-							"vs/base/~",
-							"mote/base/parts/*/~",
-							"vs/base/parts/*/~",
-							"vs/platform/*/~",
-							"vs/workbench/~",
-							"vs/workbench/api/~",
-							"vs/workbench/services/*/~",
-							"vs/workbench/contrib/*/~",
-							"mote/client/~",
-							"vs/server/~"
-						]
-					},
-					{
-						"target": "src/vs/server/~",
-						"restrictions": [
-							"vs/base/~",
-							"vs/base/parts/*/~",
-							"vs/platform/*/~",
-							"vs/workbench/~",
-							"vs/workbench/api/~",
-							"vs/workbench/services/*/~",
-							"vs/workbench/contrib/*/~",
-							"vs/server/~"
 						]
 					},
 					{

@@ -7,7 +7,6 @@ import { Event } from 'mote/base/common/event';
 import * as types from 'mote/base/common/types';
 import { URI, UriComponents } from 'mote/base/common/uri';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
-import { IWorkspaceFolder } from 'mote/platform/workspace/common/workspace';
 
 export const IConfigurationService = createDecorator<IConfigurationService>('configurationService');
 
@@ -155,7 +154,7 @@ export interface IConfigurationService {
 
 	inspect<T>(key: string, overrides?: IConfigurationOverrides): IConfigurationValue<Readonly<T>>;
 
-	reloadConfiguration(target?: ConfigurationTarget | IWorkspaceFolder): Promise<void>;
+	reloadConfiguration(target?: ConfigurationTarget): Promise<void>;
 
 	keys(): {
 		default: string[];
@@ -184,7 +183,7 @@ export interface IConfigurationData {
 	application: IConfigurationModel;
 	user: IConfigurationModel;
 	workspace: IConfigurationModel;
-	folders: [UriComponents, IConfigurationModel][];
+	pages: [UriComponents, IConfigurationModel][];
 }
 
 export interface IConfigurationCompareResult {

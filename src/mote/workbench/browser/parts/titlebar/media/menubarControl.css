@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.mote-workbench .menubar > .menubar-menu-button,
+.mote-workbench .menubar .toolbar-toggle-more {
+	color: var(--mote-titleBar-activeForeground);
+}
+
+.mote-workbench .activitybar .menubar.compact > .menubar-menu-button,
+.mote-workbench .activitybar .menubar.compact .toolbar-toggle-more {
+	color: var(--mote-activityBar-inactiveForeground);
+}
+
+.mote-workbench .activitybar .menubar.compact > .menubar-menu-button.open,
+.mote-workbench .activitybar .menubar.compact > .menubar-menu-button:focus,
+.mote-workbench .activitybar .menubar.compact:not(:focus-within) > .menubar-menu-button:hover,
+.mote-workbench .activitybar .menubar.compact  > .menubar-menu-button.open .toolbar-toggle-more,
+.mote-workbench .activitybar .menubar.compact > .menubar-menu-button:focus .toolbar-toggle-more,
+.mote-workbench .activitybar .menubar.compact:not(:focus-within) > .menubar-menu-button:hover .toolbar-toggle-more {
+	color: var(--mote-activityBar-foreground);
+}
+
+.mote-workbench .menubar.inactive:not(.compact) > .menubar-menu-button,
+.mote-workbench .menubar.inactive:not(.compact) > .menubar-menu-button .toolbar-toggle-more  {
+	color: var(--mote-titleBar-inactiveForeground);
+}
+
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button.open,
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button:focus,
+.mote-workbench .menubar:not(:focus-within):not(.compact) > .menubar-menu-button:hover,
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button.open .toolbar-toggle-more,
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button:focus .toolbar-toggle-more,
+.mote-workbench .menubar:not(:focus-within):not(.compact) > .menubar-menu-button:hover .toolbar-toggle-more {
+	color: var(--mote-menubar-selectionForeground);
+}
+
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button.open .menubar-menu-title,
+.mote-workbench .menubar:not(.compact) > .menubar-menu-button:focus .menubar-menu-title,
+.mote-workbench .menubar:not(:focus-within):not(.compact) > .menubar-menu-button:hover .menubar-menu-title {
+	background-color: var(--mote-menubar-selectionBackground);
+}
+
+.mote-workbench .menubar > .menubar-menu-button:hover .menubar-menu-title  {
+	outline: dashed 1px var(--mote-menubar-selectionBorder);
+}
+
+.mote-workbench .menubar > .menubar-menu-button.open .menubar-menu-title,
+.mote-workbench .menubar > .menubar-menu-button:focus .menubar-menu-title {
+	outline: solid 1px var(--mote-menubar-selectionBorder);
+}
+
+.mote-workbench .menubar > .menubar-menu-button.open .menubar-menu-title,
+.mote-workbench .menubar > .menubar-menu-button:focus .menubar-menu-title,
+.mote-workbench .menubar > .menubar-menu-button:hover .menubar-menu-title {
+	outline-color: var(--mote-menubar-selectionBorder);
+	outline-offset: -1px;
+}
+
+

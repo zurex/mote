@@ -5,6 +5,7 @@ import { EditorInput } from 'mote/workbench/common/editorInput';
 import { Event } from 'mote/base/common/event';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { IGroupModelChangeEvent } from 'mote/workbench/common/editorGroupModel';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 
 export const IEditorGroupsService = createDecorator<IEditorGroupsService>('editorGroupsService');
 
@@ -122,6 +123,11 @@ export interface IEditorGroup {
 	 * All opened editors in the group in sequential order of their appearance.
 	 */
 	readonly editors: readonly EditorInput[];
+
+	/**
+	 * The scoped context key service for this group.
+	 */
+	readonly scopedContextKeyService: IContextKeyService;
 
 	/**
 	 * The active editor pane is the currently visible editor pane of the group.

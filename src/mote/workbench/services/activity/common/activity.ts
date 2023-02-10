@@ -1,4 +1,40 @@
+import { IDisposable } from 'mote/base/common/lifecycle';
+import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
+
+export interface IActivity {
+	readonly badge: IBadge;
+	readonly clazz?: string;
+	readonly priority?: number;
+}
+
+export const IActivityService = createDecorator<IActivityService>('activityService');
+
+export interface IActivityService {
+
+	readonly _serviceBrand: undefined;
+
+	/**
+	 * Show activity for the given view container
+	 */
+	showViewContainerActivity(viewContainerId: string, badge: IActivity): IDisposable;
+
+	/**
+	 * Show activity for the given view
+	 */
+	showViewActivity(viewId: string, badge: IActivity): IDisposable;
+
+	/**
+	 * Show accounts activity
+	 */
+	showAccountsActivity(activity: IActivity): IDisposable;
+
+	/**
+	 * Show global activity
+	 */
+	showGlobalActivity(activity: IActivity): IDisposable;
+}
+
 
 export interface IBadge {
 	getDescription(): string;

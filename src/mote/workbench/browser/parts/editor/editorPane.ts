@@ -6,6 +6,7 @@ import { IEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IStorageService } from 'mote/platform/storage/common/storage';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 
 /**
  * The base class of editors in the workbench. Editors register themselves for specific editor inputs.
@@ -43,6 +44,11 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 
 	private _group: IEditorGroup | undefined;
 	get group(): IEditorGroup | undefined { return this._group; }
+
+	/**
+	 * Should be overridden by editors that have their own ScopedContextKeyService
+	 */
+	get scopedContextKeyService(): IContextKeyService | undefined { return undefined; }
 
 	constructor(
 		id: string,

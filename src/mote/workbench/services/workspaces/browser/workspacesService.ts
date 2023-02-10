@@ -8,7 +8,6 @@ import { Lodash } from 'mote/base/common/lodash';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
-import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 import { IUserProfile } from 'mote/platform/user/common/user';
 import SpaceRootStore from 'mote/platform/store/common/spaceRootStore';
 import SpaceStore from 'mote/platform/store/common/spaceStore';
@@ -74,9 +73,6 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 
 	async onProfileChange(profile: IUserProfile | undefined) {
 		if (!profile) {
-			this.spaceRootStores = [];
-			this.editorService.openEditor(new LoginInput());
-			this._onDidChangeWorkspace.fire();
 			return;
 		}
 		const spaceRootStore = new SpaceRootStore(profile.id, this.storeService);

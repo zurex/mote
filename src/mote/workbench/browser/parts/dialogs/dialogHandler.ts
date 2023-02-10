@@ -9,26 +9,39 @@ import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
 import { ILogService } from 'mote/platform/log/common/log';
 import Severity from 'mote/base/common/severity';
 import { Dialog, IDialogResult } from 'mote/base/browser/ui/dialog/dialog';
-import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { DisposableStore } from 'mote/base/common/lifecycle';
 import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
+import { EventHelper } from 'mote/base/browser/dom';
+import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
 import { IProductService } from 'mote/platform/product/common/productService';
+import { IClipboardService } from 'mote/platform/clipboard/common/clipboardService';
 import { fromNow } from 'mote/base/common/date';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
-import { Color, RGBA } from 'mote/base/common/color';
+import { MarkdownRenderer } from 'mote/editor/contrib/markdownRenderer/browser/markdownRenderer';
+import { defaultButtonStyles, defaultCheckboxStyles, defaultDialogStyles, defaultInputBoxStyles } from 'mote/platform/theme/browser/defaultStyles';
 
 export class BrowserDialogHandler implements IDialogHandler {
+
+	private static readonly ALLOWABLE_COMMANDS = [
+		'copy',
+		'cut',
+		'editor.action.selectAll',
+		'editor.action.clipboardCopyAction',
+		'editor.action.clipboardCutAction',
+		'editor.action.clipboardPasteAction'
+	];
+
+	private readonly markdownRenderer: MarkdownRenderer;
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IThemeService themeService: IThemeService,
-		//@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService,
-		//@IClipboardService private readonly clipboardService: IClipboardService
+		@IClipboardService private readonly clipboardService: IClipboardService
 	) {
-
+		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
 	}
 
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
@@ -72,14 +85,12 @@ export class BrowserDialogHandler implements IDialogHandler {
 
 		const renderBody = customOptions ? (parent: HTMLElement) => {
 			parent.classList.add(...(customOptions.classes || []));
-			/*
 			customOptions.markdownDetails?.forEach(markdownDetail => {
 				const result = this.markdownRenderer.render(markdownDetail.markdown);
 				parent.appendChild(result.element);
 				result.element.classList.add(...(markdownDetail.classes || []));
 				dialogDisposables.add(result);
 			});
-			*/
 		} : undefined;
 
 		const dialog = new Dialog(
@@ -91,14 +102,12 @@ export class BrowserDialogHandler implements IDialogHandler {
 				cancelId,
 				type,
 				keyEventProcessor: (event: StandardKeyboardEvent) => {
-					/*
 					const resolved = this.keybindingService.softDispatch(event, this.layoutService.container);
 					if (resolved?.commandId) {
 						if (BrowserDialogHandler.ALLOWABLE_COMMANDS.indexOf(resolved.commandId) === -1) {
 							EventHelper.stop(event, true);
 						}
 					}
-					*/
 				},
 				renderBody,
 				icon: customOptions?.icon,
@@ -106,14 +115,15 @@ export class BrowserDialogHandler implements IDialogHandler {
 				buttonDetails: customOptions?.buttonDetails,
 				checkboxLabel: checkbox?.label,
 				checkboxChecked: checkbox?.checked,
-				inputs
-			});
+				inputs,
+				buttonStyles: defaultButtonStyles,
+				checkboxStyles: defaultCheckboxStyles,
+				inputBoxStyles: defaultInputBoxStyles,
+				dialogStyles: defaultDialogStyles
+			}
+		);
 
 		dialogDisposables.add(dialog);
-		//dialogDisposables.add(attachDialogStyler(dialog, this.themeService));
-		dialog.style({
-			dialogBackground: new Color(new RGBA(37, 37, 38))
-		});
 
 		const result = await dialog.show();
 		dialogDisposables.dispose();
@@ -151,8 +161,7 @@ export class BrowserDialogHandler implements IDialogHandler {
 		const { choice } = await this.show(Severity.Info, this.productService.nameLong, [localize('copy', "Copy"), localize('ok', "OK")], { detail, cancelId: 1 });
 
 		if (choice === 0) {
-			console.log(detailToCopy);
-			//this.writeText(detailToCopy);
+			this.clipboardService.writeText(detailToCopy);
 		}
 	}
 }

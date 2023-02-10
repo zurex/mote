@@ -3,6 +3,8 @@ import { Event } from 'mote/base/common/event';
 import { URI } from 'mote/base/common/uri';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { basename } from 'mote/base/common/path';
+import { TernarySearchTree } from 'mote/base/common/ternarySearchTree';
+import { joinPath } from 'mote/base/common/resources';
 
 export const enum WorkbenchState {
 	/** Current workbench is empty */
@@ -12,23 +14,33 @@ export const enum WorkbenchState {
 	WORKSPACE,
 }
 
-export interface IWorkspacePage {
+export interface IWorkspacePageData {
+
+	readonly id: string;
 
 	/**
-	 * The associated URI for this workspace page.
+	 * The associated URI for this workspace folder.
 	 */
 	readonly uri: URI;
 
 	/**
-	 * The name of this workspace page. Defaults to
+	 * The name of this workspace folder. Defaults to
 	 * the basename of its [uri-path](#Uri.path)
 	 */
 	readonly name: string;
 
 	/**
-	 * The id of this workspace page.
+	 * The ordinal number of this workspace folder.
 	 */
-	readonly id: string;
+	readonly index: number;
+}
+
+export interface IWorkspacePage extends IWorkspacePageData {
+
+	/**
+	 * Given workspace folder relative path, returns the resource with the absolute path.
+	 */
+	toResource: (relativePath: string) => URI;
 }
 
 export interface IWorkspace {
@@ -38,9 +50,21 @@ export interface IWorkspace {
 	readonly id: string;
 
 	/**
+	 * Transient workspaces are meant to go away after being used
+	 * once, e.g. a window reload of a transient workspace will
+	 * open an empty window.
+	 */
+	readonly transient?: boolean;
+
+	/**
 	 * Pages in the workspace.
 	 */
 	readonly pages: IWorkspacePage[];
+
+	/**
+	 * the location of the workspace configuration
+	 */
+	readonly configuration?: URI | null;
 }
 
 export interface IBaseWorkspaceIdentifier {
@@ -139,4 +163,82 @@ export interface IWorkspaceContextService {
 	getSpaceStore(): SpaceStore | undefined;
 
 	getSpaceStores(): SpaceStore[];
+}
+
+export class Workspace implements IWorkspace {
+
+	private _pages!: IWorkspacePage[];
+	private _pagesMap: TernarySearchTree<URI, WorkspacePage> = TernarySearchTree.forUris<WorkspacePage>(this._ignorePathCasing, () => true);
+
+
+	constructor(
+		private _id: string,
+		pages: IWorkspacePage[],
+		private _transient: boolean,
+		private _configuration: URI | null,
+		private _ignorePathCasing: (key: URI) => boolean,
+	) {
+		this.pages = pages;
+	}
+
+	get id(): string {
+		return this._id;
+	}
+
+	get transient(): boolean {
+		return this._transient;
+	}
+
+	get configuration(): URI | null {
+		return this._configuration;
+	}
+
+	get pages(): IWorkspacePage[] {
+		return this._pages;
+	}
+
+	set pages(pages: IWorkspacePage[]) {
+		this._pages = pages;
+		this.updatePagessMap();
+	}
+
+	getPage(resource: URI): IWorkspacePage | null {
+		if (!resource) {
+			return null;
+		}
+
+		return this._pagesMap.findSubstr(resource) || null;
+	}
+
+	private updatePagessMap(): void {
+		this._pagesMap = TernarySearchTree.forUris<WorkspacePage>(this._ignorePathCasing, () => true);
+		for (const page of this.pages) {
+			this._pagesMap.set(page.uri, page);
+		}
+	}
+
+	toJSON(): IWorkspace {
+		return { id: this.id, pages: this.pages, transient: this.transient, configuration: this.configuration };
+	}
+}
+
+export class WorkspacePage implements IWorkspacePage {
+
+	readonly id: string;
+	readonly uri: URI;
+	readonly name: string;
+	readonly index: number;
+
+	constructor(
+		data: IWorkspacePageData,
+	) {
+		this.id = data.id;
+		this.uri = data.uri;
+		this.index = data.index;
+		this.name = data.name;
+	}
+
+	toResource(relativePath: string): URI {
+		return joinPath(this.uri, relativePath);
+	}
 }

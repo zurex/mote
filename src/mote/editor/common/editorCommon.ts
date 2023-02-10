@@ -176,6 +176,10 @@ export interface IEditor {
 	 */
 	trigger(source: string | null | undefined, handlerId: string, payload: any): void;
 
+	/**
+	 * Returns all actions associated with this editor.
+	 */
+	getSupportedActions(): IEditorAction[];
 
 	/**
 	 * Gets the current model attached to this editor.

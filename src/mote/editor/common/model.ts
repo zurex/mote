@@ -39,6 +39,22 @@ export const enum PositionAffinity {
 }
 
 /**
+ * @internal
+ */
+export interface ITextBufferBuilder {
+	acceptChunk(chunk: string): void;
+	finish(): ITextBufferFactory;
+}
+
+/**
+ * @internal
+ */
+export interface ITextBufferFactory {
+	create(defaultEOL: DefaultEndOfLine): { textBuffer: ITextBuffer; disposable: IDisposable };
+	getFirstLineText(lengthLimit: number): string;
+}
+
+/**
  * Options for a model decoration.
  */
 export interface IModelDecorationOptions {
@@ -101,6 +117,23 @@ export const enum TrackedRangeStickiness {
 	GrowsOnlyWhenTypingBefore = 2,
 	GrowsOnlyWhenTypingAfter = 3,
 }
+
+/**
+ * Text snapshot that works like an iterator.
+ * Will try to return chunks of roughly ~64KB size.
+ * Will return null when finished.
+ */
+export interface ITextSnapshot {
+	read(): string | null;
+}
+
+/**
+ * @internal
+ */
+export function isITextSnapshot(obj: any): obj is ITextSnapshot {
+	return (obj && typeof obj.read === 'function');
+}
+
 
 /**
  * A model.

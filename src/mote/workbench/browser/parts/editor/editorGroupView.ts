@@ -14,6 +14,7 @@ import { IInstantiationService } from 'mote/platform/instantiation/common/instan
 import { GroupsOrder, ICloseEditorOptions } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { SideBySideEditorInput } from 'mote/workbench/common/sideBySideEditorInput';
 import { RunOnceWorker } from 'mote/base/common/async';
+import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 
 export class EditorGroupView extends Themable implements IEditorGroupView {
 
@@ -32,6 +33,11 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 	}
 
 	//#endregion
+
+	/**
+	 * Access to the context key service scoped to this editor group.
+	 */
+	readonly scopedContextKeyService: IContextKeyService;
 
 	//#region Events
 
@@ -81,6 +87,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		from: IEditorGroupView | ISerializedEditorGroupModel | null,
 		private _index: number,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 	) {
 		super(themeService);
@@ -97,6 +104,10 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		//#region create()
 		{
+			// Scoped context key service
+			this.scopedContextKeyService = this._register(this.contextKeyService.createScoped(this.element));
+
+
 			// Container
 			this.element.classList.add('editor-group-container');
 

@@ -31,6 +31,16 @@ export function stripIcons(text: string): string {
 	return text.replace(stripIconsRegex, (match, preWhitespace, escaped, postWhitespace) => escaped ? match : preWhitespace || postWhitespace || '');
 }
 
+/**
+ * Takes a label with icons (`$(iconId)xyz`), removes the icon syntax adds whitespace so that screen readers can read the text better.
+ */
+export function getCodiconAriaLabel(text: string | undefined) {
+	if (!text) {
+		return '';
+	}
+
+	return text.replace(/\$\((.*?)\)/g, (_match, codiconName) => ` ${codiconName} `).trim();
+}
 
 export interface IParsedLabelWithIcons {
 	readonly text: string;

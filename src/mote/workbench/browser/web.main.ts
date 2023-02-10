@@ -52,6 +52,10 @@ import { WorkbenchConfigurationService } from 'mote/workbench/services/configura
 import { LogService } from 'mote/platform/log/common/logService';
 import { BufferLogger } from 'mote/platform/log/common/bufferLog';
 import { rendererLogId } from 'mote/workbench/common/logConstants';
+import { NullPolicyService } from 'mote/platform/policy/common/policy';
+import { ConfigurationCache } from 'mote/workbench/services/configuration/common/configurationCache';
+import { UriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentityService';
+import { IUriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentity';
 
 export class BrowserMain extends Disposable {
 
@@ -206,6 +210,10 @@ export class BrowserMain extends Disposable {
 
 		await this.registerFileSystemProviders(environmentService, fileService, bufferLogger, logService, loggerService, logsPath);
 
+		// URI Identity
+		const uriIdentityService = new UriIdentityService(fileService);
+		serviceCollection.set(IUriIdentityService, uriIdentityService);
+
 		// Storage
 		const storageService = await this.createStorageService({ id: 'mote' }, logService);
 		serviceCollection.set(IStorageService, storageService);
@@ -220,11 +228,9 @@ export class BrowserMain extends Disposable {
 
 		remoteService.userService = userService;
 
-		// Workspace
-		//const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
-		//serviceCollection.set(IWorkspaceContextService, workspaceService);
-
-		serviceCollection.set(IWorkbenchConfigurationService, new WorkbenchConfigurationService());
+		// Configuration
+		const configuraionService = await this.createConfigurationService(environmentService, fileService, logService);
+		serviceCollection.set(IWorkbenchConfigurationService, configuraionService);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//
@@ -316,6 +322,18 @@ export class BrowserMain extends Disposable {
 		return storageService;
 	}
 
+	private async createConfigurationService(environmentService: IWorkbenchEnvironmentService, fileService: FileService, logService: ILogService): Promise<WorkbenchConfigurationService> {
+		const configurationCache = new ConfigurationCache([Schemas.file, Schemas.vscodeUserData, Schemas.tmp] /* Cache all non native resources */, environmentService, fileService);
+
+		const configuraionService = new WorkbenchConfigurationService(
+			{ remoteAuthority: this.configuration.remoteAuthority, configurationCache },
+			environmentService,
+			logService,
+			new NullPolicyService()
+		);
+		return Promise.resolve(configuraionService);
+	}
+
 	private resolveWorkspaceInitializationPayload(): any {
 		let workspace: IWorkspace | undefined = undefined;
 		if (this.configuration.workspaceProvider) {
@@ -329,7 +347,7 @@ export class BrowserMain extends Disposable {
 
 		// Single-folder workspace
 		if (workspace && isFolderToOpen(workspace)) {
-			return getSingleFolderWorkspaceIdentifier(workspace.folderUri);
+			return getSingleFolderWorkspaceIdentifier(workspace.workspaceUri);
 		}
 
 		return { id: 'empty-window' };

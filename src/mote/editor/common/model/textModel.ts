@@ -13,6 +13,50 @@ import { IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInject
 import { Emitter, Event } from 'mote/base/common/event';
 import { TextBuffer } from 'mote/editor/common/model/textBuffer';
 import { URI } from 'mote/base/common/uri';
+import { VSBuffer, VSBufferReadableStream } from 'mote/base/common/buffer';
+import { listenStream } from 'mote/base/common/stream';
+import { PieceTreeTextBufferBuilder } from 'mote/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder';
+
+export function createTextBufferFactory(text: string): model.ITextBufferFactory {
+	const builder = new PieceTreeTextBufferBuilder();
+	builder.acceptChunk(text);
+	return builder.finish();
+}
+
+interface ITextStream {
+	on(event: 'data', callback: (data: string) => void): void;
+	on(event: 'error', callback: (err: Error) => void): void;
+	on(event: 'end', callback: () => void): void;
+	on(event: string, callback: any): void;
+}
+
+export function createTextBufferFactoryFromStream(stream: ITextStream): Promise<model.ITextBufferFactory>;
+export function createTextBufferFactoryFromStream(stream: VSBufferReadableStream): Promise<model.ITextBufferFactory>;
+export function createTextBufferFactoryFromStream(stream: ITextStream | VSBufferReadableStream): Promise<model.ITextBufferFactory> {
+	return new Promise<model.ITextBufferFactory>((resolve, reject) => {
+		const builder = new PieceTreeTextBufferBuilder();
+
+		let done = false;
+
+		listenStream<string | VSBuffer>(stream, {
+			onData: chunk => {
+				builder.acceptChunk((typeof chunk === 'string') ? chunk : chunk.toString());
+			},
+			onError: error => {
+				if (!done) {
+					done = true;
+					reject(error);
+				}
+			},
+			onEnd: () => {
+				if (!done) {
+					done = true;
+					resolve(builder.finish());
+				}
+			}
+		});
+	});
+}
 
 export class TextModel extends Disposable implements ITextModel {
 

@@ -1,8 +1,50 @@
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { URI } from 'mote/base/common/uri';
+import { Event } from 'mote/base/common/event';
+
+export interface IEditorModel {
+
+	/**
+	 * Emitted when the model is about to be disposed.
+	 */
+	readonly onWillDispose: Event<void>;
+
+	/**
+	 * Resolves the model.
+	 */
+	resolve(): Promise<void>;
+
+	/**
+	 * Find out if the editor model was resolved or not.
+	 */
+	isResolved(): boolean;
+
+	/**
+	 * Find out if this model has been disposed.
+	 */
+	isDisposed(): boolean;
+
+	/**
+	 * Dispose associated resources
+	 */
+	dispose(): void;
+}
 
 export interface IBaseUntypedEditorInput {
+	/**
+	 * Optional options to use when opening the input.
+	 */
+	options?: IEditorOptions;
 
+	/**
+	 * Label to show for the input.
+	 */
+	readonly label?: string;
+
+	/**
+	 * Description to show for the input.
+	 */
+	readonly description?: string;
 }
 
 export interface IResourceEditorInput extends IBaseUntypedEditorInput {

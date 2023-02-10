@@ -19,6 +19,9 @@ import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { EditorGroupLayout, IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IStatusbarService } from 'mote/workbench/services/statusbar/browser/statusbar';
+import { isWeb } from 'mote/base/common/platform';
+import { isWCOEnabled } from 'mote/base/browser/browser';
+import { ITitleService } from 'mote/workbench/services/title/common/titleService';
 
 interface IWorkbenchLayoutWindowInitializationState {
 	views: {
@@ -91,7 +94,25 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private _dimension!: IDimension;
 	get dimension(): IDimension { return this._dimension; }
 
-	offset?: { top: number } | undefined;
+	get offset() {
+		let top = 0;
+		let quickPickTop = 0;
+		/*
+		if (this.isVisible(Parts.BANNER_PART)) {
+			top = this.getPart(Parts.BANNER_PART).maximumHeight;
+			quickPickTop = top;
+		}
+		*/
+		if (this.isVisible(Parts.TITLEBAR_PART)) {
+			top += this.getPart(Parts.TITLEBAR_PART).maximumHeight;
+			quickPickTop = top;
+		}
+		// If the command center is visible then the quickinput should go over the title bar and the banner
+		if (this.titleService.isCommandCenterVisible) {
+			quickPickTop = 6;
+		}
+		return { top, quickPickTop };
+	}
 
 	//#endregion
 
@@ -100,6 +121,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private initialized = false;
 	private workbenchGrid!: SerializableGrid<ISerializableView>;
 
+	private titleBarPartView!: ISerializableView;
 	private activityBarPartView!: ISerializableView;
 	private statusBarPartView!: ISerializableView;
 	private sideBarPartView!: ISerializableView;
@@ -114,6 +136,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private paneCompositeService!: IPaneCompositePartService;
 	private viewDescriptorService!: IViewDescriptorService;
 	private statusBarService!: IStatusbarService;
+	private titleService!: ITitleService;
 
 	//#endregion
 
@@ -163,6 +186,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
 		this.statusBarService = accessor.get(IStatusbarService);
+		this.titleService = accessor.get(ITitleService);
 
 		this.registerLayoutListeners();
 
@@ -220,7 +244,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	}
 
 	focus(): void {
-		throw new Error("Method not implemented.");
+		this.focusPart(Parts.EDITOR_PART);
 	}
 
 	registerPart(part: Part): void {
@@ -263,12 +287,14 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	}
 
 	protected createWorkbenchLayout(): void {
+		const titleBar = this.getPart(Parts.TITLEBAR_PART);
 		const sideBar = this.getPart(Parts.SIDEBAR_PART);
 		const editorPart = this.getPart(Parts.EDITOR_PART);
 		const activityBar = this.getPart(Parts.ACTIVITYBAR_PART);
 		const statusBar = this.getPart(Parts.STATUSBAR_PART);
 
 		// View references for all parts
+		this.titleBarPartView = titleBar;
 		this.sideBarPartView = sideBar;
 		this.statusBarPartView = statusBar;
 		this.activityBarPartView = activityBar;
@@ -276,6 +302,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		const viewMap = {
 			[Parts.ACTIVITYBAR_PART]: this.activityBarPartView,
+			[Parts.TITLEBAR_PART]: this.titleBarPartView,
 			[Parts.SIDEBAR_PART]: this.sideBarPartView,
 			[Parts.EDITOR_PART]: this.editorPartView,
 			[Parts.STATUSBAR_PART]: this.statusBarPartView,
@@ -397,10 +424,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBarSize = 200;
 		//const panelSize = 300;
 
-		const titleBarHeight = 0;
+		const titleBarHeight = this.titleBarPartView.minimumHeight;
 		const activityBarWidth = this.activityBarPartView.minimumWidth;
 		const statusBarHeight = this.statusBarPartView.minimumHeight;
 		const middleSectionHeight = height - titleBarHeight - statusBarHeight;
+
+		const titleAndBanner: ISerializedNode[] = [
+			{
+				type: 'leaf',
+				data: { type: Parts.TITLEBAR_PART },
+				size: titleBarHeight,
+				visible: this.isVisible(Parts.TITLEBAR_PART)
+			}
+		];
 
 		const activityBarNode: ISerializedLeafNode = {
 			type: 'leaf',
@@ -430,6 +466,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 				type: 'branch',
 				size: width,
 				data: [
+					...(this.shouldShowBannerFirst() ? titleAndBanner.reverse() : titleAndBanner),
 					{
 						type: 'branch',
 						data: middleSection,
@@ -457,6 +494,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		}
 
 		return this.getPart(part).getContainer();
+	}
+
+	private shouldShowBannerFirst(): boolean {
+		return isWeb && !isWCOEnabled();
 	}
 
 	private setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
