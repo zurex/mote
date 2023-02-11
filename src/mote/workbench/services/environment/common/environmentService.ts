@@ -20,6 +20,9 @@ export interface IWorkbenchEnvironmentService extends IEnvironmentService {
 	// --- Paths
 	readonly logFile: URI;
 
+	// --- Development
+	readonly profDurationMarkers?: string[];
+
 	// --- Editors to open
 	readonly filesToOpenOrCreate?: IPath[] | undefined;
 }

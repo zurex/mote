@@ -58,7 +58,6 @@ export class ModelService extends Disposable implements IModelService {
 
 	public createModel(value: string | ITextBufferFactory, resource?: URI, isForSimpleWidget: boolean = false): ITextModel {
 
-
 		const modelData = this._createModelData(value, resource, isForSimpleWidget);
 
 		return modelData.model;

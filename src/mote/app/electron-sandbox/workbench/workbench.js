@@ -12,7 +12,7 @@
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Add a perf entry right from the top
-	performance.mark('code/didStartRenderer');
+	performance.mark('mote/didStartRenderer');
 
 	// Load workbench main JS, CSS and NLS all in parallel. This is an
 	// optimization to prevent a waterfall of loading to happen, because

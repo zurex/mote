@@ -96,6 +96,14 @@ export interface IEditorGroupView extends IDisposable, ISerializableView, IEdito
 
 	readonly onDidFocus: Event<void>;
 
+	/**
+	 * A promise that resolves when the group has been restored.
+	 *
+	 * For a group with active editor, the promise will resolve
+	 * when the active editor has finished to resolve.
+	 */
+	readonly whenRestored: Promise<void>;
+
 	setActive(isActive: boolean): void;
 
 	notifyIndexChanged(newIndex: number): void;

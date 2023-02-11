@@ -10,7 +10,7 @@ import { IPaneCompositePartService } from 'mote/workbench/services/panecomposite
 import { DeferredPromise, Promises } from "mote/base/common/async";
 import { IViewDescriptorService, ViewContainerLocation } from 'mote/workbench/common/views';
 import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from 'mote/base/browser/ui/grid/grid';
-import { mark } from "mote/base/common/performance";
+import { mark } from 'mote/base/common/performance';
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { IPath } from 'mote/platform/window/common/window';
@@ -362,7 +362,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		// Restore editors
 		layoutReadyPromises.push((async () => {
-			mark('code/willRestoreEditors');
+			mark('mote/willRestoreEditors');
 
 			const editor = await this.windowState.initialization.editor.editorToOpen;
 			let openEditorPromise: Promise<unknown> | undefined = undefined;
@@ -376,10 +376,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 					openEditorPromise,
 					this.editorGroupService.whenRestored
 				]).finally(() => {
-					// the `code/didRestoreEditors` perf mark is specifically
+					// the `mote/didRestoreEditors` perf mark is specifically
 					// for when visible editors have resolved, so we only mark
 					// if when editor group service has restored.
-					mark('code/didRestoreEditors');
+					mark('mote/didRestoreEditors');
 				})
 			);
 		})());

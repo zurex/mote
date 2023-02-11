@@ -36,6 +36,11 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	isRestored(): boolean;
 
 	/**
+	 * A promise for to await the `isRestored()` condition to be `true`.
+	 */
+	readonly whenRestored: Promise<void>;
+
+	/**
 	 * Returns if the part is visible.
 	 */
 	isVisible(part: Parts): boolean;

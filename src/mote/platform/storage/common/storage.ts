@@ -299,11 +299,11 @@ export abstract class AbstractStorageService extends Disposable implements IStor
 			this.initializationPromise = (async () => {
 
 				// Init all storage locations
-				mark('code/willInitStorage');
+				mark('mote/willInitStorage');
 				try {
 					await this.doInitialize(); // Ask subclasses to initialize storage
 				} finally {
-					mark('code/didInitStorage');
+					mark('mote/didInitStorage');
 				}
 
 				// On some OS we do not get enough time to persist state on shutdown (e.g. when

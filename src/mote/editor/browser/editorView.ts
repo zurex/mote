@@ -360,10 +360,12 @@ export abstract class EditorView extends ViewEventHandler {
 
 		let width: number;
 
-		if (layoutInfo.width > 1500) {
-			width = 900;
+		if (layoutInfo.width > 1800) {
+			width = 1500;
+		} else if (layoutInfo.width > 1500) {
+			width = 1300;
 		} else if (layoutInfo.width > 1200) {
-			width = 720;
+			width = 900;
 		} else {
 			width = layoutInfo.width - padding * 2 - 1;
 		}

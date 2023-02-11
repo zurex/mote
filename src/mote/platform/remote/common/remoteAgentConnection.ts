@@ -196,10 +196,10 @@ function createSocket(logService: ILogService, socketFactory: ISocketFactory, ho
 	const result = new PromiseWithTimeout<ISocket>(timeoutCancellationToken);
 	const sw = StopWatch.create(false);
 	logService.info(`Creating a socket (${debugLabel})...`);
-	performance.mark(`code/willCreateSocket/${debugConnectionType}`);
+	performance.mark(`mote/willCreateSocket/${debugConnectionType}`);
 	socketFactory.connect(host, port, path, query, debugLabel, (err: any, socket: ISocket | undefined) => {
 		if (result.didTimeout) {
-			performance.mark(`code/didCreateSocketError/${debugConnectionType}`);
+			performance.mark(`mote/didCreateSocketError/${debugConnectionType}`);
 			logService.info(`Creating a socket (${debugLabel}) finished after ${sw.elapsed()} ms, but this is too late and has timed out already.`);
 			if (err) {
 				logService.error(err);
@@ -207,11 +207,11 @@ function createSocket(logService: ILogService, socketFactory: ISocketFactory, ho
 			socket?.dispose();
 		} else {
 			if (err || !socket) {
-				performance.mark(`code/didCreateSocketError/${debugConnectionType}`);
+				performance.mark(`mote/didCreateSocketError/${debugConnectionType}`);
 				logService.info(`Creating a socket (${debugLabel}) returned an error after ${sw.elapsed()} ms.`);
 				result.reject(err);
 			} else {
-				performance.mark(`code/didCreateSocketOK/${debugConnectionType}`);
+				performance.mark(`mote/didCreateSocketOK/${debugConnectionType}`);
 				logService.info(`Creating a socket (${debugLabel}) was successful after ${sw.elapsed()} ms.`);
 				result.resolve(socket);
 			}

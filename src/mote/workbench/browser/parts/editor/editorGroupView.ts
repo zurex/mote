@@ -13,7 +13,7 @@ import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { GroupsOrder, ICloseEditorOptions } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { SideBySideEditorInput } from 'mote/workbench/common/sideBySideEditorInput';
-import { RunOnceWorker } from 'mote/base/common/async';
+import { DeferredPromise, RunOnceWorker } from 'mote/base/common/async';
 import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
 import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
 import { EditorProgressIndicator } from 'mote/workbench/services/progress/browser/progressIndicator';
@@ -88,6 +88,8 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private readonly disposedEditorsWorker = this._register(new RunOnceWorker<EditorInput>(editors => this.handleDisposedEditors(editors), 0));
 
+	private readonly whenRestoredPromise = new DeferredPromise<void>();
+	readonly whenRestored = this.whenRestoredPromise.p;
 
 	constructor(
 		private accessor: IEditorGroupsAccessor,
@@ -141,12 +143,26 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			//this._onDidChange.input = this.editorPane.onDidChangeSizeConstraints;
 		}
 
+		// Restore editors if provided
+		const restoreEditorsPromise = this.restoreEditors(from) ?? Promise.resolve();
+
+		// Signal restored once editors have restored
+		restoreEditorsPromise.finally(() => {
+			this.whenRestoredPromise.complete();
+		});
+
 		// Register Listeners
 		this.registerListeners();
 	}
 
 	private updateContainer(): void {
 
+	}
+
+	private restoreEditors(from: IEditorGroupView | ISerializedEditorGroupModel | null): Promise<void> | undefined {
+		if (this.count === 0) {
+			return; // nothing to show
+		}
 	}
 
 	//#region event handling

@@ -28,7 +28,7 @@ export class IndexedDB {
 	}
 
 	private static async openDatabase(name: string, version: number | undefined, stores: string[]): Promise<IDBDatabase> {
-		mark(`code/willOpenDatabase/${name}`);
+		mark(`mote/willOpenDatabase/${name}`);
 		try {
 			return await IndexedDB.doOpenDatabase(name, version, stores);
 		} catch (err) {
@@ -48,7 +48,7 @@ export class IndexedDB {
 
 			throw err;
 		} finally {
-			mark(`code/didOpenDatabase/${name}`);
+			mark(`mote/didOpenDatabase/${name}`);
 		}
 	}
 

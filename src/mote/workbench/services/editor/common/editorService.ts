@@ -81,6 +81,12 @@ export interface IEditorService {
 	 */
 	readonly visibleEditorPanes: readonly IVisibleEditorPane[];
 
+	/**
+	 * All editors that are currently visible. An editor is visible when it is opened in an
+	 * editor group and active in that group. Multiple editor groups can be opened at the same time.
+	 */
+	readonly visibleEditors: readonly EditorInput[];
+
 	openEditor(editor: EditorInput): Promise<IEditorPane | undefined>;
 
 	openEditorWithResource(editor: IResourceEditorInput): Promise<IEditorPane | undefined>;

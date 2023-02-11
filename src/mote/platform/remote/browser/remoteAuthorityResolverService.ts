@@ -71,9 +71,9 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
 		const authorityPrefix = getRemoteAuthorityPrefix(authority);
 		const sw = StopWatch.create(false);
 		this._logService.info(`Resolving connection token (${authorityPrefix})...`);
-		performance.mark(`code/willResolveConnectionToken/${authorityPrefix}`);
+		performance.mark(`mote/willResolveConnectionToken/${authorityPrefix}`);
 		const connectionToken = await Promise.resolve(this._connectionTokens.get(authority) || this._connectionToken);
-		performance.mark(`code/didResolveConnectionToken/${authorityPrefix}`);
+		performance.mark(`mote/didResolveConnectionToken/${authorityPrefix}`);
 		this._logService.info(`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`);
 		const defaultPort = (/^https:/.test(window.location.href) ? 443 : 80);
 		const { host, port } = parseAuthorityWithOptionalPort(authority, defaultPort);

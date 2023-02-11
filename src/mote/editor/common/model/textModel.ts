@@ -82,7 +82,7 @@ export abstract class AbstractTextModel extends Disposable implements ITextModel
 		const [textBuffer, disposable] = this.createTextBuffer();
 		this.buffer = textBuffer;
 		this.bufferDisposable = disposable;
-		this._tokenizationTextModelPart = new TokenizationTextModelPart(this.buffer);
+		this._tokenizationTextModelPart = new TokenizationTextModelPart(this);
 
 		this.options = AbstractTextModel.resolveOptions(this.buffer, this.creationOptions);
 	}
@@ -418,13 +418,6 @@ export abstract class AbstractTextModel extends Disposable implements ITextModel
 		this.bufferDisposable.dispose();
 		this.bufferDisposable = textBufferDisposable;
 		this.increaseVersionId();
-
-		// Flush all tokens
-		//this._tokenizationTextModelPart.flush();
-
-		// Destroy all my decorations
-		//this._decorations = Object.create(null);
-		//this._decorationsTree = new DecorationsTrees();
 
 		// Destroy my edit history and settings
 		this.commandManager.clear();

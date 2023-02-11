@@ -6,12 +6,13 @@ import { EditorInput } from 'mote/workbench/common/editorInput';
 import { ICloseEditorOptions, IEditorGroup, IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IEditorResolverService, ResolvedStatus } from 'mote/workbench/services/editor/common/editorResolverService';
 import { IEditorsChangeEvent, IEditorService, isPreferredGroup, PreferredGroup } from 'mote/workbench/services/editor/common/editorService';
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { findGroup } from 'mote/workbench/services/editor/common/editorGroupFinder';
 import { Disposable, DisposableStore, dispose } from 'mote/base/common/lifecycle';
 import { Emitter, Event } from 'mote/base/common/event';
 import { withNullAsUndefined } from 'mote/base/common/types';
 import { IEditorGroupView } from 'mote/workbench/browser/parts/editor/editor';
+import { coalesce } from 'mote/base/common/arrays';
 
 export class EditorService extends Disposable implements IEditorService {
 
@@ -58,6 +59,10 @@ export class EditorService extends Disposable implements IEditorService {
 		return activeGroup ? withNullAsUndefined(activeGroup.activeEditor) : undefined;
 	}
 
+	get visibleEditorPanes(): IVisibleEditorPane[] {
+		return coalesce(this.editorGroupService.groups.map(group => group.activeEditorPane));
+	}
+
 	get activeEditorPane(): IVisibleEditorPane | undefined {
 		return this.editorGroupService.activeGroup?.activeEditorPane;
 	}
@@ -69,6 +74,10 @@ export class EditorService extends Disposable implements IEditorService {
 			return activeControl as any;
 		}
 		return undefined;
+	}
+
+	get visibleEditors(): EditorInput[] {
+		return coalesce(this.editorGroupService.groups.map(group => group.activeEditor));
 	}
 
 	//#endregion
@@ -204,4 +213,4 @@ export class EditorService extends Disposable implements IEditorService {
 }
 
 
-registerSingleton(IEditorService, EditorService);
+registerSingleton(IEditorService, EditorService, InstantiationType.Eager);

@@ -236,7 +236,7 @@ export interface IStartupMetrics {
 		 * The time it took to tell electron to open/restore a renderer (browser window).
 		 *
 		 * * Happens in the main-process
-		 * * Measured with the `main:appReady` and `code/willOpenNewWindow` performance marks.
+		 * * Measured with the `main:appReady` and `mote/willOpenNewWindow` performance marks.
 		 * * This can be compared between insider and stable builds.
 		 * * It is our code running here and we should monitor this carefully for regressions.
 		 */
@@ -247,7 +247,7 @@ export interface IStartupMetrics {
 		 * of load the main-bundle (`workbench.desktop.main.js`).
 		 *
 		 * * Happens in the main-process *and* the renderer-process
-		 * * Measured with the `code/willOpenNewWindow` and `willLoadWorkbenchMain` performance marks.
+		 * * Measured with the `mote/willOpenNewWindow` and `willLoadWorkbenchMain` performance marks.
 		 * * This can be compared between insider and stable builds.
 		 * * It is mostly not our code running here and we can only observe what's happening.
 		 *
@@ -267,7 +267,7 @@ export interface IStartupMetrics {
 		 * The time it took to init the storage database connection from the workbench.
 		 *
 		 * * Happens in the renderer-process
-		 * * Measured with the `code/willInitStorage` and `code/didInitStorage` performance marks.
+		 * * Measured with the `mote/willInitStorage` and `mote/didInitStorage` performance marks.
 		 */
 		readonly ellapsedStorageInit: number;
 
@@ -570,8 +570,8 @@ export abstract class AbstractTimerService implements ITimerService {
 
 	setPerformanceMarks(source: string, marks: perf.PerformanceMark[]): void {
 		// Perf marks are a shared resource because anyone can generate them
-		// and because of that we only accept marks that start with 'code/'
-		const codeMarks = marks.filter(mark => mark.name.startsWith('code/'));
+		// and because of that we only accept marks that start with 'mote/'
+		const codeMarks = marks.filter(mark => mark.name.startsWith('mote/'));
 		this._marks.setMarks(source, codeMarks);
 		this._reportPerformanceMarks(source, codeMarks);
 	}
@@ -636,16 +636,16 @@ export abstract class AbstractTimerService implements ITimerService {
 		const initialStartup = this._isInitialStartup();
 		let startMark: string;
 		if (isWeb) {
-			startMark = 'code/timeOrigin';
+			startMark = 'mote/timeOrigin';
 		} else {
-			startMark = initialStartup ? 'code/didStartMain' : 'code/willOpenNewWindow';
+			startMark = initialStartup ? 'mote/didStartMain' : 'mote/willOpenNewWindow';
 		}
 
 		const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
-		const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+		//const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
 		const info: Writeable<IStartupMetrics> = {
 			version: 2,
-			ellapsed: this._marks.getDuration(startMark, 'code/didStartWorkbench'),
+			ellapsed: this._marks.getDuration(startMark, 'mote/didStartWorkbench'),
 
 			// reflections
 			isLatestVersion: Boolean(await this._updateService.isLatestVersion()),
@@ -654,35 +654,35 @@ export abstract class AbstractTimerService implements ITimerService {
 			windowCount: await this._getWindowCount(),
 			viewletId: activeViewlet?.getId(),
 			editorIds: this._editorService.visibleEditors.map(input => input.typeId),
-			panelId: activePanel ? activePanel.getId() : undefined,
+			//panelId: activePanel ? activePanel.getId() : undefined,
 
 			// timers
 			timers: {
-				ellapsedAppReady: initialStartup ? this._marks.getDuration('code/didStartMain', 'code/mainAppReady') : undefined,
-				ellapsedNlsGeneration: initialStartup ? this._marks.getDuration('code/willGenerateNls', 'code/didGenerateNls') : undefined,
-				ellapsedLoadMainBundle: initialStartup ? this._marks.getDuration('code/willLoadMainBundle', 'code/didLoadMainBundle') : undefined,
-				ellapsedCrashReporter: initialStartup ? this._marks.getDuration('code/willStartCrashReporter', 'code/didStartCrashReporter') : undefined,
-				ellapsedMainServer: initialStartup ? this._marks.getDuration('code/willStartMainServer', 'code/didStartMainServer') : undefined,
-				ellapsedWindowCreate: initialStartup ? this._marks.getDuration('code/willCreateCodeWindow', 'code/didCreateCodeWindow') : undefined,
-				ellapsedWindowRestoreState: initialStartup ? this._marks.getDuration('code/willRestoreCodeWindowState', 'code/didRestoreCodeWindowState') : undefined,
-				ellapsedBrowserWindowCreate: initialStartup ? this._marks.getDuration('code/willCreateCodeBrowserWindow', 'code/didCreateCodeBrowserWindow') : undefined,
-				ellapsedWindowMaximize: initialStartup ? this._marks.getDuration('code/willMaximizeCodeWindow', 'code/didMaximizeCodeWindow') : undefined,
-				ellapsedWindowLoad: initialStartup ? this._marks.getDuration('code/mainAppReady', 'code/willOpenNewWindow') : undefined,
-				ellapsedWindowLoadToRequire: this._marks.getDuration('code/willOpenNewWindow', 'code/willLoadWorkbenchMain'),
-				ellapsedRequire: this._marks.getDuration('code/willLoadWorkbenchMain', 'code/didLoadWorkbenchMain'),
-				ellapsedWaitForWindowConfig: this._marks.getDuration('code/willWaitForWindowConfig', 'code/didWaitForWindowConfig'),
-				ellapsedStorageInit: this._marks.getDuration('code/willInitStorage', 'code/didInitStorage'),
-				ellapsedSharedProcesConnected: this._marks.getDuration('code/willConnectSharedProcess', 'code/didConnectSharedProcess'),
-				ellapsedWorkspaceServiceInit: this._marks.getDuration('code/willInitWorkspaceService', 'code/didInitWorkspaceService'),
-				ellapsedRequiredUserDataInit: this._marks.getDuration('code/willInitRequiredUserData', 'code/didInitRequiredUserData'),
-				ellapsedOtherUserDataInit: this._marks.getDuration('code/willInitOtherUserData', 'code/didInitOtherUserData'),
-				ellapsedExtensions: this._marks.getDuration('code/willLoadExtensions', 'code/didLoadExtensions'),
-				ellapsedEditorRestore: this._marks.getDuration('code/willRestoreEditors', 'code/didRestoreEditors'),
-				ellapsedViewletRestore: this._marks.getDuration('code/willRestoreViewlet', 'code/didRestoreViewlet'),
-				ellapsedPanelRestore: this._marks.getDuration('code/willRestorePanel', 'code/didRestorePanel'),
-				ellapsedWorkbench: this._marks.getDuration('code/willStartWorkbench', 'code/didStartWorkbench'),
-				ellapsedExtensionsReady: this._marks.getDuration(startMark, 'code/didLoadExtensions'),
-				ellapsedRenderer: this._marks.getDuration('code/didStartRenderer', 'code/didStartWorkbench')
+				ellapsedAppReady: initialStartup ? this._marks.getDuration('mote/didStartMain', 'mote/mainAppReady') : undefined,
+				ellapsedNlsGeneration: initialStartup ? this._marks.getDuration('mote/willGenerateNls', 'mote/didGenerateNls') : undefined,
+				ellapsedLoadMainBundle: initialStartup ? this._marks.getDuration('mote/willLoadMainBundle', 'mote/didLoadMainBundle') : undefined,
+				ellapsedCrashReporter: initialStartup ? this._marks.getDuration('mote/willStartCrashReporter', 'mote/didStartCrashReporter') : undefined,
+				ellapsedMainServer: initialStartup ? this._marks.getDuration('mote/willStartMainServer', 'mote/didStartMainServer') : undefined,
+				ellapsedWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateCodeWindow', 'mote/didCreateCodeWindow') : undefined,
+				ellapsedWindowRestoreState: initialStartup ? this._marks.getDuration('mote/willRestoreCodeWindowState', 'mote/didRestoreCodeWindowState') : undefined,
+				ellapsedBrowserWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateCodeBrowserWindow', 'mote/didCreateCodeBrowserWindow') : undefined,
+				ellapsedWindowMaximize: initialStartup ? this._marks.getDuration('mote/willMaximizeCodeWindow', 'mote/didMaximizeCodeWindow') : undefined,
+				ellapsedWindowLoad: initialStartup ? this._marks.getDuration('mote/mainAppReady', 'mote/willOpenNewWindow') : undefined,
+				ellapsedWindowLoadToRequire: this._marks.getDuration('mote/willOpenNewWindow', 'mote/willLoadWorkbenchMain'),
+				ellapsedRequire: this._marks.getDuration('mote/willLoadWorkbenchMain', 'mote/didLoadWorkbenchMain'),
+				ellapsedWaitForWindowConfig: this._marks.getDuration('mote/willWaitForWindowConfig', 'mote/didWaitForWindowConfig'),
+				ellapsedStorageInit: this._marks.getDuration('mote/willInitStorage', 'mote/didInitStorage'),
+				ellapsedSharedProcesConnected: this._marks.getDuration('mote/willConnectSharedProcess', 'mote/didConnectSharedProcess'),
+				ellapsedWorkspaceServiceInit: this._marks.getDuration('mote/willInitWorkspaceService', 'mote/didInitWorkspaceService'),
+				ellapsedRequiredUserDataInit: this._marks.getDuration('mote/willInitRequiredUserData', 'mote/didInitRequiredUserData'),
+				ellapsedOtherUserDataInit: this._marks.getDuration('mote/willInitOtherUserData', 'mote/didInitOtherUserData'),
+				ellapsedExtensions: this._marks.getDuration('mote/willLoadExtensions', 'mote/didLoadExtensions'),
+				ellapsedEditorRestore: this._marks.getDuration('mote/willRestoreEditors', 'mote/didRestoreEditors'),
+				ellapsedViewletRestore: this._marks.getDuration('mote/willRestoreViewlet', 'mote/didRestoreViewlet'),
+				ellapsedPanelRestore: this._marks.getDuration('mote/willRestorePanel', 'mote/didRestorePanel'),
+				ellapsedWorkbench: this._marks.getDuration('mote/willStartWorkbench', 'mote/didStartWorkbench'),
+				ellapsedExtensionsReady: this._marks.getDuration(startMark, 'mote/didLoadExtensions'),
+				ellapsedRenderer: this._marks.getDuration('mote/didStartRenderer', 'mote/didStartWorkbench')
 			},
 
 			// system info
@@ -697,7 +697,7 @@ export abstract class AbstractTimerService implements ITimerService {
 			isVMLikelyhood: undefined,
 			initialStartup,
 			hasAccessibilitySupport: this._accessibilityService.isScreenReaderOptimized(),
-			emptyWorkbench: this._contextService.getWorkbenchState() === WorkbenchState.EMPTY
+			emptyWorkbench: false,
 		};
 
 		await this._extendStartupInfo(info);

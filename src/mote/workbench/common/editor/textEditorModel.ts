@@ -10,6 +10,8 @@ export class BaseTextEditorModel extends EditorModel {
 
 	protected textEditorModelHandle: URI | undefined = undefined;
 
+	private createdEditorModel: boolean | undefined;
+
 	private readonly modelDisposeListener = this._register(new MutableDisposable());
 
 	constructor(
@@ -52,6 +54,31 @@ export class BaseTextEditorModel extends EditorModel {
 
 	isReadonly(): boolean {
 		return true;
+	}
+
+	/**
+	 * Creates the text editor model with the provided value, optional preferred language
+	 * (can be comma separated for multiple values) and optional resource URL.
+	 */
+	protected createTextEditorModel(value: ITextBufferFactory, resource: URI | undefined, preferredLanguageId?: string): ITextModel {
+		return this.doCreateTextEditorModel(value, resource);
+	}
+
+	private doCreateTextEditorModel(value: ITextBufferFactory, resource: URI | undefined): ITextModel {
+		let model = resource && this.modelService.getModel(resource);
+		if (!model) {
+			model = this.modelService.createModel(value, resource);
+			this.createdEditorModel = true;
+
+			// Make sure we clean up when this model gets disposed
+			this.registerModelDisposeListener(model);
+		} else {
+			this.updateTextEditorModel(value);
+		}
+
+		this.textEditorModelHandle = model.uri;
+
+		return model;
 	}
 
 	/**

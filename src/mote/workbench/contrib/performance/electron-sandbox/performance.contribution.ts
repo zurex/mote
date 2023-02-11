@@ -9,7 +9,7 @@ import { Extensions, IWorkbenchContributionsRegistry } from 'mote/workbench/comm
 import { StartupProfiler } from './startupProfiler';
 import { NativeStartupTimings } from './startupTimings';
 import { RendererProfiling } from 'mote/workbench/contrib/performance/electron-sandbox/rendererAutoProfiler';
-import { IConfigurationRegistry, Extensions as ConfigExt } from 'mote/platform/configuration/common/configurationRegistry';
+import { IConfigurationRegistry, ConfigurationExtensions as ConfigExt } from 'mote/platform/configuration/common/configurationRegistry';
 import { localize } from 'mote/nls';
 import { applicationConfigurationNodeBase } from 'mote/workbench/common/configuration';
 

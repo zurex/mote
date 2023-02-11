@@ -26,7 +26,7 @@ import { Color } from 'mote/base/common/color';
 import { EDITOR_GROUP_BORDER } from 'mote/workbench/common/theme';
 import { IBoundarySashes } from 'mote/base/browser/ui/grid/gridview';
 import { CenteredViewLayout } from 'mote/base/browser/ui/centered/centeredViewLayout';
-import { DeferredPromise } from 'mote/base/common/async';
+import { DeferredPromise, Promises } from 'mote/base/common/async';
 
 interface IEditorPartUIState {
 	serializedGrid: ISerializedGrid;
@@ -657,6 +657,11 @@ export class EditorPart extends Part implements IEditorGroupsService, IEditorGro
 		// Signal ready
 		this.whenReadyPromise.complete();
 		this._isReady = true;
+
+		// Signal restored
+		Promises.settled(this.groups.map(group => group.whenRestored)).finally(() => {
+			this.whenRestoredPromise.complete();
+		});
 
 		return this.container;
 	}
