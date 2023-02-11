@@ -12,7 +12,7 @@ import { bufferToStream, VSBuffer } from 'mote/base/common/buffer';
 import { createTextModel } from 'mote/editor/test/common/testTextModel';
 import { ITextSnapshot, DefaultEndOfLine } from 'mote/editor/common/model';
 import { isWindows } from 'mote/base/common/platform';
-import { createTextBufferFactoryFromStream } from 'mote/editor/common/model/textModel';
+import { createTextBufferFactoryFromStream } from 'mote/editor/common/model/textBasedTextModel';
 
 export interface Params {
 	setup(): Promise<{

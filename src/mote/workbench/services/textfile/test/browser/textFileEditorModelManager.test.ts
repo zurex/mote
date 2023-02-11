@@ -12,7 +12,7 @@ import { FileChangesEvent, FileChangeType, FileOperationError, FileOperationResu
 import { toResource } from 'mote/base/test/common/utils';
 import { PLAINTEXT_LANGUAGE_ID } from 'mote/editor/common/languages/modesRegistry';
 import { ITextFileEditorModel } from 'mote/workbench/services/textfile/common/textfiles';
-import { createTextBufferFactory } from 'mote/editor/common/model/textModel';
+import { createTextBufferFactory } from 'mote/editor/common/model/textBasedTextModel';
 import { timeout } from 'mote/base/common/async';
 import { DisposableStore } from 'mote/base/common/lifecycle';
 

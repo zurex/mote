@@ -505,7 +505,6 @@ export function renderViewLine(input: RenderLineInput, viewBlock: IViewLineContr
 	const startVisibleColumn = resolvedInput.startVisibleColumn;
 	const parts = resolvedInput.parts;
 
-
 	const characterMapping = new CharacterMapping(len + 1, 0);
 	let lastCharacterMappingDefined = false;
 

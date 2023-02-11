@@ -11,14 +11,11 @@ import { onUnexpectedError } from 'mote/base/common/errors';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
-import { setStyles } from 'mote/base/browser/jsx/createElement';
-import BlockStore from 'mote/platform/store/common/blockStore';
 import { ViewOverlayWidgets } from 'mote/editor/browser/viewParts/overlayWidgets/overlayWidgets';
 import { IMouseTarget, IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/editorBrowser';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
-import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 import { TemplatePicker } from 'mote/editor/browser/viewParts/templatePicker/templatePicker';
 import { IViewModel } from 'mote/editor/common/viewModel';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
@@ -38,9 +35,9 @@ export interface IOverlayWidgetData {
 }
 
 
-export class EditorView extends ViewEventHandler {
+export abstract class EditorView extends ViewEventHandler {
 
-	private readonly context: ViewContext;
+	protected readonly context: ViewContext;
 	private selections: EditorSelection[];
 
 	// These are parts, but we must do some API related calls on them, so we keep a reference
@@ -58,20 +55,19 @@ export class EditorView extends ViewEventHandler {
 	// Dom nodes
 	public readonly domNode: FastDomNode<HTMLElement>;
 	private readonly overflowGuardContainer: FastDomNode<HTMLElement>;
-	private readonly linesContent: FastDomNode<HTMLElement>;
-	private readonly headerContainer!: FastDomNode<HTMLElement>;
+	protected readonly linesContent: FastDomNode<HTMLElement>;
+
 
 	constructor(
 		configuration: IEditorConfiguration,
 		viewController: ViewController,
 		colorTheme: IColorTheme,
 		model: IViewModel,
-		private readonly pageStore: BlockStore,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		//private readonly pageStore: BlockStore,
+		@IInstantiationService protected instantiationService: IInstantiationService,
 	) {
 		super();
 		this.selections = [new EditorSelection(1, 1, 1, 1)];
-		this.headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
 
 		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
 		this.linesContent = createFastDomNode(document.createElement('div'));
@@ -82,9 +78,7 @@ export class EditorView extends ViewEventHandler {
 		//this.linesContent.domNode.style.alignItems = 'center';
 		this.linesContent.domNode.style.position = 'relative';
 
-		const contentStore = pageStore.getContentStore();
-		//viewController.setViewLayout(model.viewLayout);
-		this.context = new ViewContext(colorTheme, configuration, contentStore, model.viewLayout, viewController, model);
+		this.context = new ViewContext(colorTheme, configuration, null as any, model.viewLayout, viewController, model);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);
@@ -118,8 +112,11 @@ export class EditorView extends ViewEventHandler {
 		this.overlayWidgets = new ViewOverlayWidgets(this.context);
 		this.viewParts.push(this.overlayWidgets);
 
-		// -------------- Wire dom nodes up
-		this.createHeader(this.linesContent, viewController);
+		// Pointer handler
+		this._pointerHandler = this._register(new PointerHandler(this.context, viewController, this._createPointerHandlerHelper()));
+	}
+
+	protected wireDomNodesUp() {
 		this.linesContent.appendChild(this.templatePicker.getDomNode());
 		this.linesContent.appendChild(this._viewCursors.getDomNode());
 		this.linesContent.appendChild(this.viewLines.getDomNode());
@@ -133,8 +130,6 @@ export class EditorView extends ViewEventHandler {
 
 		this.applyLayout();
 
-		// Pointer handler
-		this._pointerHandler = this._register(new PointerHandler(this.context, viewController, this._createPointerHandlerHelper()));
 	}
 
 	private _createPointerHandlerHelper(): IPointerHandlerHelper {
@@ -175,40 +170,6 @@ export class EditorView extends ViewEventHandler {
 				return this.viewLines.getLineWidth(lineNumber);
 			}
 		} as any;
-	}
-
-	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
-		this.createCover(parent);
-		const headerDomNode = createFastDomNode(dom.$('div'));
-		headerDomNode.setAttribute('data-root', 'true');
-		headerDomNode.setAttribute('data-index', '0');
-		headerDomNode.setAttribute('data-block-id', this.pageStore.id);
-		const headerContainer = this.headerContainer;
-
-		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
-
-		const viewLineContrib = ViewLineExtensionsRegistry.getViewLineContribution('text')!;
-		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, 0, this.context, viewController, {
-			placeholder: 'Untitled', forcePlaceholder: true
-		});
-		headerHandler.setValue(this.pageStore);
-		headerContainer.appendChild(headerHandler.getDomNode());
-
-		this._register(this.pageStore.onDidUpdate(() => {
-			//headerHandler.setValue(this.pageStore);
-		}));
-
-		headerDomNode.appendChild(headerContainer);
-		setStyles(headerDomNode.domNode, this.getTitleStyle());
-		parent.appendChild(headerDomNode);
-	}
-
-
-	createCover(parent: FastDomNode<HTMLElement>) {
-		const coverDomNode = createFastDomNode(dom.$(''));
-		coverDomNode.domNode.style.height = '100px';
-		parent.appendChild(coverDomNode);
 	}
 
 	//#region event handlers
@@ -389,8 +350,7 @@ export class EditorView extends ViewEventHandler {
 		const paddingLeft = this.getSafePaddingLeftCSS(padding);
 		const paddingRight = this.getSafePaddingRightCSS(padding);
 
-		this.headerContainer.domNode.style.paddingLeft = paddingLeft;
-		this.headerContainer.domNode.style.paddingRight = paddingRight;
+
 
 		this.templatePicker.getDomNode().domNode.style.paddingLeft = paddingLeft;
 		this.templatePicker.getDomNode().domNode.style.paddingRight = paddingRight;
@@ -408,9 +368,13 @@ export class EditorView extends ViewEventHandler {
 			width = layoutInfo.width - padding * 2 - 1;
 		}
 
-		this.headerContainer.setWidth(width);
+		this.layoutChildren(paddingLeft, paddingRight, width);
 		this.templatePicker.getDomNode().setWidth(width);
 		this.viewLines.getDomNode().setWidth(width);
+
+	}
+
+	protected layoutChildren(paddingLeft: string, paddingRight: string, width: number): void {
 
 	}
 }

@@ -1,14 +1,17 @@
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { ISingleEditOperation } from 'mote/editor/common/core/editOperation';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
-import { ICursorStateComputer, IValidEditOperation } from 'mote/editor/common/model';
-import { TextModel } from 'mote/editor/common/model/textModel';
+import { ICursorStateComputer, ITextModel, IValidEditOperation } from 'mote/editor/common/model';
 import { UndoRedoGroup } from 'mote/platform/undoRedo/common/undoRedo';
 
 export class EditStack {
 
-	constructor(private readonly model: TextModel) {
+	constructor(private readonly model: ITextModel) {
 
+	}
+
+	public clear(): void {
+		//this._undoRedoService.removeElements(this._model.uri);
 	}
 
 	public pushEditOperation(

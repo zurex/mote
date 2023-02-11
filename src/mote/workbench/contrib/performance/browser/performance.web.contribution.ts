@@ -5,17 +5,17 @@
 
 import { LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { Registry } from 'mote/platform/registry/common/platform';
-import { Extensions, IWorkbenchContributionsRegistry } from 'mote/workbench/common/contributions';
+import { WorkbenchExtensions, IWorkbenchContributionsRegistry } from 'mote/workbench/common/contributions';
 import { BrowserResourcePerformanceMarks, BrowserStartupTimings } from 'mote/workbench/contrib/performance/browser/startupTimings';
 
 // -- startup timings
 
-Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench).registerWorkbenchContribution(
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
 	BrowserResourcePerformanceMarks,
 	LifecyclePhase.Eventually
 );
 
-Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench).registerWorkbenchContribution(
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
 	BrowserStartupTimings,
 	LifecyclePhase.Eventually
 );

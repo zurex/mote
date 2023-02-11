@@ -259,10 +259,6 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	 */
 	addOverlayWidget(widget: IOverlayWidget): void;
 
-	setStore(store: BlockStore): void;
-
-	getStore(): BlockStore | null;
-
 	/**
 	 * Given a position, returns a column number that takes tab-widths into account.
 	 * @internal
@@ -301,6 +297,21 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	 * @internal
 	 */
 	invokeWithinContext<T>(fn: (accessor: ServicesAccessor) => T): T;
+
+	/**
+	 * Type the getModel() of IEditor.
+	 */
+	getModel(): ITextModel | null;
+
+	/**
+	 * Sets the current model attached to this editor.
+	 * If the previous model was created by the editor via the value key in the options
+	 * literal object, it will be destroyed. Otherwise, if the previous model was set
+	 * via setModel, or the model key in the options literal object, the previous model
+	 * will not be destroyed.
+	 * It is safe to call setModel(null) to simply detach the current model from the editor.
+	 */
+	setModel(model: ITextModel | null): void;
 
 	/**
 	 * Create an "undo stop" in the undo-redo stack.

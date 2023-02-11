@@ -30,6 +30,12 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	layout(): void;
 
 	/**
+	 * Asks the part service if all parts have been fully restored. For editor part
+	 * this means that the contents of visible editors have loaded.
+	 */
+	isRestored(): boolean;
+
+	/**
 	 * Returns if the part is visible.
 	 */
 	isVisible(part: Parts): boolean;

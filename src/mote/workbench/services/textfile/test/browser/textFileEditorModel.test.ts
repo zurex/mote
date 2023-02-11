@@ -13,7 +13,7 @@ import { TextFileEditorModelManager } from 'mote/workbench/services/textfile/com
 import { FileOperationResult, FileOperationError } from 'mote/platform/files/common/files';
 import { DeferredPromise, timeout } from 'mote/base/common/async';
 import { assertIsDefined } from 'mote/base/common/types';
-import { createTextBufferFactory, createTextBufferFactoryFromStream } from 'mote/editor/common/model/textModel';
+import { createTextBufferFactory, createTextBufferFactoryFromStream } from 'mote/editor/common/model/textBasedTextModel';
 import { CancellationToken } from 'mote/base/common/cancellation';
 import { URI } from 'mote/base/common/uri';
 import { bufferToStream, VSBuffer } from 'mote/base/common/buffer';

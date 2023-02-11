@@ -1,7 +1,7 @@
 import * as dom from 'mote/base/browser/dom';
 import * as browser from 'mote/base/browser/browser';
 import { IKeyboardEvent, printKeyboardEvent, printStandardKeyboardEvent, StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
-import { ResolvedKeybinding, ScanCodeBinding, SimpleKeybinding } from 'mote/base/common/keybindings';
+import { Keybinding, KeyCodeChord, ResolvedKeybinding, ScanCodeChord } from 'mote/base/common/keybindings';
 import { KeyCode, KeyMod, ScanCode } from 'mote/base/common/keyCodes';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 import { IContextKey, IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
@@ -17,6 +17,7 @@ import { BrowserFeatures, KeyboardSupport } from 'mote/base/browser/canIUse';
 import { OperatingSystem, OS } from 'mote/base/common/platform';
 import { IKeyboardMapper } from 'mote/platform/keyboardLayout/common/keyboardMapper';
 import { IKeyboardLayoutService } from 'mote/platform/keyboardLayout/common/keyboardLayout';
+import { INotificationService } from 'mote/platform/notification/common/notification';
 
 export class WorkbenchKeybindingService extends AbstractKeybindingService {
 
@@ -28,9 +29,10 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		@ILogService logService: ILogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICommandService commandService: ICommandService,
-		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService
+		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService,
+		@INotificationService notificationService: INotificationService,
 	) {
-		super(logService, contextKeyService, commandService);
+		super(contextKeyService, commandService, notificationService, logService);
 
 		this.isComposingGlobalContextKey = contextKeyService.createKey('isComposing', false);
 
@@ -74,7 +76,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 					continue;
 				}
 
-				const resolvedKeybindings = this.keyboardMapper.resolveUserBinding(keybinding);
+				const resolvedKeybindings = this.keyboardMapper.resolveKeybinding(keybinding);
 				for (let i = resolvedKeybindings.length - 1; i >= 0; i--) {
 					const resolvedKeybinding = resolvedKeybindings[i];
 					result[resultLen++] = new ResolvedKeybindingItem(resolvedKeybinding, item.command, item.commandArgs, when, isDefault, item.extensionId, item.isBuiltinExtension);
@@ -85,7 +87,7 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		return result;
 	}
 
-	private _assertBrowserConflicts(kb: (SimpleKeybinding | ScanCodeBinding)[], commandId: string | null): boolean {
+	private _assertBrowserConflicts(keybinding: Keybinding, commandId: string | null): boolean {
 		if (BrowserFeatures.keyboard === KeyboardSupport.Always) {
 			return false;
 		}
@@ -94,47 +96,47 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 			return false;
 		}
 
-		for (const part of kb) {
-			if (!part.metaKey && !part.altKey && !part.ctrlKey && !part.shiftKey) {
+		for (const chord of keybinding.chords) {
+			if (!chord.metaKey && !chord.altKey && !chord.ctrlKey && !chord.shiftKey) {
 				continue;
 			}
 
 			const modifiersMask = KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.Shift;
 
 			let partModifiersMask = 0;
-			if (part.metaKey) {
+			if (chord.metaKey) {
 				partModifiersMask |= KeyMod.CtrlCmd;
 			}
 
-			if (part.shiftKey) {
+			if (chord.shiftKey) {
 				partModifiersMask |= KeyMod.Shift;
 			}
 
-			if (part.altKey) {
+			if (chord.altKey) {
 				partModifiersMask |= KeyMod.Alt;
 			}
 
-			if (part.ctrlKey && OS === OperatingSystem.Macintosh) {
+			if (chord.ctrlKey && OS === OperatingSystem.Macintosh) {
 				partModifiersMask |= KeyMod.WinCtrl;
 			}
 
 			if ((partModifiersMask & modifiersMask) === (KeyMod.CtrlCmd | KeyMod.Alt)) {
-				if (part instanceof ScanCodeBinding && (part.scanCode === ScanCode.ArrowLeft || part.scanCode === ScanCode.ArrowRight)) {
+				if (chord instanceof ScanCodeChord && (chord.scanCode === ScanCode.ArrowLeft || chord.scanCode === ScanCode.ArrowRight)) {
 					// console.warn('Ctrl/Cmd+Arrow keybindings should not be used by default in web. Offender: ', kb.getHashCode(), ' for ', commandId);
 					return true;
 				}
-				if (part instanceof SimpleKeybinding && (part.keyCode === KeyCode.LeftArrow || part.keyCode === KeyCode.RightArrow)) {
+				if (chord instanceof KeyCodeChord && (chord.keyCode === KeyCode.LeftArrow || chord.keyCode === KeyCode.RightArrow)) {
 					// console.warn('Ctrl/Cmd+Arrow keybindings should not be used by default in web. Offender: ', kb.getHashCode(), ' for ', commandId);
 					return true;
 				}
 			}
 
 			if ((partModifiersMask & modifiersMask) === KeyMod.CtrlCmd) {
-				if (part instanceof ScanCodeBinding && (part.scanCode >= ScanCode.Digit1 && part.scanCode <= ScanCode.Digit0)) {
+				if (chord instanceof ScanCodeChord && (chord.scanCode >= ScanCode.Digit1 && chord.scanCode <= ScanCode.Digit0)) {
 					// console.warn('Ctrl/Cmd+Num keybindings should not be used by default in web. Offender: ', kb.getHashCode(), ' for ', commandId);
 					return true;
 				}
-				if (part instanceof SimpleKeybinding && (part.keyCode >= KeyCode.Digit0 && part.keyCode <= KeyCode.Digit9)) {
+				if (chord instanceof KeyCodeChord && (chord.keyCode >= KeyCode.Digit0 && chord.keyCode <= KeyCode.Digit9)) {
 					// console.warn('Ctrl/Cmd+Num keybindings should not be used by default in web. Offender: ', kb.getHashCode(), ' for ', commandId);
 					return true;
 				}

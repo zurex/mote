@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isCodeEditor } from 'mote/editor/browser/editorBrowser';
+import { isMoteEditor } from 'mote/editor/browser/editorBrowser';
 import { ILifecycleService, StartupKind, StartupKindToString } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IUpdateService } from 'mote/platform/update/common/update';
-import * as files from 'mote/workbench/contrib/files/common/files';
+import * as files from 'mote/workbench/contrib/pages/common/files';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
-import { IWorkspaceTrustManagementService } from 'mote/platform/workspace/common/workspaceTrust';
+//import { IWorkspaceTrustManagementService } from 'mote/platform/workspace/common/workspaceTrust';
 import { IPaneCompositePartService } from 'mote/workbench/services/panecomposite/browser/panecomposite';
 import { ViewContainerLocation } from 'mote/workbench/common/views';
 import { ILogService } from 'mote/platform/log/common/log';
@@ -27,7 +27,7 @@ export abstract class StartupTimings {
 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
 		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
 		@IUpdateService private readonly _updateService: IUpdateService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService
+		//@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService
 	) {
 	}
 
@@ -42,18 +42,16 @@ export abstract class StartupTimings {
 		if (this._lifecycleService.startupKind !== StartupKind.NewWindow) {
 			return StartupKindToString(this._lifecycleService.startupKind);
 		}
-		if (!this._workspaceTrustService.isWorkspaceTrusted()) {
-			return 'Workspace not trusted';
-		}
+
 		const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
-		if (!activeViewlet || activeViewlet.getId() !== files.VIEWLET_ID) {
+		if (!activeViewlet || activeViewlet.getId() !== files.FILES_VIEWLET_ID) {
 			return 'Explorer viewlet not visible';
 		}
 		const visibleEditorPanes = this._editorService.visibleEditorPanes;
 		if (visibleEditorPanes.length !== 1) {
 			return `Expected text editor count : 1, Actual : ${visibleEditorPanes.length}`;
 		}
-		if (!isCodeEditor(visibleEditorPanes[0].getControl())) {
+		if (!isMoteEditor(visibleEditorPanes[0].getControl())) {
 			return 'Active editor is not a text editor';
 		}
 		const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
@@ -75,14 +73,14 @@ export class BrowserStartupTimings extends StartupTimings implements IWorkbenchC
 		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IUpdateService updateService: IUpdateService,
-		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService,
+		//@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService,
 		@ITimerService private readonly timerService: ITimerService,
 		@ILogService private readonly logService: ILogService,
 		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(editorService, paneCompositeService, lifecycleService, updateService);
 
 		this.logPerfMarks();
 	}

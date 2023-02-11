@@ -49,6 +49,14 @@ export interface IModelContentChangedEvent {
 	readonly isFlush: boolean;
 }
 
+
+export interface IModelOptionsChangedEvent {
+	readonly tabSize: boolean;
+	readonly indentSize: boolean;
+	readonly insertSpaces: boolean;
+	readonly trimAutoWhitespace: boolean;
+}
+
 /**
  * @internal
  */

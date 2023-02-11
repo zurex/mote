@@ -95,6 +95,13 @@ export interface IEditorOptions {
 	activation?: EditorActivation;
 
 	/**
+	 * Tells the editor to reload the editor input in the editor even if it is identical to the one
+	 * already showing. By default, the editor will not reload the input if it is identical to the
+	 * one showing.
+	 */
+	forceReload?: boolean;
+
+	/**
 	 * An active editor that is opened will show its contents directly. Set to true to open an editor
 	 * in the background without loading its contents.
 	 *

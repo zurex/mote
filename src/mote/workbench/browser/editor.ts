@@ -1,3 +1,4 @@
+import { localize } from 'mote/nls';
 import { EditorExtensions, IEditorDescriptor as ICommonEditorDescriptor } from 'mote/workbench/common/editor';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { SyncDescriptor } from 'mote/platform/instantiation/common/descriptors';
@@ -6,6 +7,7 @@ import { BrandedService, IConstructorSignature, IInstantiationService } from 'mo
 import { insert } from 'mote/base/common/arrays';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { EditorInput } from 'mote/workbench/common/editorInput';
+import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
 
 
 export interface IEditorPaneDescriptor extends ICommonEditorDescriptor<EditorPane> { }
@@ -146,3 +148,23 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
 
 
 Registry.add(EditorExtensions.EditorPane, new EditorPaneRegistry());
+
+export function computeEditorAriaLabel(input: EditorInput, index: number | undefined, group: IEditorGroup | undefined, groupCount: number | undefined): string {
+	let ariaLabel = input.getAriaLabel();
+	if (group && !group.isPinned(input)) {
+		ariaLabel = localize('preview', "{0}, preview", ariaLabel);
+	}
+
+	if (group?.isSticky(index ?? input)) {
+		ariaLabel = localize('pinned', "{0}, pinned", ariaLabel);
+	}
+
+	// Apply group information to help identify in
+	// which group we are (only if more than one group
+	// is actually opened)
+	if (group && typeof groupCount === 'number' && groupCount > 1) {
+		ariaLabel = `${ariaLabel}, ${group.ariaLabel}`;
+	}
+
+	return ariaLabel;
+}

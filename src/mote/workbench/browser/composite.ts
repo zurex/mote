@@ -87,10 +87,22 @@ export abstract class Composite extends Component {
 		// Subclasses can implement
 	}
 
+	private _hasFocus = false;
+	hasFocus(): boolean {
+		return this._hasFocus;
+	}
+
 	/**
 	 * Layout the contents of this composite using the provided dimensions.
 	 */
 	abstract layout(dimension: Dimension): void;
+
+	/**
+	 * Returns true if this composite is currently visible and false otherwise.
+	 */
+	isVisible(): boolean {
+		return this.visible;
+	}
 
 	/**
 	 * Returns the underlying composite control or `undefined` if it is not accessible.

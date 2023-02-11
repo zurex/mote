@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
-import { IRemoteAgentService } from 'mote/workbench/services/remote/common/remoteAgentService';
 import { IPathService, AbstractPathService } from 'mote/workbench/services/path/common/pathService';
 import { URI } from 'mote/base/common/uri';
 import { IWorkbenchEnvironmentService } from 'mote/workbench/services/environment/common/environmentService';
@@ -37,9 +36,9 @@ function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, co
 
 	const workspace = contextService.getWorkspace();
 
-	const firstFolder = firstOrDefault(workspace.folders);
-	if (firstFolder) {
-		return firstFolder.uri;
+	const firstPage = firstOrDefault(workspace.pages);
+	if (firstPage) {
+		return firstPage.uri;
 	}
 
 	if (workspace.configuration) {

@@ -226,7 +226,8 @@ export class LinesLayout extends Disposable {
 		try {
 			const offset = this.viewLineLayout.getVerticalOffsetForLineNumber(lineNumber, includeViewZones);
 			if (offset >= 0) {
-				return offset;
+				// TODO: fix me
+				return offset - 30;
 			}
 		}
 		catch (e) {

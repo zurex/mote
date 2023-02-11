@@ -24,7 +24,7 @@ import { IFilesConfigurationService } from 'mote/workbench/services/filesConfigu
 import { ILabelService } from 'mote/platform/label/common/label';
 import { CancellationToken, CancellationTokenSource } from 'mote/base/common/cancellation';
 import { UTF16be, UTF16le, UTF8, UTF8_with_bom } from 'mote/workbench/services/textfile/common/encoding';
-import { createTextBufferFactoryFromStream } from 'mote/editor/common/model/textModel';
+import { createTextBufferFactoryFromStream } from 'mote/editor/common/model/textBasedTextModel';
 //import { ILanguageDetectionService } from 'mote/workbench/services/languageDetection/common/languageDetectionWorkerService';
 import { IPathService } from 'mote/workbench/services/path/common/pathService';
 import { extUri } from 'mote/base/common/resources';

@@ -2,11 +2,12 @@ import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { Composite } from 'mote/workbench/browser/composite';
 import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'mote/workbench/browser/parts/editor/editor';
-import { IEditorPane } from 'mote/workbench/common/editor';
+import { IEditorOpenContext, IEditorPane } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IEditorGroup } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IStorageService } from 'mote/platform/storage/common/storage';
 import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
+import { CancellationToken } from 'mote/base/common/cancellation';
 
 /**
  * The base class of editors in the workbench. Editors register themselves for specific editor inputs.
@@ -84,8 +85,35 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 * The provided cancellation token should be used to test if the operation
 	 * was cancelled.
 	 */
-	async setInput(input: EditorInput, options: IEditorOptions | undefined): Promise<void> {
+	async setInput(input: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
 		this._input = input;
+		this._options = options;
+	}
+
+	/**
+	 * Called to indicate to the editor that the input should be cleared and
+	 * resources associated with the input should be freed.
+	 *
+	 * This method can be called based on different contexts, e.g. when opening
+	 * a different input or different editor control or when closing all editors
+	 * in a group.
+	 *
+	 * To monitor the lifecycle of editor inputs, you should not rely on this
+	 * method, rather refer to the listeners on `IEditorGroup` via `IEditorGroupService`.
+	 */
+	clearInput(): void {
+		this._input = undefined;
+		this._options = undefined;
+	}
+
+	/**
+	 * Note: Clients should not call this method, the workbench calls this
+	 * method. Calling it otherwise may result in unexpected behavior.
+	 *
+	 * Sets the given options to the editor. Clients should apply the options
+	 * to the current input.
+	 */
+	setOptions(options: IEditorOptions | undefined): void {
 		this._options = options;
 	}
 
@@ -98,5 +126,11 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 */
 	protected setEditorVisible(visible: boolean, group: IEditorGroup | undefined): void {
 		this._group = group;
+	}
+
+	getViewState(): object | undefined {
+
+		// Subclasses to override
+		return undefined;
 	}
 }

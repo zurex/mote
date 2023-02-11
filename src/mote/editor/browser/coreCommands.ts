@@ -11,9 +11,9 @@ import { EditOperationType } from 'mote/editor/common/cursorCommon';
 
 const CORE_WEIGHT = KeybindingWeight.EditorCore;
 
-export abstract class CoreEditorCommand extends EditorCommand {
-	public runEditorCommand(accessor: ServicesAccessor | null, editor: IMoteEditor, args: any): void {
-		const viewModel = editor.getStore();
+export abstract class CoreEditorCommand<T> extends EditorCommand {
+	public runEditorCommand(accessor: ServicesAccessor | null, editor: IMoteEditor, args: Partial<T>): void {
+		const viewModel = editor._getViewModel();
 		if (!viewModel) {
 			// the editor has no view => has no cursors
 			return;
@@ -21,13 +21,13 @@ export abstract class CoreEditorCommand extends EditorCommand {
 		this.runCoreEditorCommand(viewModel, args || {});
 	}
 
-	public abstract runCoreEditorCommand(viewModel: any, args: any): void;
+	public abstract runCoreEditorCommand(viewModel: IViewModel, args: Partial<T>): void;
 }
 
 export namespace CoreEditingCommands {
 	export abstract class CoreEditingCommand extends EditorCommand {
-		public runEditorCommand(accessor: ServicesAccessor, editor: IMoteEditor, args: any): void {
-			const viewModel = editor.getStore();
+		public runEditorCommand(accessor: ServicesAccessor, editor: IMoteEditor, args: unknown): void {
+			const viewModel = editor._getViewModel();
 			if (!viewModel) {
 				// the editor has no view => has no cursors
 				return;
@@ -35,7 +35,7 @@ export namespace CoreEditingCommands {
 			this.runCoreEditingCommand(editor, viewModel, args || {});
 		}
 
-		public abstract runCoreEditingCommand(editor: IMoteEditor, viewModel: any, args: any): void;
+		public abstract runCoreEditingCommand(editor: IMoteEditor, viewModel: IViewModel, args: unknown): void;
 	}
 
 	export const LineBreakInsert: EditorCommand = registerEditorCommand(new class extends CoreEditingCommand {

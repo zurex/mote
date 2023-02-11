@@ -21,7 +21,14 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 	}
 
 	private _getLineTokens(lineNumber: number): LineTokens {
-		const segments: ISegment[] = this.textBuffer.getLineStore(lineNumber).getTitleStore().getValue() || [];
+		let segments: ISegment[];
+		if (this.textBuffer.getLineStore) {
+			segments = this.textBuffer.getLineStore(lineNumber).getTitleStore().getValue() || [];
+		} else {
+			const lineText = this.textBuffer.getLineContent(lineNumber);
+			segments = [[lineText]];
+		}
+
 		return LineTokens.fromSegments(segments);
 	}
 }

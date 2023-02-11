@@ -17,7 +17,7 @@ import { IWorkbenchEnvironmentService } from 'mote/workbench/services/environmen
 import { TextFileEditorModelManager } from 'mote/workbench/services/textfile/common/textFileEditorModelManager';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { Schemas } from 'mote/base/common/network';
-import { createTextBufferFactoryFromSnapshot, createTextBufferFactoryFromStream } from 'mote/editor/common/model/textModel';
+import { createTextBufferFactoryFromSnapshot, createTextBufferFactoryFromStream } from 'mote/editor/common/model/textBasedTextModel';
 import { IModelService } from 'mote/editor/common/services/model';
 import { joinPath, dirname, basename, toLocalResource, extname, isEqual } from 'mote/base/common/resources';
 import { IDialogService, IFileDialogService, IConfirmation } from 'mote/platform/dialogs/common/dialogs';

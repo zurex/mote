@@ -33,13 +33,6 @@ export class WorkbenchModelService extends ModelService {
 	) {
 		super(configurationService, resourcePropertiesService, themeService, logService, undoRedoService);
 	}
-
-	protected override _schemaShouldMaintainUndoRedoElements(resource: URI) {
-		return (
-			super._schemaShouldMaintainUndoRedoElements(resource)
-			|| resource.scheme === this._pathService.defaultUriScheme
-		);
-	}
 }
 
 registerSingleton(IModelService, WorkbenchModelService, InstantiationType.Delayed);

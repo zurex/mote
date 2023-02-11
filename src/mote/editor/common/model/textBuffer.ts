@@ -1,11 +1,10 @@
-import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
+import { keepLineTypes } from 'mote/editor/common/blockTypes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { ApplyEditsResult, EndOfLinePreference, IInternalModelContentChange, ISingleEditOperationIdentifier, ITextBuffer, IValidEditOperation, ValidAnnotatedEditOperation } from 'mote/editor/common/model';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { BlockTypes } from 'mote/platform/store/common/record';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
 import { Segment } from 'mote/editor/common/core/segment';

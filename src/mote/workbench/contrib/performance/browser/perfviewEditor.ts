@@ -13,7 +13,6 @@ import { ILifecycleService, LifecyclePhase, StartupKindToString } from 'mote/wor
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IModelService } from 'mote/editor/common/services/model';
 import { ITimerService } from 'mote/workbench/services/timer/browser/timerService';
-import { IExtensionService } from 'mote/workbench/services/extensions/common/extensions';
 import { IDisposable, dispose } from 'mote/base/common/lifecycle';
 import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 //import { writeTransientState } from 'mote/workbench/contrib/codeEditor/browser/toggleWordWrap';
@@ -88,10 +87,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 
 		if (!this._model || this._model.isDisposed()) {
 			dispose(this._modelDisposables);
-			//const langId = this._languageService.createById('markdown');
 			this._model = this._modelService.getModel(resource) || this._modelService.createModel('Loading...', resource);
-
-			//this._modelDisposables.push(this._extensionService.onDidChangeExtensionsStatus(this._updateModel, this));
 
 			//writeTransientState(this._model, { wordWrapOverride: 'off' }, this._editorService);
 		}
@@ -181,33 +177,6 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 
 		md.heading(2, 'Performance Marks');
 		md.table(['What', 'Duration', 'Process', 'Info'], table);
-	}
-
-	private _addExtensionsTable(md: MarkdownBuilder): void {
-
-		const eager: ({ toString(): string })[][] = [];
-		const normal: ({ toString(): string })[][] = [];
-		//const extensionsStatus = this._extensionService.getExtensionsStatus();
-		for (const id in extensionsStatus) {
-			const { activationTimes: times } = extensionsStatus[id];
-			if (!times) {
-				continue;
-			}
-			if (times.activationReason.startup) {
-				eager.push([id, times.activationReason.startup, times.codeLoadingTime, times.activateCallTime, times.activateResolvedTime, times.activationReason.activationEvent, times.activationReason.extensionId.value]);
-			} else {
-				normal.push([id, times.activationReason.startup, times.codeLoadingTime, times.activateCallTime, times.activateResolvedTime, times.activationReason.activationEvent, times.activationReason.extensionId.value]);
-			}
-		}
-
-		const table = eager.concat(normal);
-		if (table.length > 0) {
-			md.heading(2, 'Extension Activation Stats');
-			md.table(
-				['Extension', 'Eager', 'Load Code', 'Call Activate', 'Finish Activate', 'Event', 'By'],
-				table
-			);
-		}
 	}
 
 	private _addRawPerfMarks(md: MarkdownBuilder): void {

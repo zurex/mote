@@ -3,6 +3,7 @@ import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { ITextModel, IValidEditOperation } from 'mote/editor/common/model';
 import { IDisposable } from 'mote/base/common/lifecycle';
 import { IDimension } from 'mote/editor/common/core/dimension';
+import { IPosition } from 'mote/editor/common/core/position';
 
 /**
  * A builder and helper for edit operations for a command.
@@ -107,6 +108,43 @@ export interface IEditorAction {
 	isSupported(): boolean;
 	run(): Promise<void>;
 }
+
+/**
+ * A (serializable) state of the cursors.
+ */
+export interface ICursorState {
+	inSelectionMode: boolean;
+	selectionStart: IPosition;
+	position: IPosition;
+}
+
+/**
+ * A (serializable) state of the view.
+ */
+export interface IViewState {
+	/** written by previous versions */
+	scrollTop?: number;
+	/** written by previous versions */
+	scrollTopWithoutViewZones?: number;
+	scrollLeft: number;
+	firstPosition: IPosition;
+	firstPositionDeltaTop: number;
+}
+
+/**
+ * A (serializable) state of the code editor.
+ */
+export interface IMoteEditorViewState {
+	cursorState: ICursorState[];
+	viewState: IViewState;
+	contributionsState: { [id: string]: any };
+}
+
+/**
+ * An editor view state.
+ */
+export type IEditorViewState = IMoteEditorViewState;
+
 
 export const enum ScrollType {
 	Smooth = 0,

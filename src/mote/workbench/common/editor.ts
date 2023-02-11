@@ -1,3 +1,5 @@
+import { localize } from 'mote/nls';
+import { Event } from 'mote/base/common/event';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 import { IStoreService } from 'mote/platform/store/common/store';
@@ -13,6 +15,8 @@ import { Disposable, IDisposable, toDisposable } from 'mote/base/common/lifecycl
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { IEditor } from 'mote/editor/common/editorCommon';
 
 export type GroupIdentifier = number;
 
@@ -21,6 +25,13 @@ export type GroupIdentifier = number;
 export const EditorExtensions = {
 	EditorPane: 'workbench.contributions.editors',
 	EditorFactory: 'workbench.contributions.editor.inputFactories'
+};
+
+// Static information regarding the text editor
+export const DEFAULT_EDITOR_ASSOCIATION = {
+	id: 'default',
+	displayName: localize('promptOpenWith.defaultEditor.displayName', "Text Editor"),
+	providerDisplayName: localize('builtinProviderDisplayName', "Built-in")
 };
 
 /**
@@ -50,6 +61,165 @@ export interface IEditorPane extends IComposite {
 	 * changes.
 	 */
 	getControl(): IEditorControl | undefined;
+
+	/**
+	 * Returns the current view state of the editor if any.
+	 *
+	 * This method is optional to override for the editor pane
+	 * and should only be overridden when the pane can deal with
+	 * `IEditorOptions.viewState` to be applied when opening.
+	 */
+	getViewState(): object | undefined;
+
+	/**
+	 * An optional method to return the current selection in
+	 * the editor pane in case the editor pane has a selection
+	 * concept.
+	 *
+	 * Clients of this method will typically react to the
+	 * `onDidChangeSelection` event to receive the current
+	 * selection as needed.
+	 */
+	getSelection?(): IEditorPaneSelection | undefined;
+
+	/**
+	 * Finds out if this editor is visible or not.
+	 */
+	isVisible(): boolean;
+}
+
+export const enum EditorPaneSelectionChangeReason {
+
+	/**
+	 * The selection was changed as a result of a programmatic
+	 * method invocation.
+	 *
+	 * For a text editor pane, this for example can be a selection
+	 * being restored from previous view state automatically.
+	 */
+	PROGRAMMATIC = 1,
+
+	/**
+	 * The selection was changed by the user.
+	 *
+	 * This typically means the user changed the selection
+	 * with mouse or keyboard.
+	 */
+	USER,
+
+	/**
+	 * The selection was changed as a result of editing in
+	 * the editor pane.
+	 *
+	 * For a text editor pane, this for example can be typing
+	 * in the text of the editor pane.
+	 */
+	EDIT,
+
+	/**
+	 * The selection was changed as a result of a navigation
+	 * action.
+	 *
+	 * For a text editor pane, this for example can be a result
+	 * of selecting an entry from a text outline view.
+	 */
+	NAVIGATION,
+
+	/**
+	 * The selection was changed as a result of a jump action
+	 * from within the editor pane.
+	 *
+	 * For a text editor pane, this for example can be a result
+	 * of invoking "Go to definition" from a symbol.
+	 */
+	JUMP
+}
+
+export interface IEditorPaneSelectionChangeEvent {
+
+	/**
+	 * More details for how the selection was made.
+	 */
+	reason: EditorPaneSelectionChangeReason;
+}
+
+export interface IEditorPaneSelection {
+
+	/**
+	 * Asks to compare this selection to another selection.
+	 */
+	compare(otherSelection: IEditorPaneSelection): EditorPaneSelectionCompareResult;
+
+	/**
+	 * Asks to massage the provided `options` in a way
+	 * that the selection can be restored when the editor
+	 * is opened again.
+	 *
+	 * For a text editor this means to apply the selected
+	 * line and column as text editor options.
+	 */
+	restore(options: IEditorOptions): IEditorOptions;
+
+	/**
+	 * Only used for logging to print more info about the selection.
+	 */
+	log?(): string;
+}
+
+export const enum EditorPaneSelectionCompareResult {
+
+	/**
+	 * The selections are identical.
+	 */
+	IDENTICAL = 1,
+
+	/**
+	 * The selections are similar.
+	 *
+	 * For a text editor this can mean that the one
+	 * selection is in close proximity to the other
+	 * selection.
+	 *
+	 * Upstream clients may decide in this case to
+	 * not treat the selection different from the
+	 * previous one because it is not distinct enough.
+	 */
+	SIMILAR = 2,
+
+	/**
+	 * The selections are entirely different.
+	 */
+	DIFFERENT = 3
+}
+
+export interface IEditorPaneWithSelection extends IEditorPane {
+
+	readonly onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent>;
+
+	getSelection(): IEditorPaneSelection | undefined;
+}
+
+export function isEditorPaneWithSelection(editorPane: IEditorPane | undefined): editorPane is IEditorPaneWithSelection {
+	const candidate = editorPane as IEditorPaneWithSelection | undefined;
+
+	return !!candidate && typeof candidate.getSelection === 'function' && !!candidate.onDidChangeSelection;
+}
+
+/**
+ * Try to retrieve the view state for the editor pane that
+ * has the provided editor input opened, if at all.
+ *
+ * This method will return `undefined` if the editor input
+ * is not visible in any of the opened editor panes.
+ */
+export function findViewStateForEditor(input: EditorInput, group: GroupIdentifier, editorService: IEditorService): object | undefined {
+	for (const editorPane of editorService.visibleEditorPanes) {
+		if (editorPane.group.id === group && input.matches(editorPane.input)) {
+			return editorPane.getViewState();
+		}
+	}
+
+	return undefined;
 }
 
 /**
@@ -58,6 +228,17 @@ export interface IEditorPane extends IComposite {
 export interface IVisibleEditorPane extends IEditorPane {
 	readonly input: EditorInput;
 	readonly group: IEditorGroup;
+}
+
+/**
+ * The text editor pane is the container for workbench text editors.
+ */
+export interface ITextEditorPane extends IEditorPane {
+
+	/**
+	 * Returns the underlying text editor widget of this editor.
+	 */
+	getControl(): IEditor | undefined;
 }
 
 export interface IEditorFactoryRegistry {

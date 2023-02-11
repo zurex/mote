@@ -30,7 +30,7 @@ export class DocumentEditor extends EditorPane {
 	//private editorContainer!: HTMLElement;
 	private onChangeListener: IDisposable | undefined = undefined;
 
-	private editorControl: IMoteEditor | undefined = undefined;
+	private editorControl: MoteEditorWidget | undefined = undefined;
 
 	constructor(
 		@IInstantiationService private instantiationService: IInstantiationService,

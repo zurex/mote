@@ -8,8 +8,7 @@ import * as strings from 'mote/base/common/strings';
 import { WordCharacterClass, WordCharacterClassifier, getMapForWordSeparators } from 'mote/editor/common/core/wordCharacterClassifier';
 import { Position } from 'mote/editor/common/core/position';
 import { EditorRange } from 'mote/editor/common/core/editorRange';
-import { EndOfLinePreference, FindMatch, SearchData } from 'mote/editor/common/model';
-import { TextModel } from 'mote/editor/common/model/textModel';
+import { EndOfLinePreference, FindMatch, ITextModel, SearchData } from 'mote/editor/common/model';
 
 const LIMIT_FIND_COUNT = 999;
 
@@ -160,7 +159,7 @@ class LineFeedCounter {
 
 export class TextModelSearch {
 
-	public static findMatches(model: TextModel, searchParams: SearchParams, searchRange: EditorRange, captureMatches: boolean, limitResultCount: number): FindMatch[] {
+	public static findMatches(model: ITextModel, searchParams: SearchParams, searchRange: EditorRange, captureMatches: boolean, limitResultCount: number): FindMatch[] {
 		const searchData = searchParams.parseSearchRequest();
 		if (!searchData) {
 			return [];
@@ -176,7 +175,7 @@ export class TextModelSearch {
 	 * Multiline search always executes on the lines concatenated with \n.
 	 * We must therefore compensate for the count of \n in case the model is CRLF
 	 */
-	private static _getMultilineMatchRange(model: TextModel, deltaOffset: number, text: string, lfCounter: LineFeedCounter | null, matchIndex: number, match0: string): EditorRange {
+	private static _getMultilineMatchRange(model: ITextModel, deltaOffset: number, text: string, lfCounter: LineFeedCounter | null, matchIndex: number, match0: string): EditorRange {
 		let startOffset: number;
 		let lineFeedCountBeforeMatch = 0;
 		if (lfCounter) {
@@ -200,7 +199,7 @@ export class TextModelSearch {
 		return new EditorRange(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column);
 	}
 
-	private static _doFindMatchesMultiline(model: TextModel, searchRange: EditorRange, searcher: Searcher, captureMatches: boolean, limitResultCount: number): FindMatch[] {
+	private static _doFindMatchesMultiline(model: ITextModel, searchRange: EditorRange, searcher: Searcher, captureMatches: boolean, limitResultCount: number): FindMatch[] {
 		const deltaOffset = model.getOffsetAt(searchRange.getStartPosition());
 		// We always execute multiline search over the lines joined with \n
 		// This makes it that \n will match the EOL for both CRLF and LF models
@@ -223,7 +222,7 @@ export class TextModelSearch {
 		return result;
 	}
 
-	private static _doFindMatchesLineByLine(model: TextModel, searchRange: EditorRange, searchData: SearchData, captureMatches: boolean, limitResultCount: number): FindMatch[] {
+	private static _doFindMatchesLineByLine(model: ITextModel, searchRange: EditorRange, searchData: SearchData, captureMatches: boolean, limitResultCount: number): FindMatch[] {
 		const result: FindMatch[] = [];
 		let resultLen = 0;
 
@@ -287,7 +286,7 @@ export class TextModelSearch {
 		return resultLen;
 	}
 
-	public static findNextMatch(model: TextModel, searchParams: SearchParams, searchStart: Position, captureMatches: boolean): FindMatch | null {
+	public static findNextMatch(model: ITextModel, searchParams: SearchParams, searchStart: Position, captureMatches: boolean): FindMatch | null {
 		const searchData = searchParams.parseSearchRequest();
 		if (!searchData) {
 			return null;
@@ -301,7 +300,7 @@ export class TextModelSearch {
 		return this._doFindNextMatchLineByLine(model, searchStart, searcher, captureMatches);
 	}
 
-	private static _doFindNextMatchMultiline(model: TextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
+	private static _doFindNextMatchMultiline(model: ITextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
 		const searchTextStart = new Position(searchStart.lineNumber, 1);
 		const deltaOffset = model.getOffsetAt(searchTextStart);
 		const lineCount = model.getLineCount();
@@ -328,7 +327,7 @@ export class TextModelSearch {
 		return null;
 	}
 
-	private static _doFindNextMatchLineByLine(model: TextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
+	private static _doFindNextMatchLineByLine(model: ITextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
 		const lineCount = model.getLineCount();
 		const startLineNumber = searchStart.lineNumber;
 
@@ -365,7 +364,7 @@ export class TextModelSearch {
 		return null;
 	}
 
-	public static findPreviousMatch(model: TextModel, searchParams: SearchParams, searchStart: Position, captureMatches: boolean): FindMatch | null {
+	public static findPreviousMatch(model: ITextModel, searchParams: SearchParams, searchStart: Position, captureMatches: boolean): FindMatch | null {
 		const searchData = searchParams.parseSearchRequest();
 		if (!searchData) {
 			return null;
@@ -379,7 +378,7 @@ export class TextModelSearch {
 		return this._doFindPreviousMatchLineByLine(model, searchStart, searcher, captureMatches);
 	}
 
-	private static _doFindPreviousMatchMultiline(model: TextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
+	private static _doFindPreviousMatchMultiline(model: ITextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
 		const matches = this._doFindMatchesMultiline(model, new EditorRange(1, 1, searchStart.lineNumber, searchStart.column), searcher, captureMatches, 10 * LIMIT_FIND_COUNT);
 		if (matches.length > 0) {
 			return matches[matches.length - 1];
@@ -394,7 +393,7 @@ export class TextModelSearch {
 		return null;
 	}
 
-	private static _doFindPreviousMatchLineByLine(model: TextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
+	private static _doFindPreviousMatchLineByLine(model: ITextModel, searchStart: Position, searcher: Searcher, captureMatches: boolean): FindMatch | null {
 		const lineCount = model.getLineCount();
 		const startLineNumber = searchStart.lineNumber;
 

@@ -74,6 +74,13 @@ export interface IEditorService {
 	 */
 	readonly activeEditorControl: IEditor | undefined;
 
+	/**
+	 * All editor panes that are currently visible across all editor groups.
+	 *
+	 * @see {@link IEditorService.visibleEditors} for access to the visible editor inputs
+	 */
+	readonly visibleEditorPanes: readonly IVisibleEditorPane[];
+
 	openEditor(editor: EditorInput): Promise<IEditorPane | undefined>;
 
 	openEditorWithResource(editor: IResourceEditorInput): Promise<IEditorPane | undefined>;

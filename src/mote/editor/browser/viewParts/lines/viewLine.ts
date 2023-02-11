@@ -269,15 +269,6 @@ export class ViewLine implements IVisibleLine {
 		sb.appendString('</div>');
 
 		let renderedViewLine: IRenderedViewLine | null = null;
-		/*
-		if (monospaceAssumptionsAreValid && canUseFastRenderedViewLine && lineData.isBasicASCII && this.options.useMonospaceOptimizations && output.containsForeignElements === ForeignElementType.None) {
-			renderedViewLine = new FastRenderedViewLine(
-				this._renderedViewLine ? this._renderedViewLine.domNode : null,
-				renderLineInput,
-				output.characterMapping
-			);
-		}
-		*/
 
 		if (!renderedViewLine) {
 			renderedViewLine = createRenderedLine(

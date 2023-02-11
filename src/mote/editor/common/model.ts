@@ -5,11 +5,12 @@ import { EditorRange, IRange } from 'mote/editor/common/core/editorRange';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { IPosition, Position } from 'mote/editor/common/core/position';
 import { TextChange } from 'mote/editor/common/core/textChange';
-import { IModelContentChange, IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent } from 'mote/editor/common/textModelEvents';
+import { IModelContentChange, IModelContentChangedEvent, IModelOptionsChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent } from 'mote/editor/common/textModelEvents';
 import { ITokenizationTextModelPart } from 'mote/editor/common/tokenizationTextModelPart';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { UndoRedoGroup } from 'mote/platform/undoRedo/common/undoRedo';
 import { URI } from 'mote/base/common/uri';
+import { equals } from 'mote/base/common/objects';
 
 export const enum PositionAffinity {
 	/**
@@ -160,6 +161,12 @@ export interface ITextModel {
 	readonly onDidChangeContentOrInjectedText: Event<InternalModelContentChangeEvent | ModelInjectedTextChangedEvent>;
 
 	/**
+	 * An event emitted right before disposing the model.
+	 * @event
+	 */
+	readonly onWillDispose: Event<void>;
+
+	/**
 	 * Gets the resource associated with this editor model.
 	 */
 	readonly uri: URI;
@@ -167,11 +174,29 @@ export interface ITextModel {
 	isEmpty(): boolean;
 
 	/**
+	 * Returns if the model was disposed or not.
+	 */
+	isDisposed(): boolean;
+
+	/**
 	 * Get the current version id of the model.
 	 * Anytime a change happens to the model (even undo/redo),
 	 * the version id is incremented.
 	 */
 	getVersionId(): number;
+
+	/**
+	 * Replace the entire text buffer value contained in this model.
+	 */
+	setValue(newValue: string | ITextSnapshot): void;
+
+	/**
+	 * Get the text stored in this model.
+	 * @param eol The end of line character preference. Defaults to `EndOfLinePreference.TextDefined`.
+	 * @param preserverBOM Preserve a BOM character if it was detected when the model was constructed.
+	 * @return The text.
+	 */
+	getValue(eol?: EndOfLinePreference, preserveBOM?: boolean): string;
 
 	/**
 	 * Get the resolved options for this model.
@@ -442,6 +467,74 @@ export interface ICursorStateComputer {
 	(inverseEditOperations: IValidEditOperation[]): EditorSelection[] | null;
 }
 
+export class TextModelResolvedOptions {
+	_textModelResolvedOptionsBrand: void = undefined;
+
+	readonly tabSize: number;
+	readonly indentSize: number;
+	private readonly _indentSizeIsTabSize: boolean;
+	readonly insertSpaces: boolean;
+	readonly defaultEOL: DefaultEndOfLine;
+	readonly trimAutoWhitespace: boolean;
+	readonly bracketPairColorizationOptions: BracketPairColorizationOptions;
+
+	public get originalIndentSize(): number | 'tabSize' {
+		return this._indentSizeIsTabSize ? 'tabSize' : this.indentSize;
+	}
+
+	/**
+	 * @internal
+	 */
+	constructor(src: {
+		tabSize: number;
+		indentSize: number | 'tabSize';
+		insertSpaces: boolean;
+		defaultEOL: DefaultEndOfLine;
+		trimAutoWhitespace: boolean;
+		bracketPairColorizationOptions: BracketPairColorizationOptions;
+	}) {
+		this.tabSize = Math.max(1, src.tabSize | 0);
+		if (src.indentSize === 'tabSize') {
+			this.indentSize = this.tabSize;
+			this._indentSizeIsTabSize = true;
+		} else {
+			this.indentSize = Math.max(1, src.indentSize | 0);
+			this._indentSizeIsTabSize = false;
+		}
+		this.insertSpaces = Boolean(src.insertSpaces);
+		this.defaultEOL = src.defaultEOL | 0;
+		this.trimAutoWhitespace = Boolean(src.trimAutoWhitespace);
+		this.bracketPairColorizationOptions = src.bracketPairColorizationOptions;
+	}
+
+	/**
+	 * @internal
+	 */
+	public equals(other: TextModelResolvedOptions): boolean {
+		return (
+			this.tabSize === other.tabSize
+			&& this._indentSizeIsTabSize === other._indentSizeIsTabSize
+			&& this.indentSize === other.indentSize
+			&& this.insertSpaces === other.insertSpaces
+			&& this.defaultEOL === other.defaultEOL
+			&& this.trimAutoWhitespace === other.trimAutoWhitespace
+			&& equals(this.bracketPairColorizationOptions, other.bracketPairColorizationOptions)
+		);
+	}
+
+	/**
+	 * @internal
+	 */
+	public createChangeEvent(newOpts: TextModelResolvedOptions): IModelOptionsChangedEvent {
+		return {
+			tabSize: this.tabSize !== newOpts.tabSize,
+			indentSize: this.indentSize !== newOpts.indentSize,
+			insertSpaces: this.insertSpaces !== newOpts.insertSpaces,
+			trimAutoWhitespace: this.trimAutoWhitespace !== newOpts.trimAutoWhitespace,
+		};
+	}
+}
+
 /**
  * @internal
  */
@@ -476,6 +569,7 @@ export interface IReadonlyTextBuffer {
 	getLineStore(lineNumber: number): BlockStore;
 
 	getValueInRange(range: EditorRange, eol: EndOfLinePreference): string;
+	getValueLengthInRange(range: EditorRange, eol: EndOfLinePreference): number;
 	getCharacterCountInRange(range: EditorRange, eol: EndOfLinePreference): number;
 
 	getEOL(): string;

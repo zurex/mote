@@ -80,6 +80,9 @@ export class TemplatePicker extends ViewPart {
 	}
 
 	public render(): void {
+		if (!this.context.contentStore) {
+			return;
+		}
 		const pageIds: string[] = this.context.contentStore.getValue() || [];
 		if (pageIds.length > 0) {
 			clearNode(this.domNode.domNode);

@@ -9,57 +9,18 @@ import { ITokenizationTextModelPart } from 'mote/editor/common/tokenizationTextM
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { UndoRedoGroup } from 'mote/platform/undoRedo/common/undoRedo';
-import { IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent, ModelRawChange, ModelRawContentChangedEvent, ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from 'mote/editor/common/textModelEvents';
+import { IModelContentChangedEvent, InternalModelContentChangeEvent, ModelInjectedTextChangedEvent, ModelRawChange, ModelRawContentChangedEvent, ModelRawFlush, ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from 'mote/editor/common/textModelEvents';
 import { Emitter, Event } from 'mote/base/common/event';
-import { TextBuffer } from 'mote/editor/common/model/textBuffer';
 import { URI } from 'mote/base/common/uri';
-import { VSBuffer, VSBufferReadableStream } from 'mote/base/common/buffer';
-import { listenStream } from 'mote/base/common/stream';
-import { PieceTreeTextBufferBuilder } from 'mote/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder';
 
-export function createTextBufferFactory(text: string): model.ITextBufferFactory {
-	const builder = new PieceTreeTextBufferBuilder();
-	builder.acceptChunk(text);
-	return builder.finish();
-}
+export abstract class AbstractTextModel extends Disposable implements ITextModel {
 
-interface ITextStream {
-	on(event: 'data', callback: (data: string) => void): void;
-	on(event: 'error', callback: (err: Error) => void): void;
-	on(event: 'end', callback: () => void): void;
-	on(event: string, callback: any): void;
-}
+	public static resolveOptions(textBuffer: model.ITextBuffer, options: model.ITextModelCreationOptions): model.TextModelResolvedOptions {
+		return new model.TextModelResolvedOptions(options);
+	}
 
-export function createTextBufferFactoryFromStream(stream: ITextStream): Promise<model.ITextBufferFactory>;
-export function createTextBufferFactoryFromStream(stream: VSBufferReadableStream): Promise<model.ITextBufferFactory>;
-export function createTextBufferFactoryFromStream(stream: ITextStream | VSBufferReadableStream): Promise<model.ITextBufferFactory> {
-	return new Promise<model.ITextBufferFactory>((resolve, reject) => {
-		const builder = new PieceTreeTextBufferBuilder();
-
-		let done = false;
-
-		listenStream<string | VSBuffer>(stream, {
-			onData: chunk => {
-				builder.acceptChunk((typeof chunk === 'string') ? chunk : chunk.toString());
-			},
-			onError: error => {
-				if (!done) {
-					done = true;
-					reject(error);
-				}
-			},
-			onEnd: () => {
-				if (!done) {
-					done = true;
-					resolve(builder.finish());
-				}
-			}
-		});
-	});
-}
-
-export class TextModel extends Disposable implements ITextModel {
-
+	private readonly _onWillDispose: Emitter<void> = this._register(new Emitter<void>());
+	public readonly onWillDispose: Event<void> = this._onWillDispose.event;
 
 	private readonly _onDidChangeDecorations: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onDidChangeDecorations: Event<void> = this._onDidChangeDecorations.event;
@@ -77,7 +38,9 @@ export class TextModel extends Disposable implements ITextModel {
 	}
 
 	private attachedEditorCount: number;
-	private buffer: model.ITextBuffer;
+	private buffer!: model.ITextBuffer;
+	private bufferDisposable!: IDisposable;
+	protected options!: model.TextModelResolvedOptions;
 
 	private _isDisposed: boolean;
 	private __isDisposing: boolean;
@@ -94,12 +57,13 @@ export class TextModel extends Disposable implements ITextModel {
 	private _isRedoing: boolean;
 	//#endregion
 
-	private readonly _tokenizationTextModelPart: TokenizationTextModelPart;
+	private _tokenizationTextModelPart!: TokenizationTextModelPart;
 	public get tokenization(): ITokenizationTextModelPart { return this._tokenizationTextModelPart; }
 
 
 	constructor(
-		pageStore: BlockStore
+		protected creationOptions: model.ITextModelCreationOptions,
+		private associatedResource: URI,
 	) {
 		super();
 
@@ -108,16 +72,25 @@ export class TextModel extends Disposable implements ITextModel {
 		this._isDisposed = false;
 		this.__isDisposing = false;
 
-		this.buffer = new TextBuffer(pageStore);
-
 		this.commandManager = new EditStack(this);
 		this._isUndoing = false;
 		this._isRedoing = false;
-		this._tokenizationTextModelPart = new TokenizationTextModelPart(this.buffer);
+
 	}
 
+	protected initialize() {
+		const [textBuffer, disposable] = this.createTextBuffer();
+		this.buffer = textBuffer;
+		this.bufferDisposable = disposable;
+		this._tokenizationTextModelPart = new TokenizationTextModelPart(this.buffer);
+
+		this.options = AbstractTextModel.resolveOptions(this.buffer, this.creationOptions);
+	}
+
+	abstract createTextBuffer(): [model.ITextBuffer, IDisposable];
+
 	get uri(): URI {
-		return null as any;
+		return this.associatedResource;
 	}
 
 	getDecorationRange(id: string): EditorRange | null {
@@ -131,6 +104,10 @@ export class TextModel extends Disposable implements ITextModel {
 	getVersionId(): number {
 		this.assertNotDisposed();
 		return this._versionId;
+	}
+
+	public isDisposed(): boolean {
+		return this._isDisposed;
 	}
 
 	private increaseVersionId(): void {
@@ -221,9 +198,30 @@ export class TextModel extends Disposable implements ITextModel {
 		return this.buffer.getValueInRange(this.validateRange(rawRange), eol);
 	}
 
+	public getValueLengthInRange(rawRange: IRange, eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined): number {
+		this.assertNotDisposed();
+		return this.buffer.getValueLengthInRange(this.validateRange(rawRange), eol);
+	}
+
 	public getCharacterCountInRange(rawRange: IRange, eol: model.EndOfLinePreference = model.EndOfLinePreference.TextDefined): number {
 		this.assertNotDisposed();
 		return this.buffer.getCharacterCountInRange(this.validateRange(rawRange), eol);
+	}
+
+	public getFullModelRange(): EditorRange {
+		this.assertNotDisposed();
+		const lineCount = this.getLineCount();
+		return new EditorRange(1, 1, lineCount, this.getLineMaxColumn(lineCount));
+	}
+
+	public abstract setValue(newValue: string | model.ITextSnapshot): void;
+
+	public getValue(eol?: model.EndOfLinePreference, preserveBOM: boolean = false): string {
+		this.assertNotDisposed();
+		const fullModelRange = this.getFullModelRange();
+		const fullModelValue = this.getValueInRange(fullModelRange, eol);
+
+		return fullModelValue;
 	}
 
 	//#endregion
@@ -409,10 +407,76 @@ export class TextModel extends Disposable implements ITextModel {
 
 	//#endregion
 
-	private assertNotDisposed(): void {
+	protected _setValueFromTextBuffer(textBuffer: model.ITextBuffer, textBufferDisposable: IDisposable): void {
+		this.assertNotDisposed();
+		const oldFullModelRange = this.getFullModelRange();
+		const oldModelValueLength = this.getValueLengthInRange(oldFullModelRange);
+		const endLineNumber = this.getLineCount();
+		const endColumn = this.getLineMaxColumn(endLineNumber);
+
+		this.buffer = textBuffer;
+		this.bufferDisposable.dispose();
+		this.bufferDisposable = textBufferDisposable;
+		this.increaseVersionId();
+
+		// Flush all tokens
+		//this._tokenizationTextModelPart.flush();
+
+		// Destroy all my decorations
+		//this._decorations = Object.create(null);
+		//this._decorationsTree = new DecorationsTrees();
+
+		// Destroy my edit history and settings
+		this.commandManager.clear();
+		//this._trimAutoWhitespaceLines = null;
+
+		this.emitContentChangedEvent(
+			new ModelRawContentChangedEvent(
+				[
+					new ModelRawFlush()
+				],
+				this._versionId,
+				false,
+				false
+			),
+			this._createContentChanged2(new EditorRange(1, 1, endLineNumber, endColumn), 0, oldModelValueLength, this.getValue(), false, false, true)
+		);
+	}
+
+	private _createContentChanged2(range: EditorRange, rangeOffset: number, rangeLength: number, text: string, isUndoing: boolean, isRedoing: boolean, isFlush: boolean): IModelContentChangedEvent {
+		return {
+			changes: [{
+				range: range,
+				rangeOffset: rangeOffset,
+				rangeLength: rangeLength,
+				text: text,
+			}],
+			eol: this.buffer.getEOL(),
+			versionId: this.getVersionId(),
+			isUndoing: isUndoing,
+			isRedoing: isRedoing,
+			isFlush: isFlush
+		};
+	}
+
+	protected assertNotDisposed(): void {
 		if (this._isDisposed) {
 			throw new Error('Model is disposed!');
 		}
+	}
+
+	public override dispose(): void {
+		this.__isDisposing = true;
+		this._onWillDispose.fire();
+		this._tokenizationTextModelPart.dispose();
+		this._isDisposed = true;
+
+		super.dispose();
+
+		this.bufferDisposable.dispose();
+		this.__isDisposing = false;
+		// Manually release reference to previous text buffer to avoid large leaks
+		// in case someone leaks a TextModel reference
 	}
 }
 

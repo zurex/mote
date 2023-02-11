@@ -28,21 +28,6 @@ const enum BinaryKeybindingsMask {
 	KeyCode = 0x000000FF
 }
 
-export function createKeybinding(keybinding: number, OS: OperatingSystem): Keybinding | null {
-	if (keybinding === 0) {
-		return null;
-	}
-	const firstPart = (keybinding & 0x0000FFFF) >>> 0;
-	const chordPart = (keybinding & 0xFFFF0000) >>> 16;
-	if (chordPart !== 0) {
-		return new ChordKeybinding([
-			createSimpleKeybinding(firstPart, OS),
-			createSimpleKeybinding(chordPart, OS)
-		]);
-	}
-	return new ChordKeybinding([createSimpleKeybinding(firstPart, OS)]);
-}
-
 export function decodeKeybinding(keybinding: number, OS: OperatingSystem): Keybinding | null {
 	if (keybinding === 0) {
 		return null;
@@ -241,168 +226,8 @@ export class ResolvedChord {
 
 export type SingleModifierChord = 'ctrl' | 'shift' | 'alt' | 'meta';
 
-export interface IBaseKeybinding extends Modifiers {
-	isDuplicateModifierCase(): boolean;
-}
-
-export class SimpleKeybinding implements IBaseKeybinding {
-	public readonly ctrlKey: boolean;
-	public readonly shiftKey: boolean;
-	public readonly altKey: boolean;
-	public readonly metaKey: boolean;
-	public readonly keyCode: KeyCode;
-
-	constructor(ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, keyCode: KeyCode) {
-		this.ctrlKey = ctrlKey;
-		this.shiftKey = shiftKey;
-		this.altKey = altKey;
-		this.metaKey = metaKey;
-		this.keyCode = keyCode;
-	}
-
-	public equals(other: SimpleKeybinding): boolean {
-		return (
-			this.ctrlKey === other.ctrlKey
-			&& this.shiftKey === other.shiftKey
-			&& this.altKey === other.altKey
-			&& this.metaKey === other.metaKey
-			&& this.keyCode === other.keyCode
-		);
-	}
-
-	public getHashCode(): string {
-		const ctrl = this.ctrlKey ? '1' : '0';
-		const shift = this.shiftKey ? '1' : '0';
-		const alt = this.altKey ? '1' : '0';
-		const meta = this.metaKey ? '1' : '0';
-		return `${ctrl}${shift}${alt}${meta}${this.keyCode}`;
-	}
-
-	public isModifierKey(): boolean {
-		return (
-			this.keyCode === KeyCode.Unknown
-			|| this.keyCode === KeyCode.Ctrl
-			|| this.keyCode === KeyCode.Meta
-			|| this.keyCode === KeyCode.Alt
-			|| this.keyCode === KeyCode.Shift
-		);
-	}
-
-	public toChord(): ChordKeybinding {
-		return new ChordKeybinding([this]);
-	}
-
-	/**
-	 * Does this keybinding refer to the key code of a modifier and it also has the modifier flag?
-	 */
-	public isDuplicateModifierCase(): boolean {
-		return (
-			(this.ctrlKey && this.keyCode === KeyCode.Ctrl)
-			|| (this.shiftKey && this.keyCode === KeyCode.Shift)
-			|| (this.altKey && this.keyCode === KeyCode.Alt)
-			|| (this.metaKey && this.keyCode === KeyCode.Meta)
-		);
-	}
-}
-
-export class ChordKeybinding {
-	public readonly parts: SimpleKeybinding[];
-
-	constructor(parts: SimpleKeybinding[]) {
-		if (parts.length === 0) {
-			throw illegalArgument(`parts`);
-		}
-		this.parts = parts;
-	}
-
-	public getHashCode(): string {
-		let result = '';
-		for (let i = 0, len = this.parts.length; i < len; i++) {
-			if (i !== 0) {
-				result += ';';
-			}
-			result += this.parts[i].getHashCode();
-		}
-		return result;
-	}
-
-	public equals(other: ChordKeybinding | null): boolean {
-		if (other === null) {
-			return false;
-		}
-		if (this.parts.length !== other.parts.length) {
-			return false;
-		}
-		for (let i = 0; i < this.parts.length; i++) {
-			if (!this.parts[i].equals(other.parts[i])) {
-				return false;
-			}
-		}
-		return true;
-	}
-}
-
-export class ScanCodeBinding implements IBaseKeybinding {
-	public readonly ctrlKey: boolean;
-	public readonly shiftKey: boolean;
-	public readonly altKey: boolean;
-	public readonly metaKey: boolean;
-	public readonly scanCode: ScanCode;
-
-	constructor(ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, scanCode: ScanCode) {
-		this.ctrlKey = ctrlKey;
-		this.shiftKey = shiftKey;
-		this.altKey = altKey;
-		this.metaKey = metaKey;
-		this.scanCode = scanCode;
-	}
-
-	public equals(other: ScanCodeBinding): boolean {
-		return (
-			this.ctrlKey === other.ctrlKey
-			&& this.shiftKey === other.shiftKey
-			&& this.altKey === other.altKey
-			&& this.metaKey === other.metaKey
-			&& this.scanCode === other.scanCode
-		);
-	}
-
-	/**
-	 * Does this keybinding refer to the key code of a modifier and it also has the modifier flag?
-	 */
-	public isDuplicateModifierCase(): boolean {
-		return (
-			(this.ctrlKey && (this.scanCode === ScanCode.ControlLeft || this.scanCode === ScanCode.ControlRight))
-			|| (this.shiftKey && (this.scanCode === ScanCode.ShiftLeft || this.scanCode === ScanCode.ShiftRight))
-			|| (this.altKey && (this.scanCode === ScanCode.AltLeft || this.scanCode === ScanCode.AltRight))
-			|| (this.metaKey && (this.scanCode === ScanCode.MetaLeft || this.scanCode === ScanCode.MetaRight))
-		);
-	}
-}
-
-export class ResolvedKeybindingPart {
-	readonly ctrlKey: boolean;
-	readonly shiftKey: boolean;
-	readonly altKey: boolean;
-	readonly metaKey: boolean;
-
-	readonly keyLabel: string | null;
-	readonly keyAriaLabel: string | null;
-
-	constructor(ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, kbLabel: string | null, kbAriaLabel: string | null) {
-		this.ctrlKey = ctrlKey;
-		this.shiftKey = shiftKey;
-		this.altKey = altKey;
-		this.metaKey = metaKey;
-		this.keyLabel = kbLabel;
-		this.keyAriaLabel = kbAriaLabel;
-	}
-}
-
-export type KeybindingModifier = 'ctrl' | 'shift' | 'alt' | 'meta';
-
 /**
- * A resolved keybinding. Can be a simple keybinding or a chord keybinding.
+ * A resolved keybinding. Consists of one or multiple chords.
  */
 export abstract class ResolvedKeybinding {
 	/**
@@ -426,41 +251,26 @@ export abstract class ResolvedKeybinding {
 	 * Is the user settings label reflecting the label?
 	 */
 	public abstract isWYSIWYG(): boolean;
-
-	/**
-	 * Is the binding a chord?
-	 */
-	public abstract isChord(): boolean;
-
 	/**
 	 * Does the keybinding consist of more than one chord?
 	 */
 	public abstract hasMultipleChords(): boolean;
-
 	/**
 	 * Returns the chords that comprise of the keybinding.
 	 */
 	public abstract getChords(): ResolvedChord[];
-
 	/**
-	 * Returns the parts that comprise of the keybinding.
-	 * Simple keybindings return one element.
-	 */
-	public abstract getParts(): ResolvedKeybindingPart[];
-
-	/**
-	 * Returns the parts that should be used for dispatching.
-	 * Returns null for parts consisting of only modifier keys
+	 * Returns the chords as strings useful for dispatching.
+	 * Returns null for modifier only chords.
 	 * @example keybinding "Shift" -> null
 	 * @example keybinding ("D" with shift == true) -> "shift+D"
 	 */
-	public abstract getDispatchParts(): (string | null)[];
-
+	public abstract getDispatchChords(): (string | null)[];
 	/**
-	 * Returns the parts that should be used for dispatching single modifier keys
-	 * Returns null for parts that contain more than one modifier or a regular key.
+	 * Returns the modifier only chords as strings useful for dispatching.
+	 * Returns null for chords that contain more than one modifier or a regular key.
 	 * @example keybinding "Shift" -> "shift"
 	 * @example keybinding ("D" with shift == true") -> null
 	 */
-	public abstract getSingleModifierDispatchParts(): (KeybindingModifier | null)[];
+	public abstract getSingleModifierDispatchChords(): (SingleModifierChord | null)[];
 }

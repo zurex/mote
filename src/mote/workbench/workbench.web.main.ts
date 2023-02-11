@@ -17,7 +17,14 @@ import 'mote/workbench/workbench.common.main';
 
 //#endregion
 
+//#region --- workbench contributions
+
 import 'mote/workbench/browser/parts/dialogs/dialog.web.contribution';
+
+// Performance
+import 'mote/workbench/contrib/performance/browser/performance.web.contribution';
+
+//#endregion
 
 //#region --- workbench (web main)
 

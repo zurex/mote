@@ -1,14 +1,16 @@
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { IEditorPaneDescriptor, IEditorPaneRegistry } from 'mote/workbench/browser/editor';
-import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'mote/workbench/browser/parts/editor/editor';
+import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS, IEditorGroupView } from 'mote/workbench/browser/parts/editor/editor';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { EditorExtensions, IEditorOpenContext } from 'mote/workbench/common/editor';
 import { EditorInput } from 'mote/workbench/common/editorInput';
-import { Dimension, hide, IDomNodePagePosition, show } from 'mote/base/browser/dom';
+import { Dimension, hide, IDomNodePagePosition, isAncestor, show } from 'mote/base/browser/dom';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { assertIsDefined } from 'mote/base/common/types';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { Registry } from 'mote/platform/registry/common/platform';
+import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
+import { IEditorProgressService, LongRunningOperation } from 'mote/platform/progress/common/progress';
 
 export interface IOpenEditorResult {
 
@@ -58,11 +60,16 @@ export class EditorPanes extends Disposable {
 	private readonly editorPanes: EditorPane[] = [];
 	private dimension: Dimension | undefined;
 	private pagePosition: IDomNodePagePosition | undefined;
+	private readonly editorOperation = this._register(new LongRunningOperation(this.editorProgressService));
 	private readonly editorPanesRegistry = Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane);
 
 	constructor(
-		private parent: HTMLElement,
+		private editorGroupParent: HTMLElement,
+		private editorPanesParent: HTMLElement,
+		private groupView: IEditorGroupView,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IEditorProgressService private readonly editorProgressService: IEditorProgressService,
 	) {
 		super();
 	}
@@ -79,21 +86,76 @@ export class EditorPanes extends Disposable {
 	}
 
 
-	async doOpenEditor(descriptor: IEditorPaneDescriptor, editor: EditorInput, options: IEditorOptions | undefined) {
+	async doOpenEditor(descriptor: IEditorPaneDescriptor, editor: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext = Object.create(null)) {
 		// Editor pane
 		const pane = this.doShowEditorPane(descriptor);
 
+		// Remember current active element for deciding to restore focus later
+		const activeElement = document.activeElement;
+
 		// Apply input to pane
-		const { changed, cancelled } = await this.doSetInput(pane, editor, options);
+		const { changed, cancelled } = await this.doSetInput(pane, editor, options, context);
+
+		// Focus only if not cancelled and not prevented
+		const focus = !options || !options.preserveFocus;
+		if (!cancelled && focus && this.shouldRestoreFocus(activeElement)) {
+			pane.focus();
+		}
 
 		return { pane, changed, cancelled };
 	}
 
-	private async doSetInput(editorPane: EditorPane, editor: EditorInput, options: IEditorOptions | undefined) {
+	private shouldRestoreFocus(expectedActiveElement: Element | null): boolean {
+		if (!this.layoutService.isRestored()) {
+			return true; // restore focus if we are not restored yet on startup
+		}
+
+		if (!expectedActiveElement) {
+			return true; // restore focus if nothing was focused
+		}
+
+		const activeElement = document.activeElement;
+
+		if (!activeElement || activeElement === document.body) {
+			return true; // restore focus if nothing is focused currently
+		}
+
+		const same = expectedActiveElement === activeElement;
+		if (same) {
+			return true; // restore focus if same element is still active
+		}
+
+		if (activeElement.tagName !== 'INPUT' && activeElement.tagName !== 'TEXTAREA') {
+
+			// This is to avoid regressions from not restoring focus as we used to:
+			// Only allow a different input element (or textarea) to remain focused
+			// but not other elements that do not accept text input.
+
+			return true;
+		}
+
+		if (isAncestor(activeElement, this.editorGroupParent)) {
+			return true; // restore focus if active element is still inside our editor group
+		}
+
+		return false; // do not restore focus
+	}
+
+	private async doSetInput(editorPane: EditorPane, editor: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext): Promise<{ changed: boolean; cancelled: boolean }> {
 		// If the input did not change, return early and only
 		// apply the options unless the options instruct us to
 		// force open it even if it is the same
 		const inputMatches = editorPane.input?.matches(editor);
+		if (inputMatches && !options?.forceReload) {
+			editorPane.setOptions(options);
+
+			return { changed: false, cancelled: false };
+		}
+
+		// Start a new editor input operation to report progress
+		// and to support cancellation. Any new operation that is
+		// started will cancel the previous one.
+		const operation = this.editorOperation.start(this.layoutService.isRestored() ? 800 : 3200);
 
 		let cancelled = false;
 		try {
@@ -102,18 +164,16 @@ export class EditorPanes extends Disposable {
 			// This ensures that a slow loading input will not
 			// be visible for the duration of the new input to
 			// load (https://github.com/microsoft/vscode/issues/34697)
-			//editorPane.clearInput();
+			editorPane.clearInput();
 
 			// Set the input to the editor pane
-			await editorPane.setInput(editor, options);
+			await editorPane.setInput(editor, options, context, operation.token);
 
-			/*
 			if (!operation.isCurrent()) {
 				cancelled = true;
 			}
-			*/
 		} finally {
-			//operation.stop();
+			operation.stop();
 		}
 
 		return { changed: !inputMatches, cancelled };
@@ -136,7 +196,7 @@ export class EditorPanes extends Disposable {
 
 		// Show editor
 		const container = assertIsDefined(editorPane.getContainer());
-		this.parent.appendChild(container);
+		this.editorPanesParent.appendChild(container);
 		show(container);
 
 		// Layout
@@ -196,7 +256,7 @@ export class EditorPanes extends Disposable {
 		// Remove editor pane from parent
 		const editorPaneContainer = this._activeEditorPane.getContainer();
 		if (editorPaneContainer) {
-			this.parent.removeChild(editorPaneContainer);
+			this.editorPanesParent.removeChild(editorPaneContainer);
 			hide(editorPaneContainer);
 		}
 

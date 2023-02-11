@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyCode } from 'mote/base/common/keyCodes';
-import { createKeybinding, Keybinding, SimpleKeybinding, ScanCodeBinding } from 'mote/base/common/keybindings';
+import { Keybinding, SimpleKeybinding, ScanCodeBinding, decodeKeybinding } from 'mote/base/common/keybindings';
 import { OperatingSystem, OS } from 'mote/base/common/platform';
 import { CommandsRegistry, ICommandHandler, ICommandHandlerDescription } from 'mote/platform/commands/common/commands';
 import { ContextKeyExpression } from 'mote/platform/contextkey/common/contextkey';
@@ -13,8 +13,8 @@ import { combinedDisposable, DisposableStore, IDisposable, toDisposable } from '
 import { LinkedList } from 'mote/base/common/linkedList';
 
 export interface IKeybindingItem {
-	keybinding: (SimpleKeybinding | ScanCodeBinding)[];
-	command: string;
+	keybinding: Keybinding | null;
+	command: string | null;
 	commandArgs?: any;
 	when: ContextKeyExpression | null | undefined;
 	weight1: number;
@@ -48,7 +48,7 @@ export interface IKeybindingRule extends IKeybindings {
 }
 
 export interface IExtensionKeybindingRule {
-	keybinding: (SimpleKeybinding | ScanCodeBinding)[];
+	keybinding: Keybinding | null;
 	id: string;
 	args?: any;
 	weight: number;
@@ -115,7 +115,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		const result = new DisposableStore();
 
 		if (actualKb && actualKb.primary) {
-			const kk = createKeybinding(actualKb.primary, OS);
+			const kk = decodeKeybinding(actualKb.primary, OS);
 			if (kk) {
 				result.add(this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, 0, rule.when));
 			}
@@ -124,7 +124,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		if (actualKb && Array.isArray(actualKb.secondary)) {
 			for (let i = 0, len = actualKb.secondary.length; i < len; i++) {
 				const k = actualKb.secondary[i];
-				const kk = createKeybinding(k, OS);
+				const kk = decodeKeybinding(k, OS);
 				if (kk) {
 					result.add(this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, -i - 1, rule.when));
 				}
@@ -137,7 +137,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		const result: IKeybindingItem[] = [];
 		let keybindingsLen = 0;
 		for (const rule of rules) {
-			if (rule.keybinding.length > 0) {
+			if (rule.keybinding) {
 				result[keybindingsLen++] = {
 					keybinding: rule.keybinding,
 					command: rule.id,
@@ -197,11 +197,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	}
 
 	private _registerDefaultKeybinding(keybinding: Keybinding, commandId: string, commandArgs: any, weight1: number, weight2: number, when: ContextKeyExpression | null | undefined): IDisposable {
-		if (OS === OperatingSystem.Windows) {
-			this._assertNoCtrlAlt(keybinding.parts[0], commandId);
-		}
 		const remove = this._coreKeybindings.push({
-			keybinding: keybinding.parts,
+			keybinding: keybinding,
 			command: commandId,
 			commandArgs: commandArgs,
 			when: when,
@@ -238,11 +235,14 @@ function sorter(a: IKeybindingItem, b: IKeybindingItem): number {
 	if (a.weight1 !== b.weight1) {
 		return a.weight1 - b.weight1;
 	}
-	if (a.command < b.command) {
-		return -1;
-	}
-	if (a.command > b.command) {
-		return 1;
+	if (a.command && b.command) {
+		if (a.command < b.command) {
+			return -1;
+		}
+		if (a.command > b.command) {
+			return 1;
+		}
 	}
 	return a.weight2 - b.weight2;
 }
+

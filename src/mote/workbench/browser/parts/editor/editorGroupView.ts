@@ -15,6 +15,11 @@ import { GroupsOrder, ICloseEditorOptions } from 'mote/workbench/services/editor
 import { SideBySideEditorInput } from 'mote/workbench/common/sideBySideEditorInput';
 import { RunOnceWorker } from 'mote/base/common/async';
 import { IContextKeyService } from 'mote/platform/contextkey/common/contextkey';
+import { ServiceCollection } from 'mote/platform/instantiation/common/serviceCollection';
+import { EditorProgressIndicator } from 'mote/workbench/services/progress/browser/progressIndicator';
+import { IEditorProgressService } from 'mote/platform/progress/common/progress';
+import { ProgressBar } from 'mote/base/browser/ui/progressbar/progressbar';
+import { defaultProgressBarStyles } from 'mote/platform/theme/browser/defaultStyles';
 
 export class EditorGroupView extends Themable implements IEditorGroupView {
 
@@ -76,6 +81,8 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private readonly scopedInstantiationService: IInstantiationService;
 
+	private readonly progressBar: ProgressBar;
+
 	private readonly editorContainer: HTMLElement;
 	private readonly editorPane: EditorPanes;
 
@@ -111,6 +118,16 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// Container
 			this.element.classList.add('editor-group-container');
 
+			// Progress bar
+			this.progressBar = this._register(new ProgressBar(this.element, defaultProgressBarStyles));
+			this.progressBar.hide();
+
+			// Scoped instantiation service
+			this.scopedInstantiationService = this.instantiationService.createChild(new ServiceCollection(
+				[IContextKeyService, this.scopedContextKeyService],
+				[IEditorProgressService, this._register(new EditorProgressIndicator(this.progressBar, this))]
+			));
+
 			// Title control
 			///this.titleAreaControl = this.createTitleAreaControl();
 
@@ -120,7 +137,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			this.element.appendChild(this.editorContainer);
 
 			// Editor pane
-			this.editorPane = this._register(this.scopedInstantiationService.createInstance(EditorPanes, this.editorContainer));
+			this.editorPane = this._register(this.scopedInstantiationService.createInstance(EditorPanes, this.element, this.editorContainer, this));
 			//this._onDidChange.input = this.editorPane.onDidChangeSizeConstraints;
 		}
 

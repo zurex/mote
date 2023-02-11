@@ -285,8 +285,8 @@ export class ViewModelLinesFromProjectedModel implements IViewModelLines {
 
 	public getViewLineData(viewLineNumber: number): ViewLineData {
 		const info = this.getViewLineInfo(viewLineNumber);
-		const store = this.model.getLineStore(info.modelLineNumber);
 		const viewLineData = this.modelLineProjections[info.modelLineNumber - 1].getViewLineData(this.model, info.modelLineNumber, info.modelLineWrappedLineIdx);
+		const store = this.model.getLineStore(info.modelLineNumber);
 		viewLineData.type = store.getType() || 'text';
 		return viewLineData;
 	}

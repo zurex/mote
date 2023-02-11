@@ -81,39 +81,10 @@ export class ViewController extends Disposable {
 		this.setSelection(selection);
 	}
 
-	public decorate(annotation: IAnnotation): void {
-		this.executeCursorEdit(eventsCollector => {
-			const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-			const updated = Segment.update({ selection: this.selection, store: store.getTitleStore(), mode: TextSelectionMode.Editing }, annotation);
-			if (updated) {
-				eventsCollector.emitViewEvent(new viewEvents.ViewLinesChangedEvent(this.selection.lineNumber, 1));
-			}
-		});
-	}
-
 	public updateProperties(data: any) {
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				EditOperation.addUpdateOperationForStore(
-					store.getPropertiesStore(),
-					data,
-					transaction
-				);
-			}, this.contentStore.userId);
-		});
 	}
 
 	public insert(text: string): void {
-		this.executeCursorEdit(eventsCollector => {
-			Transaction.createAndCommit((transaction) => {
-				const lineNumber = this.selection.lineNumber;
-				const titleStore = this.getTitleStore();
-				this._insert(eventsCollector, text, transaction, titleStore, this.selection, TextSelectionMode.Editing);
-				// emit the line change event
-				eventsCollector.emitViewEvent(new viewEvents.ViewLinesInsertedEvent(lineNumber, lineNumber));
-			}, this.contentStore.userId);
-		});
 	}
 
 	public type(text: string): void {

@@ -1,5 +1,5 @@
 import { Transaction } from 'mote/editor/common/core/transaction';
-import { IWorkspace, IWorkspaceContextService, WorkbenchState } from 'mote/platform/workspace/common/workspace';
+import { IWorkspace, IWorkspaceContextService, IWorkspacePage, WorkbenchState, Workspace, WorkspacePage } from 'mote/platform/workspace/common/workspace';
 import { Emitter, Event } from 'mote/base/common/event';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
@@ -14,6 +14,7 @@ import SpaceStore from 'mote/platform/store/common/spaceStore';
 import { IStoreService } from 'mote/platform/store/common/store';
 import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { StoreStorageProvider } from 'mote/platform/store/common/storeStorageProvider';
+import { URI } from 'mote/base/common/uri';
 
 const CurrentSpaceIdStorageKey = 'CurrentSpaceIdStorageKey';
 export class BrowserWorkspaceService extends Disposable implements IWorkspaceContextService {
@@ -30,6 +31,8 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 
 	private readonly _onDidChangeWorkspace: Emitter<void> = this._register(new Emitter<void>());
 	public readonly onDidChangeWorkspace: Event<void> = this._onDidChangeWorkspace.event;
+
+	private workspace!: Workspace;
 
 	/**
 	 * Support multiple user in same time
@@ -69,6 +72,8 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 			}));
 			this.spaceRootStores.push(spaceRootStore);
 		});
+
+		this.initialize();
 	}
 
 	async onProfileChange(profile: IUserProfile | undefined) {
@@ -111,11 +116,19 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 	}
 
 	getWorkspace(): IWorkspace {
-		throw new Error('Method not implemented.');
+		return this.workspace;
 	}
 
 	async initialize() {
-
+		const spaceStore = this.getSpaceStore();
+		if (spaceStore) {
+			const pages: IWorkspacePage[] = spaceStore.getPagesStores().map((pageStore, index) => {
+				const name = pageStore.getTitleStore();
+				const uri = URI.from({ scheme: 'mote', path: `page/${pageStore.id}` });
+				return new WorkspacePage({ id: pageStore.id, uri, name: '', index });
+			});
+			this.workspace = new Workspace(this.currentSpaceId, pages, false, null, () => true);
+		}
 	}
 
 	async createWorkspace(userId: string, spaceName: string) {
