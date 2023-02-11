@@ -237,7 +237,6 @@
 }
 
 .mote-workbench .part.titlebar > .titlebar-container > .titlebar-left > .window-appicon:not(.codicon) {
-	background-image: url('../../../media/code-icon.svg');
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-size: 16px;
@@ -259,7 +258,6 @@
 	height: 8px;
 	z-index: 1;
 	/* on top of home indicator */
-	background-image: url('../../../media/code-icon.svg');
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-size: 8px;
