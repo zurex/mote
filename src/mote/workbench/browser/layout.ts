@@ -239,7 +239,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	}
 
 	private getInitialPageToOpen() {
-		const pages = this.environmentService.filesToOpenOrCreate;
+		const pages = this.environmentService.pagesToOpenOrCreate;
 		return pages ? pages[0] : undefined;
 	}
 

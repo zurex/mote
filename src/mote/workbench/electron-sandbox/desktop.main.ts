@@ -25,6 +25,13 @@ import { LoggerChannelClient } from 'mote/platform/log/common/logIpc';
 import { WorkbenchConfigurationService } from 'mote/workbench/services/configuration/browser/workbenchConfigurationService';
 import { IWorkbenchConfigurationService } from 'mote/workbench/services/configuration/common/workbenchConfiguration';
 import { INativeKeyboardLayoutService, NativeKeyboardLayoutService } from 'mote/workbench/services/keybinding/electron-sandbox/nativeKeyboardLayoutService';
+import { Schemas } from 'mote/base/common/network';
+import { ConfigurationCache } from 'mote/workbench/services/configuration/common/configurationCache';
+import { FileService } from 'mote/platform/files/common/fileService';
+import { NullPolicyService } from 'mote/platform/policy/common/policy';
+import { IWorkbenchFileService } from 'mote/workbench/services/files/common/files';
+import { UriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentityService';
+import { IUriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentity';
 
 export class DesktopMain extends Disposable {
 	constructor(
@@ -84,8 +91,16 @@ export class DesktopMain extends Disposable {
 			logService.trace('workbench#open(): with configuration', safeStringify(this.configuration));
 		}
 
+		// Files
+		const fileService = this._register(new FileService(logService));
+		serviceCollection.set(IWorkbenchFileService, fileService);
+
+		// URI Identity
+		const uriIdentityService = new UriIdentityService(fileService);
+		serviceCollection.set(IUriIdentityService, uriIdentityService);
+
 		const [_, storageService] = await Promise.all([
-			this.createWorkspaceService().then((configurationService) => {
+			this.createWorkspaceService(environmentService, fileService, logService).then((configurationService) => {
 				// Configuration
 				serviceCollection.set(IWorkbenchConfigurationService, configurationService);
 				return configurationService;
@@ -132,8 +147,19 @@ export class DesktopMain extends Disposable {
 		return storageService;
 	}
 
-	private async createWorkspaceService() {
-		return Promise.resolve(new WorkbenchConfigurationService());
+	private async createWorkspaceService(
+		environmentService: INativeWorkbenchEnvironmentService,
+		fileService: FileService,
+		logService: ILogService
+	) {
+		const configurationCache = new ConfigurationCache([Schemas.file, Schemas.moteUserData] /* Cache all non native resources */, environmentService, fileService);
+		const configuraionService = new WorkbenchConfigurationService(
+			{ remoteAuthority: environmentService.remoteAuthority, configurationCache },
+			environmentService,
+			logService,
+			new NullPolicyService()
+		);
+		return Promise.resolve(configuraionService);
 	}
 
 	private async createKeyboardLayoutService(mainProcessService: IMainProcessService): Promise<NativeKeyboardLayoutService> {

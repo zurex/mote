@@ -17,7 +17,7 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService
+		//@ITelemetryService private readonly _telemetryService: ITelemetryService
 	) {
 		super();
 
@@ -63,6 +63,7 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 
 		type PerformanceInputLatencyEvent = inputLatency.IInputLatencyMeasurements;
 
+		/*
 		this._telemetryService.publicLog2<PerformanceInputLatencyEvent, PerformanceInputLatencyClassification>('performance.inputLatency', {
 			keydown: measurements.keydown,
 			input: measurements.input,
@@ -70,5 +71,6 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
 			total: measurements.total,
 			sampleCount: measurements.sampleCount
 		});
+		*/
 	}
 }

@@ -79,6 +79,10 @@ export abstract class MenubarControl extends Disposable {
 
 	}
 
+	protected registerListeners(): void {
+
+	}
+
 	protected abstract doUpdateMenubar(firstTime: boolean): void;
 
 	protected setupMainMenu(): void {

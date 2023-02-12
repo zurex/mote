@@ -17,6 +17,8 @@ export interface IAppWindow extends IDisposable {
 	readonly lastFocusTime: number;
 
 	readonly isReady: boolean;
+	ready(): Promise<IAppWindow>;
+	setReady(): void;
 
 	load(config: INativeWindowConfiguration, options?: { isReload?: boolean }): void;
 	reload(cli?: NativeParsedArgs): void;
@@ -26,6 +28,8 @@ export interface IAppWindow extends IDisposable {
 
 	readonly isFullScreen: boolean;
 	toggleFullScreen(): void;
+
+	isMinimized(): boolean;
 
 	close(): void;
 }

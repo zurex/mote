@@ -295,9 +295,9 @@ function createDefaultArgvConfigSync(argvConfigPath) {
 }
 
 function getArgvConfigPath() {
-	const vscodePortable = process.env['MOTE_PORTABLE'];
-	if (vscodePortable) {
-		return path.join(vscodePortable, 'argv.json');
+	const motePortable = process.env['MOTE_PORTABLE'];
+	if (motePortable) {
+		return path.join(motePortable, 'argv.json');
 	}
 
 	let dataFolderName = product.dataFolderName;

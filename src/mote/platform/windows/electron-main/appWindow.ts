@@ -3,7 +3,7 @@ import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import { FileAccess } from "mote/base/common/network";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
 import { IThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
-import { INativeWindowConfiguration } from "mote/platform/window/common/window";
+import { INativeWindowConfiguration, IWindowSettings } from "mote/platform/window/common/window";
 import { IAppWindow, ILoadEvent } from "mote/platform/window/electron-main/window";
 import { Disposable } from "mote/base/common/lifecycle";
 import { getMarks, mark } from "mote/base/common/performance";
@@ -15,6 +15,7 @@ import { CancellationToken } from 'mote/base/common/cancellation';
 import { toErrorMessage } from 'mote/base/common/errorMessage';
 import { Emitter } from 'mote/base/common/event';
 import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 
 interface ILoadOptions {
 	isReload?: boolean;
@@ -49,6 +50,18 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 	private readonly _onWillLoad = this._register(new Emitter<ILoadEvent>());
 	readonly onWillLoad = this._onWillLoad.event;
+
+	private readonly _onDidSignalReady = this._register(new Emitter<void>());
+	readonly onDidSignalReady = this._onDidSignalReady.event;
+
+	private readonly _onDidTriggerSystemContextMenu = this._register(new Emitter<{ x: number; y: number }>());
+	readonly onDidTriggerSystemContextMenu = this._onDidTriggerSystemContextMenu.event;
+
+	private readonly _onDidClose = this._register(new Emitter<void>());
+	readonly onDidClose = this._onDidClose.event;
+
+	private readonly _onDidDestroy = this._register(new Emitter<void>());
+	readonly onDidDestroy = this._onDidDestroy.event;
 
 	//#endregion
 
@@ -95,6 +108,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
 		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
 		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
@@ -125,6 +139,20 @@ export class AppWindow extends Disposable implements IAppWindow {
 	}
 
 	private readyState = ReadyState.NONE;
+
+	setReady(): void {
+		this.logService.trace(`window#load: window reported ready (id: ${this._id})`);
+
+		this.readyState = ReadyState.READY;
+
+		// inform all waiting promises that we are ready now
+		while (this.whenReadyCallbacks.length) {
+			this.whenReadyCallbacks.pop()!(this);
+		}
+
+		// Events
+		this._onDidSignalReady.fire();
+	}
 
 	ready(): Promise<IAppWindow> {
 		return new Promise<IAppWindow>(resolve => {
@@ -180,6 +208,23 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 	private setFullScreen(fullscreen: boolean): void {
 
+	}
+
+	private useNativeFullScreen(): boolean {
+		const windowConfig = this.configurationService.getValue<IWindowSettings | undefined>('window');
+		if (!windowConfig || typeof windowConfig.nativeFullScreen !== 'boolean') {
+			return true; // default
+		}
+
+		if (windowConfig.nativeTabs) {
+			return true; // https://github.com/electron/electron/issues/16142
+		}
+
+		return windowConfig.nativeFullScreen !== false;
+	}
+
+	isMinimized(): boolean {
+		return this._win.isMinimized();
 	}
 
 	close(): void {

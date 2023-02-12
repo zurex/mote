@@ -38,6 +38,8 @@ import { LogService } from 'mote/platform/log/common/logService';
 import { ILoggerMainService, LoggerMainService } from 'mote/platform/log/electron-main/loggerService';
 import { BufferLogger } from 'mote/platform/log/common/bufferLog';
 import { DisposableStore } from 'mote/base/common/lifecycle';
+import { UriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentityService';
+import { IUriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentity';
 
 class MoteMain {
 
@@ -92,6 +94,10 @@ class MoteMain {
 		services.set(IFileService, fileService);
 		const diskFileSystemProvider = new DiskFileSystemProvider(logService);
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
+
+		// URI Identity
+		const uriIdentityService = new UriIdentityService(fileService);
+		services.set(IUriIdentityService, uriIdentityService);
 
 		// Policy
 		const policyService = new NullPolicyService();

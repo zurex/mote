@@ -95,7 +95,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	get logFile(): URI { return joinPath(this.windowLogsPath, 'window.log'); }
 
 	@memoize
-	get userRoamingDataHome(): URI { return URI.file('/User').with({ scheme: Schemas.vscodeUserData }); }
+	get userRoamingDataHome(): URI { return URI.file('/User').with({ scheme: Schemas.moteUserData }); }
 
 	@memoize
 	get argvResource(): URI { return joinPath(this.userRoamingDataHome, 'argv.json'); }
@@ -343,7 +343,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
 	}
 
 	@memoize
-	get filesToOpenOrCreate(): IPath<ITextEditorOptions>[] | undefined {
+	get pagesToOpenOrCreate(): IPath<ITextEditorOptions>[] | undefined {
 		if (this.payload) {
 			const fileToOpen = this.payload.get('openFile');
 			if (fileToOpen) {

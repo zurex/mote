@@ -26,6 +26,11 @@ import { INativeHostMainService, NativeHostMainService } from 'mote/platform/nat
 import { ProxyChannel } from 'mote/base/parts/ipc/common/ipc';
 import { DialogMainService, IDialogMainService } from 'mote/platform/dialogs/electron-main/dialogMainService';
 import { IKeyboardLayoutMainService, KeyboardLayoutMainService } from 'mote/platform/keyboardLayout/electron-main/keyboardLayoutMainService';
+import { IWorkspacesService } from 'mote/platform/workspaces/common/workspaces';
+import { BrowserWorkspacesService } from 'mote/workbench/services/workspaces/browser/browserWorkspacesService';
+import { IMenubarMainService, MenubarMainService } from 'mote/platform/menubar/electron-sandbox/menubarMainService';
+import { isLaunchedFromCli } from 'mote/platform/environment/node/argvHelper';
+import { UpdateChannel } from 'mote/platform/update/common/updateIpc';
 
 export class MoteApplication extends Disposable {
 
@@ -103,7 +108,7 @@ export class MoteApplication extends Disposable {
 
 		// Open Windows
 		appInstantiationService.invokeFunction(
-			accessor => this.openFirstWindow(accessor)
+			accessor => this.openFirstWindow(accessor, null)
 		);
 
 		// Post Open Windows Tasks
@@ -202,6 +207,11 @@ export class MoteApplication extends Disposable {
 		// Native Host
 		services.set(INativeHostMainService, new SyncDescriptor(NativeHostMainService, [sharedProcess], false /* proxied to other processes */));
 
+		// Menubar
+		services.set(IMenubarMainService, new SyncDescriptor(MenubarMainService));
+
+		//services.set(IWorkspacesService, new SyncDescriptor(BrowserWorkspacesService, undefined, false /* proxied to other processes */));
+
 		return this.mainInstantiationService.createChild(services);
 	}
 
@@ -212,31 +222,53 @@ export class MoteApplication extends Disposable {
 		// can talk to the first instance. Electron IPC does not work
 		// across apps until `requestSingleInstance` APIs are adopted.
 
+		// Update
+		const updateChannel = new UpdateChannel(accessor.get(IUpdateService));
+		mainProcessElectronServer.registerChannel('update', updateChannel);
+
 		// Keyboard Layout
 		const keyboardLayoutChannel = ProxyChannel.fromService(accessor.get(IKeyboardLayoutMainService));
 		mainProcessElectronServer.registerChannel('keyboardLayout', keyboardLayoutChannel);
 
 		// Native host (main & shared process)
-		/*
 		this.nativeHostMainService = accessor.get(INativeHostMainService);
 		const nativeHostChannel = ProxyChannel.fromService(this.nativeHostMainService);
 		mainProcessElectronServer.registerChannel('nativeHost', nativeHostChannel);
 		sharedProcessClient.then(client => client.registerChannel('nativeHost', nativeHostChannel));
-		*/
 
 		// Logger
 		const loggerChannel = new LoggerChannel(accessor.get(ILoggerMainService),);
 		mainProcessElectronServer.registerChannel('logger', loggerChannel);
 		sharedProcessClient.then(client => client.registerChannel('logger', loggerChannel));
 
+		// Menubar
+		const menubarChannel = ProxyChannel.fromService(accessor.get(IMenubarMainService));
+		mainProcessElectronServer.registerChannel('menubar', menubarChannel);
+
 	}
 
-	private openFirstWindow(accessor: ServicesAccessor) {
+	private openFirstWindow(accessor: ServicesAccessor, initialProtocolUrls: IInitialProtocolUrls | undefined) {
 		this.windowsMainService = accessor.get(IWindowsMainService);
 
+		const context = isLaunchedFromCli(process.env) ? OpenContext.CLI : OpenContext.DESKTOP;
+		const args = this.environmentMainService.args;
+
+		// First check for windows from protocol links to open
+		if (initialProtocolUrls) {
+			// Openables can open as windows directly
+			if (initialProtocolUrls.openables.length > 0) {
+				return this.windowsMainService.open({
+					cli: args,
+					context: context
+				});
+			}
+		}
+
 		return this.windowsMainService.open({
-			context: OpenContext.DESKTOP
+			cli: args,
+			context: context
 		});
+
 	}
 
 	private async afterWindowOpen(accessor: ServicesAccessor, sharedProcess: SharedProcess): Promise<void> {

@@ -20,7 +20,6 @@ export class BrowserPathService extends AbstractPathService {
 	) {
 		super(
 			guessLocalUserHome(environmentService, contextService),
-			null as any,
 			environmentService,
 			contextService
 		);

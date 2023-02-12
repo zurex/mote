@@ -17,6 +17,8 @@ import { CancellationToken } from 'mote/base/common/cancellation';
 import { getMarks, mark } from 'mote/base/common/performance';
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
 import { Emitter } from 'mote/base/common/event';
+import { once } from 'mote/base/common/functional';
+import { assertIsDefined } from 'mote/base/common/types';
 
 interface IOpenBrowserWindowOptions {
 	readonly userEnv?: IProcessEnvironment;
@@ -50,6 +52,12 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
+
+		this.registerListeners();
+	}
+
+	private registerListeners(): void {
+
 	}
 
 	openEmptyWindow(openConfig: IOpenEmptyConfiguration, options?: IOpenEmptyWindowOptions): Promise<IAppWindow[]> {
@@ -62,7 +70,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		return this.open({ ...openConfig, cli, forceEmpty, forceNewWindow, forceReuseWindow, remoteAuthority });
 	}
 
-	open(openConfig: IOpenConfiguration): IAppWindow[] {
+	async open(openConfig: IOpenConfiguration): Promise<IAppWindow[]> {
 
 		const { windows: usedWindows } = this.doOpen(openConfig);
 
@@ -142,6 +150,21 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			// Add to our list of windows
 			WindowsMainService.WINDOWS.push(createdWindow);
 
+			// Indicate new window via event
+			this._onDidOpenWindow.fire(createdWindow);
+
+			// Indicate number change via event
+			this._onDidChangeWindowsCount.fire({ oldCount: this.getWindowCount() - 1, newCount: this.getWindowCount() });
+
+			// Window Events
+			once(createdWindow.onDidSignalReady)(() => this._onDidSignalReadyWindow.fire(createdWindow));
+			once(createdWindow.onDidClose)(() => this.onWindowClosed(createdWindow));
+			once(createdWindow.onDidDestroy)(() => this._onDidDestroyWindow.fire(createdWindow));
+
+			const webContents = assertIsDefined(createdWindow.win?.webContents);
+			webContents.removeAllListeners('devtools-reload-page'); // remove built in listener so we can handle this on our own
+			webContents.on('devtools-reload-page', () => this.lifecycleMainService.reload(createdWindow));
+
 			// Lifecycle
 			this.lifecycleMainService.registerWindow(createdWindow);
 		}
@@ -161,6 +184,16 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	private doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
 		// Load it
 		window.load(configuration);
+	}
+
+	private onWindowClosed(window: IAppWindow): void {
+
+		// Remove from our list so that Electron can clean it up
+		const index = WindowsMainService.WINDOWS.indexOf(window);
+		WindowsMainService.WINDOWS.splice(index, 1);
+
+		// Emit
+		this._onDidChangeWindowsCount.fire({ oldCount: this.getWindowCount() + 1, newCount: this.getWindowCount() });
 	}
 
 	getFocusedWindow(): IAppWindow | undefined {

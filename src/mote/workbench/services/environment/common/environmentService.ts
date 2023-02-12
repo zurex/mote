@@ -23,6 +23,9 @@ export interface IWorkbenchEnvironmentService extends IEnvironmentService {
 	// --- Development
 	readonly profDurationMarkers?: string[];
 
+	// --- Config
+	readonly remoteAuthority?: string;
+
 	// --- Editors to open
-	readonly filesToOpenOrCreate?: IPath[] | undefined;
+	readonly pagesToOpenOrCreate?: IPath[] | undefined;
 }

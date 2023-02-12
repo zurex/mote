@@ -5,7 +5,7 @@
 
 // @ts-check
 
-const perf = require('./vs/base/common/performance');
+const perf = require('./mote/base/common/performance');
 const performance = require('perf_hooks').performance;
 const product = require('../product.json');
 const readline = require('readline');

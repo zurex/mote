@@ -169,7 +169,7 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IProductService, productService);
 
 		// Environment
-		const logsPath = URI.file(toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')).with({ scheme: 'vscode-log' });
+		const logsPath = URI.file(toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')).with({ scheme: 'mote-log' });
 		const environmentService = new BrowserWorkbenchEnvironmentService(payload.id, logsPath, this.configuration, productService);
 		serviceCollection.set(IBrowserWorkbenchEnvironmentService, environmentService);
 
@@ -286,14 +286,14 @@ export class BrowserMain extends Disposable {
 		// User data
 		let userDataProvider;
 		if (indexedDB) {
-			userDataProvider = new IndexedDBFileSystemProvider(Schemas.userData, indexedDB, userDataStore, true);
+			userDataProvider = new IndexedDBFileSystemProvider(Schemas.moteUserData, indexedDB, userDataStore, true);
 			this.indexedDBFileSystemProviders.push(userDataProvider);
 			//this.registerDeveloperActions(<IndexedDBFileSystemProvider>userDataProvider);
 		} else {
 			logService.info('Using in-memory user data provider');
 			userDataProvider = new InMemoryFileSystemProvider();
 		}
-		fileService.registerProvider(Schemas.userData, userDataProvider);
+		fileService.registerProvider(Schemas.moteUserData, userDataProvider);
 
 		// Remote file system
 		//this._register(RemoteFileSystemProviderClient.register(remoteAgentService, fileService, logService));
@@ -323,7 +323,7 @@ export class BrowserMain extends Disposable {
 	}
 
 	private async createConfigurationService(environmentService: IWorkbenchEnvironmentService, fileService: FileService, logService: ILogService): Promise<WorkbenchConfigurationService> {
-		const configurationCache = new ConfigurationCache([Schemas.file, Schemas.vscodeUserData, Schemas.tmp] /* Cache all non native resources */, environmentService, fileService);
+		const configurationCache = new ConfigurationCache([Schemas.file, Schemas.moteUserData, Schemas.tmp] /* Cache all non native resources */, environmentService, fileService);
 
 		const configuraionService = new WorkbenchConfigurationService(
 			{ remoteAuthority: this.configuration.remoteAuthority, configurationCache },

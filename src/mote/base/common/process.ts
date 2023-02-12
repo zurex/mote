@@ -9,8 +9,8 @@ let safeProcess: Omit<INodeProcess, 'arch'> & { arch: string | undefined };
 declare const process: INodeProcess;
 
 // Native sandbox environment
-if (typeof globals.vscode !== 'undefined' && typeof globals.vscode.process !== 'undefined') {
-	const sandboxProcess: INodeProcess = globals.vscode.process;
+if (typeof globals.mote !== 'undefined' && typeof globals.mote.process !== 'undefined') {
+	const sandboxProcess: INodeProcess = globals.mote.process;
 	safeProcess = {
 		get platform() { return sandboxProcess.platform; },
 		get arch() { return sandboxProcess.arch; },

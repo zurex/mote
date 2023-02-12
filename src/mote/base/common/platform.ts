@@ -59,9 +59,9 @@ declare const self: unknown;
 export const globals: any = (typeof self === 'object' ? self : typeof global === 'object' ? global : {});
 
 let nodeProcess: INodeProcess | undefined = undefined;
-if (typeof globals.vscode !== 'undefined' && typeof globals.vscode.process !== 'undefined') {
+if (typeof globals.mote !== 'undefined' && typeof globals.mote.process !== 'undefined') {
 	// Native environment (sandboxed)
-	nodeProcess = globals.vscode.process;
+	nodeProcess = globals.mote.process;
 } else if (typeof process !== 'undefined') {
 	// Native environment (non-sandboxed)
 	nodeProcess = process;

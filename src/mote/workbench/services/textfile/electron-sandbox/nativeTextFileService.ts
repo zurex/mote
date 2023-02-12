@@ -11,22 +11,18 @@ import { InstantiationType, registerSingleton } from 'mote/platform/instantiatio
 import { URI } from 'mote/base/common/uri';
 import { IFileService, ByteSize, getPlatformFileLimits, Arch, IFileReadLimits } from 'mote/platform/files/common/files';
 import { ITextResourceConfigurationService } from 'mote/editor/common/services/textResourceConfiguration';
-import { IUntitledTextEditorService } from 'mote/workbench/services/untitled/common/untitledTextEditorService';
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IInstantiationService } from 'mote/platform/instantiation/common/instantiation';
 import { IModelService } from 'mote/editor/common/services/model';
 import { INativeWorkbenchEnvironmentService } from 'mote/workbench/services/environment/electron-sandbox/environmentService';
 import { IDialogService, IFileDialogService } from 'mote/platform/dialogs/common/dialogs';
 import { IFilesConfigurationService } from 'mote/workbench/services/filesConfiguration/common/filesConfigurationService';
-import { ICodeEditorService } from 'mote/editor/browser/services/codeEditorService';
+import { IMoteEditorService } from 'mote/editor/browser/services/moteEditorService';
 import { IPathService } from 'mote/workbench/services/path/common/pathService';
 import { IWorkingCopyFileService } from 'mote/workbench/services/workingCopy/common/workingCopyFileService';
 import { IUriIdentityService } from 'mote/platform/uriIdentity/common/uriIdentity';
-import { ILanguageService } from 'mote/editor/common/languages/language';
-import { IElevatedFileService } from 'mote/workbench/services/files/common/elevatedFileService';
 import { ILogService } from 'mote/platform/log/common/log';
 import { Promises } from 'mote/base/common/async';
-import { IDecorationsService } from 'mote/workbench/services/decorations/common/decorations';
 
 export class NativeTextFileService extends AbstractTextFileService {
 
@@ -34,25 +30,27 @@ export class NativeTextFileService extends AbstractTextFileService {
 
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUntitledTextEditorService untitledTextEditorService: IUntitledTextEditorService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
 		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
 		@IDialogService dialogService: IDialogService,
-		@IFileDialogService fileDialogService: IFileDialogService,
+		//@IFileDialogService fileDialogService: IFileDialogService,
 		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
 		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ICodeEditorService codeEditorService: ICodeEditorService,
+		@IMoteEditorService moteEditorService: IMoteEditorService,
 		@IPathService pathService: IPathService,
 		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@ILanguageService languageService: ILanguageService,
-		@IElevatedFileService elevatedFileService: IElevatedFileService,
 		@ILogService logService: ILogService,
-		@IDecorationsService decorationsService: IDecorationsService
 	) {
-		super(fileService, untitledTextEditorService, lifecycleService, instantiationService, modelService, environmentService, dialogService, fileDialogService, textResourceConfigurationService, filesConfigurationService, codeEditorService, pathService, workingCopyFileService, uriIdentityService, languageService, logService, elevatedFileService, decorationsService);
+		super(
+			fileService, lifecycleService, instantiationService, modelService,
+			environmentService, dialogService, null as any,
+			textResourceConfigurationService, filesConfigurationService,
+			moteEditorService, pathService, workingCopyFileService,
+			uriIdentityService, logService, null as any
+		);
 
 		this.environmentService = environmentService;
 

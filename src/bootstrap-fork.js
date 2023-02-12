@@ -242,10 +242,10 @@ function listenForMessagePort() {
 	// otherwise we might miss the event. But we should also be
 	// prepared in case the event arrives late.
 	process.on('port', (e) => {
-		if (global.vscodePortsCallback) {
-			global.vscodePortsCallback(e.ports);
+		if (global.motePortsCallback) {
+			global.motePortsCallback(e.ports);
 		} else {
-			global.vscodePorts = e.ports;
+			global.motePorts = e.ports;
 		}
 	});
 }
