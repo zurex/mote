@@ -668,7 +668,10 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
 	//#region Lifecycle
 
 	async notifyReady(windowId: number | undefined): Promise<void> {
-		const window = this.windowById(windowId);
+		let window = this.windowById(windowId);
+		if (!window) {
+			window = this.windowsMainService.getLastActiveWindow();
+		}
 		window?.setReady();
 	}
 

@@ -97,7 +97,7 @@ class SharedProcessMain extends Disposable {
 			this.dispose();
 		};
 		process.once('exit', onExit);
-		ipcRenderer.once('vscode:electron-main->shared-process=exit', onExit);
+		ipcRenderer.once('mote:electron-main->shared-process=exit', onExit);
 
 		// Shared process worker lifecycle
 		//
@@ -105,7 +105,7 @@ class SharedProcessMain extends Disposable {
 		// disposed to avoid disposing workers when the entire
 		// application is shutting down anyways.
 		//
-		const eventName = 'vscode:electron-main->shared-process=disposeWorker';
+		const eventName = 'mote:electron-main->shared-process=disposeWorker';
 		const onDisposeWorker = (event: unknown, configuration: ISharedProcessWorkerConfiguration) => { this.onDisposeWorker(configuration); };
 		ipcRenderer.on(eventName, onDisposeWorker);
 		this._register(toDisposable(() => ipcRenderer.removeListener(eventName, onDisposeWorker)));
@@ -195,10 +195,10 @@ class SharedProcessMain extends Disposable {
 			// Since user data can change very frequently across multiple
 			// processes, we want a single process handling these operations.
 			this._register(new DiskFileSystemProviderClient(mainProcessService.getChannel(LOCAL_FILE_SYSTEM_CHANNEL_NAME), { pathCaseSensitive: isLinux })),
-			Schemas.vscodeUserData,
+			Schemas.moteUserData,
 			logService
 		));
-		fileService.registerProvider(Schemas.vscodeUserData, userDataFileSystemProvider);
+		fileService.registerProvider(Schemas.moteUserData, userDataFileSystemProvider);
 
 		// User Data Profiles
 		const userDataProfilesService = this._register(new UserDataProfilesNativeService(this.configuration.profiles, mainProcessService, environmentService));
@@ -316,9 +316,9 @@ export async function main(configuration: ISharedProcessConfiguration): Promise<
 	// create shared process and signal back to main that we are
 	// ready to accept message ports as client connections
 	const sharedProcess = new SharedProcessMain(configuration);
-	ipcRenderer.send('vscode:shared-process->electron-main=ipc-ready');
+	ipcRenderer.send('mote:shared-process->electron-main=ipc-ready');
 
 	// await initialization and signal this back to electron-main
 	await sharedProcess.open();
-	ipcRenderer.send('vscode:shared-process->electron-main=init-done');
+	ipcRenderer.send('mote:shared-process->electron-main=init-done');
 }

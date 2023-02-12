@@ -37,6 +37,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 
 		// inMemory Schema: go through model service cache
 		const resource = URI.parse(key);
+		console.log('[TextModelResolverService]', resource.toString());
 		if (resource.scheme === Schemas.inMemory) {
 			const cachedModel = this.modelService.getModel(resource);
 			if (!cachedModel) {
@@ -44,14 +45,6 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 			}
 
 			const model = this.instantiationService.createInstance(TextResourceEditorModel, resource);
-			if (this.ensureResolvedModel(model, key)) {
-				return model;
-			}
-		}
-
-		// Untitled Schema: go through untitled text service
-		if (resource.scheme === Schemas.untitled) {
-			const model = await this.textFileService.untitled.resolve({ untitledResource: resource });
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
 			}
@@ -66,6 +59,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		}
 
 		// Virtual documents
+		console.log('providers:', JSON.stringify(new Array(this.providers.keys())));
 		if (this.providers.has(resource.scheme)) {
 			await this.resolveTextModelContent(key);
 

@@ -1,18 +1,92 @@
-import { addDisposableListener, EventType, scheduleAtNextAnimationFrame } from "mote/base/browser/dom";
-import { Disposable } from "mote/base/common/lifecycle";
-import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
+import { localize } from 'mote/nls';
+import { addDisposableListener, EventHelper, EventType, scheduleAtNextAnimationFrame } from 'mote/base/browser/dom';
+import { onUnexpectedError } from 'mote/base/common/errors';
+import { Disposable } from 'mote/base/common/lifecycle';
+import { isCI } from 'mote/base/common/platform';
+import { ipcRenderer } from 'mote/base/parts/sandbox/electron-sandbox/globals';
+import { ICommandService } from 'mote/platform/commands/common/commands';
+import { IDialogService } from 'mote/platform/dialogs/common/dialogs';
+import { IKeybindingService } from 'mote/platform/keybinding/common/keybinding';
+import { ILogService } from 'mote/platform/log/common/log';
+import { INativeHostService } from 'mote/platform/native/electron-sandbox/native';
+import { INotificationService, Severity } from 'mote/platform/notification/common/notification';
+import { INativeRunActionInWindowRequest, INativeRunKeybindingInWindowRequest } from 'mote/platform/window/common/window';
+import { SideBySideEditor } from 'mote/workbench/common/editor';
+import { IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
+import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
 
 export class NativeWindow extends Disposable {
 	constructor(
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IEditorService private readonly editorService: IEditorService,
+		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@INotificationService private readonly notificationService: INotificationService,
+		@ICommandService private readonly commandService: ICommandService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@ILifecycleService private readonly lifecycleService: ILifecycleService,
+		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@IDialogService private readonly dialogService: IDialogService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 		this.registerListeners();
+		this.create();
 	}
 
 	private registerListeners(): void {
 		// Layout
 		this._register(addDisposableListener(window, EventType.RESIZE, e => this.onWindowResize(e, true)));
+
+		// prevent opening a real URL inside the window
+		for (const event of [EventType.DRAG_OVER, EventType.DROP]) {
+			window.document.body.addEventListener(event, (e: DragEvent) => {
+				EventHelper.stop(e);
+			});
+		}
+
+		// Support runAction event
+		ipcRenderer.on('mote:runAction', async (event: unknown, request: INativeRunActionInWindowRequest) => {
+			const args: unknown[] = request.args || [];
+
+			// If we run an action from the touchbar, we fill in the currently active resource
+			// as payload because the touch bar items are context aware depending on the editor
+			if (request.from === 'touchbar') {
+				const activeEditor = this.editorService.activeEditor;
+				if (activeEditor) {
+					const resource = EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY });
+					if (resource) {
+						args.push(resource);
+					}
+				}
+			} else {
+				args.push({ from: request.from });
+			}
+
+			try {
+				console.log('on run Action', request.id, args);
+				await this.commandService.executeCommand(request.id, ...args);
+
+				//this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: request.id, from: request.from });
+			} catch (error) {
+				this.notificationService.error(error);
+			}
+		});
+
+		// Support runKeybinding event
+		ipcRenderer.on('mote:runKeybinding', (event: unknown, request: INativeRunKeybindingInWindowRequest) => {
+			if (document.activeElement) {
+				this.keybindingService.dispatchByUserSettingsLabel(request.userSettingsLabel, document.activeElement);
+			}
+		});
+
+		// Error reporting from main
+		ipcRenderer.on('mote:reportError', (event: unknown, error: string) => {
+			if (error) {
+				onUnexpectedError(JSON.parse(error));
+			}
+		});
 	}
 
 	private onWindowResize(e: UIEvent, retry: boolean): void {
@@ -30,6 +104,29 @@ export class NativeWindow extends Disposable {
 			}
 
 			this.layoutService.layout();
+		}
+	}
+
+	private create(): void {
+		// Notify some services about lifecycle phases
+		console.log('create native window:', this.lifecycleService.phase, this.nativeHostService);
+		this.lifecycleService.when(LifecyclePhase.Ready).then(() => this.nativeHostService.notifyReady());
+
+		// Check for situations that are worth warning the user about
+		this.handleWarnings();
+	}
+
+	private async handleWarnings(): Promise<void> {
+
+		// Check for cyclic dependencies
+		if (typeof require.hasDependencyCycle === 'function' && require.hasDependencyCycle()) {
+			if (isCI) {
+				this.logService.error('Error: There is a dependency cycle in the AMD modules that needs to be resolved!');
+				this.nativeHostService.exit(37); // running on a build machine, just exit without showing a dialog
+			} else {
+				this.dialogService.show(Severity.Error, localize('loaderCycle', "There is a dependency cycle in the AMD modules that needs to be resolved!"));
+				this.nativeHostService.openDevTools();
+			}
 		}
 	}
 }

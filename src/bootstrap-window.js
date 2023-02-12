@@ -268,7 +268,7 @@
 	 */
 	function sandboxGlobals() {
 		// @ts-ignore (defined in globals.js)
-		return window.vscode;
+		return window.mote;
 	}
 
 	return {

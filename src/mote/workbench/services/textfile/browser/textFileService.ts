@@ -58,8 +58,6 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
 
 	readonly files: ITextFileEditorModelManager = this._register(this.instantiationService.createInstance(TextFileEditorModelManager));
 
-	readonly untitled: IUntitledTextEditorModelManager = this.untitledTextEditorService;
-
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
 		//@IUntitledTextEditorService private untitledTextEditorService: IUntitledTextEditorService,

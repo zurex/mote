@@ -109,6 +109,7 @@ export class Workbench extends Layout {
 				configurationService.acquireInstantiationService(instantiationService);
 			}
 
+			console.log('set lifecycleService phase Ready');
 			// Signal to lifecycle that services are set
 			lifecycleService.phase = LifecyclePhase.Ready;
 		});

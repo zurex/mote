@@ -89,7 +89,7 @@ export abstract class AbstractPathService implements IPathService {
 
 	constructor(
 		private localUserHome: URI,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		//@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 		@IWorkspaceContextService private contextService: IWorkspaceContextService
 	) {

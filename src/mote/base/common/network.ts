@@ -57,7 +57,7 @@ export namespace Schemas {
 
 	export const vscodeUserData = 'vscode-userdata';
 
-	export const userData = 'mote-userdata';
+	export const moteUserData = 'mote-userdata';
 
 	export const vscodeCustomEditor = 'vscode-custom-editor';
 

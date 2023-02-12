@@ -715,16 +715,16 @@ export function createRandomIPCHandle(): string {
 
 	// Windows: use named pipe
 	if (process.platform === 'win32') {
-		return `\\\\.\\pipe\\vscode-ipc-${randomSuffix}-sock`;
+		return `\\\\.\\pipe\\mote-ipc-${randomSuffix}-sock`;
 	}
 
 	// Mac/Unix: use socket file and prefer
 	// XDG_RUNTIME_DIR over tmpDir
 	let result: string;
 	if (XDG_RUNTIME_DIR) {
-		result = join(XDG_RUNTIME_DIR, `vscode-ipc-${randomSuffix}.sock`);
+		result = join(XDG_RUNTIME_DIR, `mote-ipc-${randomSuffix}.sock`);
 	} else {
-		result = join(getNodeDependencies().os.tmpdir(), `vscode-ipc-${randomSuffix}.sock`);
+		result = join(getNodeDependencies().os.tmpdir(), `mote-ipc-${randomSuffix}.sock`);
 	}
 
 	// Validate length

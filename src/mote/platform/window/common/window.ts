@@ -8,7 +8,7 @@ import { FileType } from 'mote/platform/files/common/files';
 import { ILoggerResource, LogLevel } from 'mote/platform/log/common/log';
 import { IAnyWorkspaceIdentifier, IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
-import { isLinux, isMacintosh, isNative, isWeb } from 'mote/base/common/platform';
+import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'mote/base/common/platform';
 
 export interface IPathData<T = IEditorOptions> {
 
@@ -40,6 +40,16 @@ export interface IPathData<T = IEditorOptions> {
 	 * if it exists.
 	 */
 	readonly openOnlyIfExists?: boolean;
+}
+
+export interface INativeRunActionInWindowRequest {
+	readonly id: string;
+	readonly from: 'menu' | 'touchbar' | 'mouse';
+	readonly args?: any[];
+}
+
+export interface INativeRunKeybindingInWindowRequest {
+	readonly userSettingsLabel: string;
 }
 
 export interface IPath<T = IEditorOptions> extends IPathData<T> {
@@ -216,4 +226,22 @@ export function getTitleBarStyle(configurationService: IConfigurationService): '
 	}
 
 	return isLinux ? 'native' : 'custom'; // default to custom on all macOS and Windows
+}
+
+export function useWindowControlsOverlay(configurationService: IConfigurationService): boolean {
+	if (!isWindows || isWeb) {
+		return false; // only supported on a desktop Windows instance
+	}
+
+	if (getTitleBarStyle(configurationService) === 'native') {
+		return false; // only supported when title bar is custom
+	}
+
+	const configuredUseWindowControlsOverlay = configurationService.getValue<boolean | undefined>('window.experimental.windowControlsOverlay.enabled');
+	if (typeof configuredUseWindowControlsOverlay === 'boolean') {
+		return configuredUseWindowControlsOverlay;
+	}
+
+	// Default to true.
+	return true;
 }

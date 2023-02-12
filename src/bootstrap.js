@@ -201,7 +201,7 @@
 	function safeSandboxGlobals() {
 		const globals = (typeof self === 'object' ? self : typeof global === 'object' ? global : {});
 
-		return globals.vscode;
+		return globals.mote;
 	}
 
 	/**

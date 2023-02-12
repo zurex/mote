@@ -12,7 +12,7 @@ import { spawn } from '@malept/cross-spawn-promise';
 async function main(): Promise<void> {
 	const buildDir = process.env['AGENT_BUILDDIRECTORY'];
 	const tempDir = process.env['AGENT_TEMPDIRECTORY'];
-	const arch = process.env['VSCODE_ARCH'];
+	const arch = process.env['MOTE_ARCH'];
 
 	if (!buildDir) {
 		throw new Error('$AGENT_BUILDDIRECTORY not set');
@@ -23,7 +23,7 @@ async function main(): Promise<void> {
 	}
 
 	const baseDir = path.dirname(__dirname);
-	const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
+	const appRoot = path.join(buildDir, `Mote-darwin-${arch}`);
 	const appName = product.nameLong + '.app';
 	const appFrameworkPath = path.join(appRoot, appName, 'Contents', 'Frameworks');
 	const helperAppBaseName = product.nameShort;

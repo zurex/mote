@@ -4,6 +4,7 @@ import { Keybinding, ResolvedKeybinding } from 'mote/base/common/keybindings';
 import { KeyCode } from 'mote/base/common/keyCodes';
 import { IContextKeyService, IContextKeyServiceTarget } from 'mote/platform/contextkey/common/contextkey';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
+import { IResolveResult } from 'mote/platform/keybinding/common/keybindingResolver';
 
 export interface IUserFriendlyKeybinding {
 	key: string;
@@ -48,6 +49,14 @@ export interface IKeybindingService {
 	 * Resolve and dispatch `keyboardEvent` and invoke the command.
 	 */
 	dispatchEvent(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean;
+
+	/**
+	 * Resolve and dispatch `keyboardEvent`, but do not invoke the command or change inner state.
+	 */
+	softDispatch(keyboardEvent: IKeyboardEvent, target: IContextKeyServiceTarget): IResolveResult | null;
+
+	dispatchByUserSettingsLabel(userSettingsLabel: string, target: IContextKeyServiceTarget): void;
+
 
 	/**
 	 * Look up keybindings for a command.

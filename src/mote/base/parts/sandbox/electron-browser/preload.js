@@ -161,7 +161,7 @@
 			on(channel, listener) {
 				if (validateIPC(channel)) {
 					ipcRenderer.on(channel, listener);
-
+					console.log('listen ipc:', channel);
 					return this;
 				}
 			},
@@ -322,17 +322,17 @@
 		}
 	};
 
-	// Use `contextBridge` APIs to expose globals to VSCode
+	// Use `contextBridge` APIs to expose globals to Mote
 	// only if context isolation is enabled, otherwise just
 	// add to the DOM global.
 	if (process.contextIsolated) {
 		try {
-			contextBridge.exposeInMainWorld('vscode', globals);
+			contextBridge.exposeInMainWorld('mote', globals);
 		} catch (error) {
 			console.error(error);
 		}
 	} else {
 		// @ts-ignore
-		window.vscode = globals;
+		window.mote = globals;
 	}
 }());

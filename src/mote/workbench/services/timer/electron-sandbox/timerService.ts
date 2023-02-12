@@ -27,7 +27,7 @@ export class TimerService extends AbstractTimerService {
 		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IExtensionService extensionService: IExtensionService,
+		//@IExtensionService extensionService: IExtensionService,
 		@IUpdateService updateService: IUpdateService,
 		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
 		@IEditorService editorService: IEditorService,
@@ -37,7 +37,7 @@ export class TimerService extends AbstractTimerService {
 		@IProductService private readonly _productService: IProductService,
 		@IStorageService private readonly _storageService: IStorageService
 	) {
-		super(lifecycleService, contextService, extensionService, updateService, paneCompositeService, editorService, accessibilityService, telemetryService, layoutService);
+		super(lifecycleService, contextService, updateService, paneCompositeService, editorService, accessibilityService, telemetryService, layoutService);
 		this.setPerformanceMarks('main', _environmentService.window.perfMarks);
 	}
 

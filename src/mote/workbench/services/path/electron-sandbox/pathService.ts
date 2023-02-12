@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
-import { IRemoteAgentService } from 'mote/workbench/services/remote/common/remoteAgentService';
 import { INativeWorkbenchEnvironmentService } from 'mote/workbench/services/environment/electron-sandbox/environmentService';
 import { IPathService, AbstractPathService } from 'mote/workbench/services/path/common/pathService';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -12,11 +11,10 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 export class NativePathService extends AbstractPathService {
 
 	constructor(
-		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService
 	) {
-		super(environmentService.userHome, remoteAgentService, environmentService, contextService);
+		super(environmentService.userHome, environmentService, contextService);
 	}
 }
 
