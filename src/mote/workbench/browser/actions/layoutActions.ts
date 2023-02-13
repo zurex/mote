@@ -49,6 +49,44 @@ registerAction2(class extends Action2 {
 	}
 });
 
+// --- Toggle Activity Bar
+
+export class ToggleActivityBarVisibilityAction extends Action2 {
+
+	static readonly ID = 'workbench.action.toggleActivityBarVisibility';
+
+	private static readonly activityBarVisibleKey = 'workbench.activityBar.visible';
+
+	constructor() {
+		super({
+			id: ToggleActivityBarVisibilityAction.ID,
+			title: {
+				value: localize('toggleActivityBar', "Toggle Activity Bar Visibility"),
+				mnemonicTitle: localize({ key: 'miActivityBar', comment: ['&& denotes a mnemonic'] }, "&&Activity Bar"),
+				original: 'Toggle Activity Bar Visibility'
+			},
+			category: Categories.View,
+			f1: true,
+			toggled: ContextKeyExpr.equals('config.workbench.activityBar.visible', true),
+			menu: [{
+				id: MenuId.MenubarAppearanceMenu,
+				group: '2_workbench_layout',
+				order: 4
+			}]
+		});
+	}
+
+	run(accessor: ServicesAccessor): void {
+		const layoutService = accessor.get(IWorkbenchLayoutService);
+		const configurationService = accessor.get(IConfigurationService);
+
+		const visibility = layoutService.isVisible(Parts.ACTIVITYBAR_PART);
+		const newVisibilityValue = !visibility;
+
+		configurationService.updateValue(ToggleActivityBarVisibilityAction.activityBarVisibleKey, newVisibilityValue);
+	}
+}
+
 //#region Sidebar Position
 
 const sidebarPositionConfigurationKey = 'workbench.sideBar.location';

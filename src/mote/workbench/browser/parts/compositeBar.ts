@@ -10,6 +10,7 @@ import { IColorTheme } from 'mote/platform/theme/common/themeService';
 import { IComposite } from 'mote/workbench/common/composite';
 import { ILogService } from 'mote/platform/log/common/log';
 import { Emitter } from 'mote/base/common/event';
+import { GestureEvent } from 'mote/base/browser/touch';
 
 export interface ICompositeBarItem {
 	id: string;
@@ -34,6 +35,7 @@ export interface ICompositeBarOptions {
 	getCompositePinnedAction: (compositeId: string) => IAction;
 	getDefaultCompositeId: () => string | undefined;
 	openComposite: (compositeId: string, preserveFocus?: boolean) => Promise<IComposite | null>;
+	readonly fillExtraContextMenuActions: (actions: IAction[], e?: MouseEvent | GestureEvent) => void;
 }
 
 export class CompositeBar extends Widget implements ICompositeBar {

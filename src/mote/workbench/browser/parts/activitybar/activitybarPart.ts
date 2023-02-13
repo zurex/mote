@@ -4,7 +4,7 @@ import { ThemedStyles } from 'mote/base/common/themes';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { Part } from 'mote/workbench/browser/part';
 import { PlaceHolderToggleCompositePinnedAction, PlaceHolderViewContainerActivityAction, ViewContainerActivityAction } from 'mote/workbench/browser/parts/activitybar/activitybarActions';
-import { IActivityHoverOptions, ICompositeBarColors, ToggleCompositePinnedAction } from 'mote/workbench/browser/parts/compositeBarAction';
+import { ActivityAction, IActivityHoverOptions, ICompositeActivity, ICompositeBarColors, ToggleCompositePinnedAction } from 'mote/workbench/browser/parts/compositeBarAction';
 import { IPaneCompositePart, IPaneCompositeSelectorPart } from 'mote/workbench/browser/parts/paneCompositePart';
 import { IViewContainerModel, IViewDescriptorService, ViewContainer, ViewContainerLocation } from 'mote/workbench/common/views';
 import { IBadge } from 'mote/workbench/services/activity/common/activity';
@@ -16,11 +16,20 @@ import { IInstantiationService } from 'mote/platform/instantiation/common/instan
 import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { CompositeBar } from 'mote/workbench/browser/parts/compositeBar';
 import { IActivity } from 'mote/workbench/common/activity';
-import { asCSSUrl, createCSSRule, Dimension } from 'mote/base/browser/dom';
+import { addDisposableListener, asCSSUrl, createCSSRule, Dimension, EventType, isAncestor } from 'mote/base/browser/dom';
 import { StringSHA1 } from 'mote/base/common/hash';
-import { ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
+import { ActionBar, ActionsOrientation } from 'mote/base/browser/ui/actionbar/actionbar';
 import { ACTIVITY_BAR_ACTIVE_BACKGROUND, ACTIVITY_BAR_ACTIVE_BORDER, ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND, ACTIVITY_BAR_DRAG_AND_DROP_BORDER, ACTIVITY_BAR_FOREGROUND, ACTIVITY_BAR_INACTIVE_FOREGROUND } from 'mote/workbench/common/theme';
 import { HoverPosition } from 'mote/base/browser/ui/hover/hoverWidget';
+import { GestureEvent } from 'mote/base/browser/touch';
+import { Separator, toAction } from 'mote/base/common/actions';
+import { localize } from 'mote/nls';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { getMenuBarVisibility } from 'mote/platform/window/common/window';
+import { ToggleActivityBarVisibilityAction, ToggleSidebarPositionAction } from 'mote/workbench/browser/actions/layoutActions';
+import { CustomMenubarControl } from 'mote/workbench/browser/parts/titlebar/menubarControl';
+import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
+import { KeyCode } from 'mote/base/common/keyCodes';
 
 interface IPlaceholderViewContainer {
 	readonly id: string;
@@ -69,11 +78,21 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 
 	private content: HTMLElement | undefined;
 
+	private menuBar: CustomMenubarControl | undefined;
+	private menuBarContainer: HTMLElement | undefined;
+
 	private compositeBar: CompositeBar;
 	private compositeBarContainer: HTMLElement | undefined;
 
+	private globalActivityAction: ActivityAction | undefined;
+	private globalActivityActionBar: ActionBar | undefined;
+	private globalActivitiesContainer: HTMLElement | undefined;
+	private readonly globalActivity: ICompositeActivity[] = [];
+
 	private readonly compositeActions = new Map<string, { activityAction: ViewContainerActivityAction; pinnedAction: ToggleCompositePinnedAction }>();
 	private readonly viewContainerDisposables = new Map<string, IDisposable>();
+
+	private readonly keyboardNavigationDisposables = this._register(new DisposableStore());
 
 	private readonly location = ViewContainerLocation.Sidebar;
 
@@ -84,6 +103,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		@IStorageService private readonly storageService: IStorageService,
 		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
 		@IInstantiationService private instantiationService: IInstantiationService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
 		//@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super(Parts.ACTIVITYBAR_PART, { hasTitle: false }, themeService, storageService, layoutService);
@@ -102,10 +122,85 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		this.content.classList.add('content');
 		parent.appendChild(this.content);
 
+		// Install menubar if compact
+		if (getMenuBarVisibility(this.configurationService) === 'compact') {
+			//this.installMenubar();
+		}
+
 		// View Containers action bar
 		this.compositeBarContainer = this.compositeBar.create(this.content);
 
+		// Keyboard Navigation
+		this.registerKeyboardNavigationListeners();
+
 		return this.content;
+	}
+
+	private registerKeyboardNavigationListeners(): void {
+		this.keyboardNavigationDisposables.clear();
+
+		// Up/Down arrow on compact menu
+		if (this.menuBarContainer) {
+			this.keyboardNavigationDisposables.add(addDisposableListener(this.menuBarContainer, EventType.KEY_DOWN, e => {
+				const kbEvent = new StandardKeyboardEvent(e);
+				if (kbEvent.equals(KeyCode.DownArrow) || kbEvent.equals(KeyCode.RightArrow)) {
+					this.compositeBar?.focus();
+				}
+			}));
+		}
+
+		// Up/Down on Activity Icons
+		if (this.compositeBarContainer) {
+			this.keyboardNavigationDisposables.add(addDisposableListener(this.compositeBarContainer, EventType.KEY_DOWN, e => {
+				const kbEvent = new StandardKeyboardEvent(e);
+				if (kbEvent.equals(KeyCode.DownArrow) || kbEvent.equals(KeyCode.RightArrow)) {
+					this.globalActivityActionBar?.focus(true);
+				} else if (kbEvent.equals(KeyCode.UpArrow) || kbEvent.equals(KeyCode.LeftArrow)) {
+					this.menuBar?.toggleFocus();
+				}
+			}));
+		}
+
+		// Up arrow on global icons
+		if (this.globalActivitiesContainer) {
+			this.keyboardNavigationDisposables.add(addDisposableListener(this.globalActivitiesContainer, EventType.KEY_DOWN, e => {
+				const kbEvent = new StandardKeyboardEvent(e);
+				if (kbEvent.equals(KeyCode.UpArrow) || kbEvent.equals(KeyCode.LeftArrow)) {
+					this.compositeBar?.focus(this.getVisiblePaneCompositeIds().length - 1);
+				}
+			}));
+		}
+	}
+
+	private uninstallMenubar() {
+		if (this.menuBar) {
+			this.menuBar.dispose();
+			this.menuBar = undefined;
+		}
+
+		if (this.menuBarContainer) {
+			this.menuBarContainer.remove();
+			this.menuBarContainer = undefined;
+			this.registerKeyboardNavigationListeners();
+		}
+	}
+
+	private installMenubar() {
+		if (this.menuBar) {
+			return; // prevent menu bar from installing twice #110720
+		}
+
+		this.menuBarContainer = document.createElement('div');
+		this.menuBarContainer.classList.add('menubar');
+
+		const content = assertIsDefined(this.content);
+		content.prepend(this.menuBarContainer);
+
+		// Menubar: install a custom menu bar depending on configuration
+		this.menuBar = this._register(this.instantiationService.createInstance(CustomMenubarControl));
+		this.menuBar.create(this.menuBarContainer);
+
+		this.registerKeyboardNavigationListeners();
 	}
 
 	public createCompositeBar() {
@@ -124,9 +219,28 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 			openComposite: async (compositeId, preserveFocus) => {
 				return (await this.paneCompositePart.openPaneComposite(compositeId, !preserveFocus)) ?? null;
 			},
-			getDefaultCompositeId: () => this.viewDescriptorService.getDefaultViewContainer(this.location)?.id,
 			getActivityAction: compositeId => this.getCompositeActions(compositeId).activityAction,
 			getCompositePinnedAction: compositeId => this.getCompositeActions(compositeId).pinnedAction,
+			fillExtraContextMenuActions: (actions, e?: MouseEvent | GestureEvent) => {
+				// Menu
+				const menuBarVisibility = getMenuBarVisibility(this.configurationService);
+				if (menuBarVisibility === 'compact' || menuBarVisibility === 'hidden' || menuBarVisibility === 'toggle') {
+					actions.unshift(...[toAction({ id: 'toggleMenuVisibility', label: localize('menu', "Menu"), checked: menuBarVisibility === 'compact', run: () => this.configurationService.updateValue('window.menuBarVisibility', menuBarVisibility === 'compact' ? 'toggle' : 'compact') }), new Separator()]);
+				}
+
+				if (menuBarVisibility === 'compact' && this.menuBarContainer && e?.target) {
+					if (isAncestor(e.target as Node, this.menuBarContainer)) {
+						actions.unshift(...[toAction({ id: 'hideCompactMenu', label: localize('hideMenu', "Hide Menu"), run: () => this.configurationService.updateValue('window.menuBarVisibility', 'toggle') }), new Separator()]);
+					}
+				}
+
+				// Toggle Sidebar
+				actions.push(toAction({ id: ToggleSidebarPositionAction.ID, label: ToggleSidebarPositionAction.getLabel(this.layoutService), run: () => this.instantiationService.invokeFunction(accessor => new ToggleSidebarPositionAction().run(accessor)) }));
+
+				// Toggle Activity Bar
+				actions.push(toAction({ id: ToggleActivityBarVisibilityAction.ID, label: localize('hideActivitBar', "Hide Activity Bar"), run: () => this.instantiationService.invokeFunction(accessor => new ToggleActivityBarVisibilityAction().run(accessor)) }));
+			},
+			getDefaultCompositeId: () => this.viewDescriptorService.getDefaultViewContainer(this.location)?.id,
 			compositeSize: 52,
 			colors: (theme: IColorTheme) => this.getActivitybarItemColors(theme),
 			overflowActionSize: ActivitybarPart.ACTION_HEIGHT
@@ -149,17 +263,6 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 		this.paneCompositePart.onDidPaneCompositeOpen(e => this.onDidChangeViewContainerVisibility(e.getId(), true));
 		this.paneCompositePart.onDidPaneCompositeClose(e => this.onDidChangeViewContainerVisibility(e.getId(), false));
 
-		// Extension registration
-		/*
-		const disposables = this._register(new DisposableStore());
-		this._register(this.extensionService.onDidRegisterExtensions(() => {
-			disposables.clear();
-			this.onDidRegisterExtensions();
-			this.compositeBar.onDidChange(() => this.saveCachedViewContainers(), this, disposables);
-			this.storageService.onDidChangeValue(e => this.onDidStorageValueChange(e), this, disposables);
-		}));
-
-
 		// Register for configuration changes
 		this._register(this.configurationService.onDidChangeConfiguration(e => {
 			if (e.affectsConfiguration('window.menuBarVisibility')) {
@@ -170,7 +273,7 @@ export class ActivitybarPart extends Part implements IPaneCompositeSelectorPart 
 				}
 			}
 		}));
-		*/
+
 	}
 
 	private onDidChangeViewContainers(added: readonly { container: ViewContainer; location: ViewContainerLocation }[], removed: readonly { container: ViewContainer; location: ViewContainerLocation }[]) {

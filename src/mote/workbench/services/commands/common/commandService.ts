@@ -2,7 +2,7 @@
 import { CommandsRegistry, ICommandEvent, ICommandService } from "mote/platform/commands/common/commands";
 import { Emitter, Event } from "mote/base/common/event";
 import { Disposable } from "mote/base/common/lifecycle";
-import { registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
 import { IInstantiationService } from "mote/platform/instantiation/common/instantiation";
 import { ILogService } from "mote/platform/log/common/log";
 
@@ -45,4 +45,4 @@ export class CommandService extends Disposable implements ICommandService {
 
 }
 
-registerSingleton(ICommandService, CommandService, true);
+registerSingleton(ICommandService, CommandService, InstantiationType.Delayed);

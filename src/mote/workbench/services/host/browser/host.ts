@@ -1,9 +1,49 @@
+import { Event } from 'mote/base/common/event';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
 import { IOpenEmptyWindowOptions, IOpenWindowOptions, IWindowOpenable } from 'mote/platform/window/common/window';
 
 export const IHostService = createDecorator<IHostService>('hostService');
 
+/**
+ * A set of methods supported in both web and native environments.
+ *
+ * @see {@link INativeHostService} for methods that are specific to native
+ * environments.
+ */
 export interface IHostService {
+
+	readonly _serviceBrand: undefined;
+
+
+	//#region Focus
+
+	/**
+	 * Emitted when the window focus changes.
+	 */
+	readonly onDidChangeFocus: Event<boolean>;
+
+	/**
+	 * Find out if the window has focus or not.
+	 */
+	readonly hasFocus: boolean;
+
+	/**
+	 * Find out if the window had the last focus.
+	 */
+	hadLastFocus(): Promise<boolean>;
+
+	/**
+	 * Attempt to bring the window to the foreground and focus it.
+	 *
+	 * @param options Pass `force: true` if you want to make the window take
+	 * focus even if the application does not have focus currently. This option
+	 * should only be used if it is necessary to steal focus from the current
+	 * focused application which may not be VSCode. It may not be supported
+	 * in all environments.
+	 */
+	focus(options?: { force: boolean }): Promise<void>;
+
+	//#endregion
 
 	//#region Window
 

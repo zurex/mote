@@ -50,7 +50,7 @@ export const TITLE_BAR_INACTIVE_FOREGROUND = registerColor('titleBar.inactiveFor
 
 export const TITLE_BAR_ACTIVE_BACKGROUND = registerColor('titleBar.activeBackground', {
 	dark: '#3C3C3C',
-	light: '#DDDDDD',
+	light: '#FBFBFA',
 	hcDark: '#000000',
 	hcLight: '#FFFFFF'
 }, localize('titleBarActiveBackground', "Title bar background when the window is active."));

@@ -80,7 +80,8 @@ export abstract class MenubarControl extends Disposable {
 	}
 
 	protected registerListeners(): void {
-
+		// Listen for changes on the main menu
+		this._register(this.mainMenu.onDidChange(() => { this.setupMainMenu(); this.doUpdateMenubar(true); }));
 	}
 
 	protected abstract doUpdateMenubar(firstTime: boolean): void;
@@ -521,7 +522,7 @@ export class CustomMenubarControl extends MenubarControl {
 	}
 
 	layout(dimension: Dimension) {
-		//this.menubar?.update(this.getMenuBarOptions());
+		this.menubar?.update(this.getMenuBarOptions());
 	}
 
 	toggleFocus() {

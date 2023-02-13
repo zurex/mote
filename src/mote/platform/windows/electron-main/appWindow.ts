@@ -1,6 +1,6 @@
 import { localize } from 'mote/nls';
 /* eslint-disable code-no-unexternalized-strings */
-import { BrowserWindow, BrowserWindowConstructorOptions, Display, Rectangle, screen } from 'electron';
+import { app, BrowserWindow, BrowserWindowConstructorOptions, Display, Rectangle, screen } from 'electron';
 import { FileAccess } from "mote/base/common/network";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
 import { IThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
@@ -235,7 +235,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 					const symbolColor = Color.fromHex(titleBarColor).isDarker() ? '#FFFFFF' : '#000000';
 
 					options.titleBarOverlay = {
-						height: 29, // the smallest size of the title bar on windows accounting for the border on windows 11
+						height: 29, // 29 is the smallest size of the title bar on windows accounting for the border on windows 11
 						color: titleBarColor,
 						symbolColor
 					};
@@ -254,6 +254,29 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 		// Eventing
 		this.registerListeners(useSandbox);
+	}
+
+	focus(options?: { force: boolean }): void {
+		// macOS: Electron > 7.x changed its behaviour to not
+		// bring the application to the foreground when a window
+		// is focused programmatically. Only via `app.focus` and
+		// the option `steal: true` can you get the previous
+		// behaviour back. The only reason to use this option is
+		// when a window is getting focused while the application
+		// is not in the foreground.
+		if (isMacintosh && options?.force) {
+			app.focus({ steal: true });
+		}
+
+		if (!this._win) {
+			return;
+		}
+
+		if (this._win.isMinimized()) {
+			this._win.restore();
+		}
+
+		this._win.focus();
 	}
 
 	private readyState = ReadyState.NONE;
@@ -410,13 +433,13 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 		switch (type) {
 			case WindowError.PROCESS_GONE:
-				this.logService.error(`CodeWindow: renderer process gone (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+				this.logService.error(`MoteWindow: renderer process gone (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
 				break;
 			case WindowError.UNRESPONSIVE:
-				this.logService.error('CodeWindow: detected unresponsive');
+				this.logService.error('MoteWindow: detected unresponsive');
 				break;
 			case WindowError.LOAD:
-				this.logService.error(`CodeWindow: failed to load (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+				this.logService.error(`MoteWindow: failed to load (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
 				break;
 		}
 
@@ -691,6 +714,29 @@ export class AppWindow extends Disposable implements IAppWindow {
 		}
 
 		return state;
+	}
+
+	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void {
+
+		// Cache the height for speeds lookups on startup
+		if (options.height) {
+			this.stateMainService.setItem((AppWindow.windowControlHeightStateStorageKey), options.height);
+		}
+
+		// Windows: window control overlay (WCO)
+		if (isWindows && this.hasWindowControlOverlay) {
+			this._win.setTitleBarOverlay({
+				color: options.backgroundColor?.trim() === '' ? undefined : options.backgroundColor,
+				symbolColor: options.foregroundColor?.trim() === '' ? undefined : options.foregroundColor,
+				height: options.height ? options.height - 1 : undefined // account for window border
+			});
+		}
+
+		// macOS: traffic lights
+		else if (isMacintosh && options.height !== undefined) {
+			const verticalOffset = (options.height - 15) / 2; // 15px is the height of the traffic lights
+			this._win.setTrafficLightPosition({ x: verticalOffset, y: verticalOffset });
+		}
 	}
 
 	private restoreWindowState(state?: IWindowUIState): [IWindowUIState, boolean? /* has multiple displays */] {

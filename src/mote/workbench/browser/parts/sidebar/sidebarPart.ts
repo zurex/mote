@@ -1,3 +1,4 @@
+import 'mote/css!./media/sidebarpart';
 import { Event } from 'mote/base/common/event';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from 'mote/workbench/browser/panecomposite';

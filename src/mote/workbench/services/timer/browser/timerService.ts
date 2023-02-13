@@ -19,6 +19,7 @@ import { ViewContainerLocation } from 'mote/workbench/common/views';
 import { TelemetryTrustedValue } from 'mote/platform/telemetry/common/telemetryUtils';
 import { isWeb } from 'mote/base/common/platform';
 import { createBlobWorker } from 'mote/base/browser/defaultWorkerFactory';
+import { PerformanceMark, PerformanceMarkPoint } from 'mote/base/common/performanceMark';
 
 /* __GDPR__FRAGMENT__
 	"IMemoryInfo" : {
@@ -444,7 +445,19 @@ class PerfMarks {
 		this._entries.push([source, entries]);
 	}
 
-	getDuration(from: string, to: string): number {
+	getDuration(point: PerformanceMarkPoint): number;
+	getDuration(from: string, to: string): number;
+	getDuration(pointOrFrom: PerformanceMarkPoint | string, arg?: string): number {
+		let from: string;
+		let to: string;
+		if (typeof pointOrFrom === 'string') {
+			from = pointOrFrom;
+			to = arg!;
+		} else {
+			const [willMark, didMark] = PerformanceMark.getPair(pointOrFrom);
+			from = willMark;
+			to = didMark;
+		}
 		const fromEntry = this._findEntry(from);
 		if (!fromEntry) {
 			return 0;
@@ -663,7 +676,7 @@ export abstract class AbstractTimerService implements ITimerService {
 				ellapsedLoadMainBundle: initialStartup ? this._marks.getDuration('mote/willLoadMainBundle', 'mote/didLoadMainBundle') : undefined,
 				ellapsedCrashReporter: initialStartup ? this._marks.getDuration('mote/willStartCrashReporter', 'mote/didStartCrashReporter') : undefined,
 				ellapsedMainServer: initialStartup ? this._marks.getDuration('mote/willStartMainServer', 'mote/didStartMainServer') : undefined,
-				ellapsedWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateCodeWindow', 'mote/didCreateCodeWindow') : undefined,
+				ellapsedWindowCreate: initialStartup ? this._marks.getDuration(PerformanceMarkPoint.CreateWindow) : undefined,
 				ellapsedWindowRestoreState: initialStartup ? this._marks.getDuration('mote/willRestoreCodeWindowState', 'mote/didRestoreCodeWindowState') : undefined,
 				ellapsedBrowserWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateMoteBrowserWindow', 'mote/didCreateMoteBrowserWindow') : undefined,
 				ellapsedWindowMaximize: initialStartup ? this._marks.getDuration('mote/willMaximizeCodeWindow', 'mote/didMaximizeCodeWindow') : undefined,

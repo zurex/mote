@@ -352,9 +352,9 @@
 }
 
 /* Layout Controls */
-.mote-workbench .part.titlebar > .titlebar-container > .titlebar-right > .layout-controls-container {
+.mote-workbench .part.titlebar > .titlebar-container > .titlebar-left > .layout-controls-container {
 	display: none;
-	padding-right: 2px;
+	padding-left: 2px;
 	flex-grow: 0;
 	flex-shrink: 0;
 	text-align: center;
@@ -362,21 +362,22 @@
 	z-index: 2500;
 	-webkit-app-region: no-drag;
 	height: 100%;
-	margin-left: auto;
+	margin-right: auto;
 	min-width: 28px;
 }
 
-.mote-workbench.mac:not(.web) .part.titlebar > .titlebar-container > .titlebar-right > .layout-controls-container {
-	right: 8px;
+.mote-workbench.mac:not(.web) .part.titlebar > .titlebar-container > .titlebar-left > .layout-controls-container {
+	left: 8px;
 }
 
-.mote-workbench .part.titlebar > .titlebar-container > .titlebar-right > .layout-controls-container.show-layout-control {
+.mote-workbench .part.titlebar > .titlebar-container > .titlebar-left > .layout-controls-container.show-layout-control {
 	display: flex;
 	justify-content: center;
 }
 
-.mote-workbench .part.titlebar > .titlebar-container > .titlebar-right > .layout-controls-container .codicon {
+.mote-workbench .part.titlebar > .titlebar-container > .titlebar-left > .layout-controls-container .codicon {
 	color: inherit;
+	font-size: 20px;
 }
 
 .mote-workbench .part.titlebar .window-controls-container .window-icon {

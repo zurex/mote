@@ -18,6 +18,8 @@ import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/
 import { ILifecycleService, LifecyclePhase, ShutdownReason } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
+import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from 'mote/base/common/actions';
+import { ITelemetryService } from 'mote/platform/telemetry/common/telemetry';
 
 export class NativeWindow extends Disposable {
 	constructor(
@@ -27,6 +29,7 @@ export class NativeWindow extends Disposable {
 		@INotificationService private readonly notificationService: INotificationService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@INativeHostService private readonly nativeHostService: INativeHostService,
 		@IDialogService private readonly dialogService: IDialogService,
@@ -67,10 +70,8 @@ export class NativeWindow extends Disposable {
 			}
 
 			try {
-				console.log('on run Action', request.id, args);
 				await this.commandService.executeCommand(request.id, ...args);
-
-				//this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: request.id, from: request.from });
+				this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: request.id, from: request.from });
 			} catch (error) {
 				this.notificationService.error(error);
 			}

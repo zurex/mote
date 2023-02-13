@@ -1,7 +1,7 @@
 import { BrowserWindow, nativeTheme } from 'electron';
 import { hostname, release } from 'os';
-import { INativeWindowConfiguration, IOpenEmptyWindowOptions } from 'mote/platform/window/common/window';
-import { IAppWindow } from 'mote/platform/window/electron-main/window';
+import { INativeWindowConfiguration, IOpenEmptyWindowOptions, IPath, IWindowSettings } from 'mote/platform/window/common/window';
+import { IAppWindow, UnloadReason } from 'mote/platform/window/electron-main/window';
 import { distinct, firstOrDefault } from 'mote/base/common/arrays';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { IProcessEnvironment } from 'mote/base/common/platform';
@@ -14,7 +14,7 @@ import { AppWindow } from 'mote/platform/windows/electron-main/appWindow';
 import { IOpenConfiguration, IOpenEmptyConfiguration, IWindowsCountChangedEvent, IWindowsMainService } from 'mote/platform/windows/electron-main/windows';
 import { ILoggerMainService } from 'mote/platform/log/electron-main/loggerService';
 import { CancellationToken } from 'mote/base/common/cancellation';
-import { getMarks, mark } from 'mote/base/common/performance';
+import { getMarks } from 'mote/base/common/performance';
 import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lifecycleMainService';
 import { Emitter } from 'mote/base/common/event';
 import { once } from 'mote/base/common/functional';
@@ -22,10 +22,30 @@ import { assertIsDefined } from 'mote/base/common/types';
 import { WindowsStateHandler } from 'mote/platform/windows/electron-main/windowsStateHandler';
 import { IStateMainService } from 'mote/platform/state/electron-main/state';
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { PerformanceMark, PerformanceMarkPoint } from 'mote/base/common/performanceMark';
+import { IEditorOptions } from 'mote/platform/editor/common/editor';
+import { ISinglePageWorkspaceIdentifier, IWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
 
 interface IOpenBrowserWindowOptions {
 	readonly userEnv?: IProcessEnvironment;
 	readonly cli?: NativeParsedArgs;
+
+	readonly forceNewWindow?: boolean;
+	readonly forceNewTabbedWindow?: boolean;
+	readonly windowToUse?: IAppWindow;
+
+}
+
+interface IPathToOpen<T = IEditorOptions> extends IPath<T> {
+
+}
+
+interface IWorkspacePathToOpen extends IPathToOpen {
+	readonly workspace: IWorkspaceIdentifier;
+}
+
+interface ISinglePageWorkspacePathToOpen extends IPathToOpen {
+	readonly workspace: ISinglePageWorkspaceIdentifier;
 }
 
 export class WindowsMainService extends Disposable implements IWindowsMainService {
@@ -78,8 +98,9 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	}
 
 	async open(openConfig: IOpenConfiguration): Promise<IAppWindow[]> {
+		this.logService.trace('windowsManager#open');
 
-		const { windows: usedWindows } = this.doOpen(openConfig);
+		const { windows: usedWindows } = await this.doOpen(openConfig, null, []);
 
 		// Make sure to pass focus to the most relevant of the windows if we open multiple
 		if (usedWindows.length > 1) {
@@ -88,36 +109,53 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		return usedWindows;
 	}
 
-	private doOpen(
-		openConfig: IOpenConfiguration
+	private async doOpen(
+		openConfig: IOpenConfiguration,
+		workspaceToOpen: IWorkspacePathToOpen | null,
+		pagesToOpen: ISinglePageWorkspacePathToOpen[],
 	) {
 
 		// Keep track of used windows and remember
 		// if files have been opened in one of them
 		const usedWindows: IAppWindow[] = [];
-		let filesOpenedInWindow: IAppWindow | undefined = undefined;
-		function addUsedWindow(window: IAppWindow, openedFiles?: boolean): void {
+		let pagesOpenedInWindow: IAppWindow | undefined = undefined;
+		function addUsedWindow(window: IAppWindow, openedPages?: boolean): void {
 			usedWindows.push(window);
 
-			if (openedFiles) {
-				filesOpenedInWindow = window;
-				//filesToOpen = undefined; // reset `filesToOpen` since files have been opened
+			if (openedPages) {
+				pagesOpenedInWindow = window;
+				//pagesToOpen = undefined; // reset `filesToOpen` since files have been opened
 			}
 		}
 
-		if (filesOpenedInWindow) {
+		if (pagesOpenedInWindow) {
 
 		}
 
-		addUsedWindow(this.openInBrowserWindow({}));
+		if (pagesToOpen) {
+
+		}
+
+		addUsedWindow(await this.openInBrowserWindow({
+			userEnv: openConfig.userEnv,
+			cli: openConfig.cli,
+		}));
 
 		return { windows: distinct(usedWindows) };
 	}
 
-	private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
-		this.logService.debug('this.environmentMainService.userHome', this.environmentMainService.tmpDir.fsPath);
+	private async openInBrowserWindow(options: IOpenBrowserWindowOptions): Promise<IAppWindow> {
+		const windowConfig = this.configurationService.getValue<IWindowSettings | undefined>('window');
+
+		const lastActiveWindow = this.getLastActiveWindow();
 
 		let window: IAppWindow | undefined;
+		if (!options.forceNewWindow && !options.forceNewTabbedWindow) {
+			window = options.windowToUse || lastActiveWindow;
+			if (window) {
+				window.focus();
+			}
+		}
 
 		// Build up the window configuration from provided options, config and environment
 		const configuration: INativeWindowConfiguration = {
@@ -125,15 +163,17 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			// the specific properties from this launch if provided
 			...this.environmentMainService.args,
 			...options.cli,
-			windowId: -1,
+
+			mainPid: process.pid,
+
+			windowId: -1, // Will be filled in by the window once loaded later
 
 			homeDir: this.environmentMainService.userHome.fsPath,
 			tmpDir: this.environmentMainService.tmpDir.fsPath,
 			userDataDir: this.environmentMainService.userDataPath,
 
-			mainPid: process.pid,
+
 			appRoot: this.environmentMainService.appRoot,
-			//perfMarks: [],
 			userEnv: { ...options.userEnv },
 
 			logLevel: this.logService.getLevel(),
@@ -142,6 +182,8 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			product,
 			perfMarks: getMarks(),
 			os: { release: release(), hostname: hostname() },
+			zoomLevel: typeof windowConfig?.zoomLevel === 'number' ? windowConfig.zoomLevel : undefined,
+
 			colorScheme: {
 				dark: nativeTheme.shouldUseDarkColors,
 				highContrast: nativeTheme.shouldUseInvertedColorScheme || nativeTheme.shouldUseHighContrastColors
@@ -152,11 +194,11 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			const state = this.windowsStateHandler.getNewWindowState(configuration);
 
 			// Create the window
-			mark('mote/willCreateCodeWindow');
+			PerformanceMark.willMark(PerformanceMarkPoint.CreateWindow);
 			const createdWindow = window = this.instantiationService.createInstance(AppWindow, {
 				state,
 			});
-			mark('mote/didCreateCodeWindow');
+			PerformanceMark.didMark(PerformanceMarkPoint.CreateWindow);
 
 			// Add to our list of windows
 			WindowsMainService.WINDOWS.push(createdWindow);
@@ -187,12 +229,27 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			configuration.loggers = currentWindowConfig?.loggers ?? configuration.loggers;
 		}
 
-		this.doOpenInBrowserWindow(window, configuration, options);
+		// Update window identifier and session now
+		// that we have the window object in hand.
+		configuration.windowId = window.id;
+
+		// If the window was already loaded, make sure to unload it
+		// first and only load the new configuration if that was
+		// not vetoed
+		if (window.isReady) {
+			this.lifecycleMainService.unload(window, UnloadReason.LOAD).then(async veto => {
+				if (!veto) {
+					await this.doOpenInBrowserWindow(window!, configuration, options);
+				}
+			});
+		} else {
+			await this.doOpenInBrowserWindow(window, configuration, options);
+		}
 
 		return window;
 	}
 
-	private doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
+	private async doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
 		// Load it
 		window.load(configuration);
 	}

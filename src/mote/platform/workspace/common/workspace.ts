@@ -67,6 +67,17 @@ export interface IWorkspace {
 	readonly configuration?: URI | null;
 }
 
+/**
+ * A single folder workspace identifier is a path to a folder + id.
+ */
+export interface ISinglePageWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
+
+	/**
+	 * Folder path as `URI`.
+	 */
+	readonly uri: URI;
+}
+
 export interface IBaseWorkspaceIdentifier {
 
 	/**

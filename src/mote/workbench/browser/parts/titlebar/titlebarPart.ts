@@ -6,7 +6,7 @@ import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate
 import { Codicon } from 'mote/base/common/codicons';
 import { Event, Emitter } from 'mote/base/common/event';
 import { DisposableStore } from 'mote/base/common/lifecycle';
-import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'mote/base/common/platform';
+import { isLinux, isMacintosh, isNative, isWeb, isWindows, locale } from 'mote/base/common/platform';
 import { ThemeIcon } from 'mote/base/common/themables';
 import { Categories } from 'mote/platform/action/common/actionCommonCategories';
 import { createActionViewItem } from 'mote/platform/actions/browser/menuEntryActionViewItem';
@@ -41,7 +41,7 @@ export class TitlebarPart extends Part implements ITitleService {
 	readonly minimumWidth: number = 0;
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
 	get minimumHeight(): number {
-		const value = this.isCommandCenterVisible || (isWeb && isWCOEnabled()) ? 35 : 30;
+		const value = this.isCommandCenterVisible || (isWeb && isWCOEnabled()) ? 45 : 30;
 		return value / (this.useCounterZoom ? getZoomFactor() : 1);
 	}
 
@@ -200,16 +200,28 @@ export class TitlebarPart extends Part implements ITitleService {
 		if (this.titleBarStyle !== 'native'
 			&& (!isMacintosh || isWeb)
 			&& this.currentMenubarVisibility !== 'compact') {
-			this.installMenubar();
+			//this.installMenubar();
 		}
 
 		// Title
 		this.title = append(this.centerContent, $('div.window-title'));
 		this.updateTitle();
 
+		let primaryControlLocation = isMacintosh ? 'left' : 'right';
+		if (isMacintosh && isNative && locale) {
+			// Check if the locale is RTL, macOS will move traffic lights in RTL locales
+			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/textInfo
+			const localeInfo = new Intl.Locale(locale) as any;
+			if (localeInfo?.textInfo?.direction === 'rtl') {
+				primaryControlLocation = 'right';
+			}
+		}
+
+		this.primaryWindowControls = append(primaryControlLocation === 'left' ? this.leftContent : this.rightContent, $('div.window-controls-container.primary'));
+		append(primaryControlLocation === 'left' ? this.rightContent : this.leftContent, $('div.window-controls-container.secondary'));
 
 		if (this.titleBarStyle !== 'native') {
-			this.layoutControls = append(this.rightContent, $('div.layout-controls-container'));
+			this.layoutControls = append(this.leftContent, $('div.layout-controls-container'));
 			this.layoutControls.classList.toggle('show-layout-control', this.layoutControlEnabled);
 
 			this.layoutToolbar = this.instantiationService.createInstance(MenuWorkbenchToolBar, this.layoutControls, MenuId.LayoutControlMenu, {
@@ -220,9 +232,6 @@ export class TitlebarPart extends Part implements ITitleService {
 				}
 			});
 		}
-
-		this.primaryWindowControls = append(isMacintosh ? this.leftContent : this.rightContent, $('div.window-controls-container.primary'));
-		append(isMacintosh ? this.rightContent : this.leftContent, $('div.window-controls-container.secondary'));
 
 		// Context menu on title
 		[EventType.CONTEXT_MENU, EventType.MOUSE_DOWN].forEach(event => {

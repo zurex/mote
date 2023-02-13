@@ -1,4 +1,5 @@
-import { isMacintosh, isWeb } from 'mote/base/common/platform';
+import { isStandalone } from 'mote/base/browser/browser';
+import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'mote/base/common/platform';
 import { localize } from 'mote/nls';
 import { ConfigurationExtensions, ConfigurationScope, IConfigurationRegistry } from 'mote/platform/configuration/common/configurationRegistry';
 import { Registry } from 'mote/platform/registry/common/platform';
@@ -470,6 +471,151 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
 				'default': true,
 				'description': localize('tips.enabled', "When enabled, will show the watermark tips when no editor is open.")
 			},
+		}
+	});
+
+	// Window
+
+	let windowTitleDescription = localize('windowTitle', "Controls the window title based on the active editor. Variables are substituted based on the context:");
+	windowTitleDescription += '\n- ' + [
+		localize('activeEditorShort', "`${activeEditorShort}`: the file name (e.g. myFile.txt)."),
+		localize('activeEditorMedium', "`${activeEditorMedium}`: the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt)."),
+		localize('activeEditorLong', "`${activeEditorLong}`: the full path of the file (e.g. /Users/Development/myFolder/myFileFolder/myFile.txt)."),
+		localize('activeFolderShort', "`${activeFolderShort}`: the name of the folder the file is contained in (e.g. myFileFolder)."),
+		localize('activeFolderMedium', "`${activeFolderMedium}`: the path of the folder the file is contained in, relative to the workspace folder (e.g. myFolder/myFileFolder)."),
+		localize('activeFolderLong', "`${activeFolderLong}`: the full path of the folder the file is contained in (e.g. /Users/Development/myFolder/myFileFolder)."),
+		localize('folderName', "`${folderName}`: name of the workspace folder the file is contained in (e.g. myFolder)."),
+		localize('folderPath', "`${folderPath}`: file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder)."),
+		localize('rootName', "`${rootName}`: name of the workspace with optional remote name and workspace indicator if applicable (e.g. myFolder, myRemoteFolder [SSH] or myWorkspace (Workspace))."),
+		localize('rootNameShort', "`${rootNameShort}`: shortened name of the workspace without suffixes (e.g. myFolder, myRemoteFolder or myWorkspace)."),
+		localize('rootPath', "`${rootPath}`: file path of the opened workspace or folder (e.g. /Users/Development/myWorkspace)."),
+		localize('profileName', "`${profileName}`: name of the profile in which the workspace is opened (e.g. Data Science (Profile)). Ignored if default profile is used."),
+		localize('appName', "`${appName}`: e.g. VS Code."),
+		localize('remoteName', "`${remoteName}`: e.g. SSH"),
+		localize('dirty', "`${dirty}`: an indicator for when the active editor has unsaved changes."),
+		localize('separator', "`${separator}`: a conditional separator (\" - \") that only shows when surrounded by variables with values or static text.")
+	].join('\n- '); // intentionally concatenated to not produce a string that is too long for translations
+
+
+	registry.registerConfiguration({
+		'id': 'window',
+		'order': 8,
+		'title': localize('windowConfigurationTitle', "Window"),
+		'type': 'object',
+		'properties': {
+			'window.title': {
+				'type': 'string',
+				'default': (() => {
+					if (isMacintosh && isNative) {
+						return '${activeEditorShort}${separator}${rootName}${separator}${profileName}'; // macOS has native dirty indicator
+					}
+
+					const base = '${dirty}${activeEditorShort}${separator}${rootName}${separator}${profileName}${separator}${appName}';
+					if (isWeb) {
+						return base + '${separator}${remoteName}'; // Web: always show remote name
+					}
+
+					return base;
+				})(),
+				'markdownDescription': windowTitleDescription
+			},
+			'window.titleSeparator': {
+				'type': 'string',
+				'default': isMacintosh ? ' \u2014 ' : ' - ',
+				'markdownDescription': localize("window.titleSeparator", "Separator used by {0}.", '`#window.title#`')
+			},
+			'window.commandCenter': {
+				type: 'boolean',
+				default: false,
+				tags: ['experimental'],
+				markdownDescription: isWeb ?
+					localize('window.commandCenterWeb', "Show command launcher together with the window title.") :
+					localize({ key: 'window.commandCenter', comment: ['{0} is a placeholder for a setting identifier.'] }, "Show command launcher together with the window title. This setting only has an effect when {0} is set to {1}.", '`#window.titleBarStyle#`', '`custom`')
+			},
+			'window.menuBarVisibility': {
+				'type': 'string',
+				'enum': ['classic', 'visible', 'toggle', 'hidden', 'compact'],
+				'markdownEnumDescriptions': [
+					localize('window.menuBarVisibility.classic', "Menu is displayed at the top of the window and only hidden in full screen mode."),
+					localize('window.menuBarVisibility.visible', "Menu is always visible at the top of the window even in full screen mode."),
+					isMacintosh ?
+						localize('window.menuBarVisibility.toggle.mac', "Menu is hidden but can be displayed at the top of the window by executing the `Focus Application Menu` command.") :
+						localize('window.menuBarVisibility.toggle', "Menu is hidden but can be displayed at the top of the window via the Alt key."),
+					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
+					isWeb ?
+						localize('window.menuBarVisibility.compact.web', "Menu is displayed as a compact button in the side bar.") :
+						localize({ key: 'window.menuBarVisibility.compact', comment: ['{0} is a placeholder for a setting identifier.'] }, "Menu is displayed as a compact button in the side bar. This value is ignored when {0} is {1}.", '`#window.titleBarStyle#`', '`native`')
+				],
+				'default': isWeb ? 'compact' : 'classic',
+				'scope': ConfigurationScope.APPLICATION,
+				'markdownDescription': isMacintosh ?
+					localize('menuBarVisibility.mac', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and executing `Focus Application Menu` will show it. A setting of 'compact' will move the menu into the side bar.") :
+					localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. A setting of 'compact' will move the menu into the side bar."),
+				'included': isWindows || isLinux || isWeb
+			},
+			'window.enableMenuBarMnemonics': {
+				'type': 'boolean',
+				'default': true,
+				'scope': ConfigurationScope.APPLICATION,
+				'description': localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
+				'included': isWindows || isLinux
+			},
+			'window.customMenuBarAltFocus': {
+				'type': 'boolean',
+				'default': true,
+				'scope': ConfigurationScope.APPLICATION,
+				'markdownDescription': localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
+				'included': isWindows || isLinux
+			},
+			'window.openFilesInNewWindow': {
+				'type': 'string',
+				'enum': ['on', 'off', 'default'],
+				'enumDescriptions': [
+					localize('window.openFilesInNewWindow.on', "Files will open in a new window."),
+					localize('window.openFilesInNewWindow.off', "Files will open in the window with the files' folder open or the last active window."),
+					isMacintosh ?
+						localize('window.openFilesInNewWindow.defaultMac', "Files will open in the window with the files' folder open or the last active window unless opened via the Dock or from Finder.") :
+						localize('window.openFilesInNewWindow.default', "Files will open in a new window unless picked from within the application (e.g. via the File menu).")
+				],
+				'default': 'off',
+				'scope': ConfigurationScope.APPLICATION,
+				'markdownDescription':
+					isMacintosh ?
+						localize('openFilesInNewWindowMac', "Controls whether files should open in a new window when using a command line or file dialog.\nNote that there can still be cases where this setting is ignored (e.g. when using the `--new-window` or `--reuse-window` command line option).") :
+						localize('openFilesInNewWindow', "Controls whether files should open in a new window when using a command line or file dialog.\nNote that there can still be cases where this setting is ignored (e.g. when using the `--new-window` or `--reuse-window` command line option).")
+			},
+			'window.openFoldersInNewWindow': {
+				'type': 'string',
+				'enum': ['on', 'off', 'default'],
+				'enumDescriptions': [
+					localize('window.openFoldersInNewWindow.on', "Folders will open in a new window."),
+					localize('window.openFoldersInNewWindow.off', "Folders will replace the last active window."),
+					localize('window.openFoldersInNewWindow.default', "Folders will open in a new window unless a folder is picked from within the application (e.g. via the File menu).")
+				],
+				'default': 'default',
+				'scope': ConfigurationScope.APPLICATION,
+				'markdownDescription': localize('openFoldersInNewWindow', "Controls whether folders should open in a new window or replace the last active window.\nNote that there can still be cases where this setting is ignored (e.g. when using the `--new-window` or `--reuse-window` command line option).")
+			},
+			'window.confirmBeforeClose': {
+				'type': 'string',
+				'enum': ['always', 'keyboardOnly', 'never'],
+				'enumDescriptions': [
+					isWeb ?
+						localize('window.confirmBeforeClose.always.web', "Always try to ask for confirmation. Note that browsers may still decide to close a tab or window without confirmation.") :
+						localize('window.confirmBeforeClose.always', "Always ask for confirmation."),
+					isWeb ?
+						localize('window.confirmBeforeClose.keyboardOnly.web', "Only ask for confirmation if a keybinding was used to close the window. Note that detection may not be possible in some cases.") :
+						localize('window.confirmBeforeClose.keyboardOnly', "Only ask for confirmation if a keybinding was used."),
+					isWeb ?
+						localize('window.confirmBeforeClose.never.web', "Never explicitly ask for confirmation unless data loss is imminent.") :
+						localize('window.confirmBeforeClose.never', "Never explicitly ask for confirmation.")
+				],
+				'default': (isWeb && !isStandalone()) ? 'keyboardOnly' : 'never', // on by default in web, unless PWA, never on desktop
+				'markdownDescription': isWeb ?
+					localize('confirmBeforeCloseWeb', "Controls whether to show a confirmation dialog before closing the browser tab or window. Note that even if enabled, browsers may still decide to close a tab or window without confirmation and that this setting is only a hint that may not work in all cases.") :
+					localize('confirmBeforeClose', "Controls whether to show a confirmation dialog before closing the window or quitting the application."),
+				'scope': ConfigurationScope.APPLICATION
+			}
 		}
 	});
 })();

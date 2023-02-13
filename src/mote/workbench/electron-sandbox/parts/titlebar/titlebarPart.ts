@@ -37,10 +37,10 @@ export class TitlebarPart extends BrowserTitleBarPart {
 
 	private getMacTitlebarSize() {
 		if (this.isBigSurOrNewer()) { // Big Sur increases title bar height
-			return 28;
+			return 45;
 		}
 
-		return 22;
+		return 28;
 	}
 
 	override get minimumHeight(): number {
@@ -48,7 +48,7 @@ export class TitlebarPart extends BrowserTitleBarPart {
 			return super.minimumHeight;
 		}
 
-		return (this.isCommandCenterVisible ? 35 : this.getMacTitlebarSize()) / (this.useCounterZoom ? getZoomFactor() : 1);
+		return (this.isCommandCenterVisible ? 45 : this.getMacTitlebarSize()) / (this.useCounterZoom ? getZoomFactor() : 1);
 	}
 	override get maximumHeight(): number { return this.minimumHeight; }
 

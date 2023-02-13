@@ -31,9 +31,12 @@ export interface IAppWindow extends IDisposable {
 
 	isMinimized(): boolean;
 
+	focus(options?: { force: boolean }): void;
 	close(): void;
 
 	serializeWindowState(): IWindowUIState;
+
+	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void;
 }
 
 export const enum LoadReason {
