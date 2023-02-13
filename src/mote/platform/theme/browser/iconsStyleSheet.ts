@@ -5,8 +5,9 @@
 
 import { asCSSPropertyValue, asCSSUrl } from 'mote/base/browser/dom';
 import { Emitter, Event } from 'mote/base/common/event';
+import { ThemeIcon } from 'mote/base/common/themables';
 import { getIconRegistry, IconContribution, IconFontDefinition } from 'mote/platform/theme/common/iconRegistry';
-import { IProductIconTheme, IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { IProductIconTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 
 export interface IIconsStyleSheet {
 	getCSS(): string;

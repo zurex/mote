@@ -15,7 +15,6 @@ import { ITextBufferFactory, ITextModel, ITextSnapshot } from 'mote/editor/commo
 import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from 'mote/base/common/buffer';
 import { areFunctions, isUndefinedOrNull } from 'mote/base/common/types';
 import { IWorkingCopy, IWorkingCopySaveEvent } from 'mote/workbench/services/workingCopy/common/workingCopy';
-import { IUntitledTextEditorModelManager } from 'mote/workbench/services/untitled/common/untitledTextEditorService';
 import { CancellationToken } from 'mote/base/common/cancellation';
 import { IProgress, IProgressStep } from 'mote/platform/progress/common/progress';
 import { IFileOperationUndoRedoInfo } from 'mote/workbench/services/workingCopy/common/workingCopyFileService';
@@ -31,12 +30,6 @@ export interface ITextFileService extends IDisposable {
 	 * methods to work with them.
 	 */
 	readonly files: ITextFileEditorModelManager;
-
-	/**
-	 * Access to the manager of untitled text editor models providing further
-	 * methods to work with them.
-	 */
-	readonly untitled: IUntitledTextEditorModelManager;
 
 	/**
 	 * Helper to determine encoding for resources.

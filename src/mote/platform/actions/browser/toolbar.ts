@@ -85,7 +85,7 @@ export class WorkbenchToolBar extends ToolBar {
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		//@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(container, _contextMenuService, {
 			// defaults
@@ -98,12 +98,10 @@ export class WorkbenchToolBar extends ToolBar {
 
 		// telemetry logic
 		if (_options?.telemetrySource) {
-			/*
 			this._store.add(this.actionBar.onDidRun(e => telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
 				'workbenchActionExecuted',
 				{ id: e.action.id, from: _options!.telemetrySource! })
 			));
-			*/
 		}
 	}
 
@@ -271,9 +269,9 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		//@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super(container, { resetMenu: menuId, ...options }, menuService, contextKeyService, contextMenuService, keybindingService, /*telemetryService*/);
+		super(container, { resetMenu: menuId, ...options }, menuService, contextKeyService, contextMenuService, keybindingService, telemetryService);
 
 		// update logic
 		const menu = this._store.add(menuService.createMenu(menuId, contextKeyService, { emitEventsForSubmenuChanges: true }));

@@ -1,6 +1,6 @@
 import { IDisposable } from 'mote/base/common/lifecycle';
+import { ThemeIcon } from 'mote/base/common/themables';
 import { createDecorator } from 'mote/platform/instantiation/common/instantiation';
-import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 
 export interface IActivity {
 	readonly badge: IBadge;

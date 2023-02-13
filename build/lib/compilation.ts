@@ -36,7 +36,7 @@ function getTypeScriptCompilerOptions(src: string): ts.CompilerOptions {
 	return options;
 }
 
-function createCompile(src: string, build: boolean, emitError: boolean, transpileOnly: boolean) {
+function createCompile(src: string, build: boolean, emitError: boolean, transpileOnly: boolean | { swc: boolean }) {
 	const tsb = require('./tsb') as typeof import('./tsb');
 	const sourcemaps = require('gulp-sourcemaps') as typeof import('gulp-sourcemaps');
 
@@ -47,7 +47,11 @@ function createCompile(src: string, build: boolean, emitError: boolean, transpil
 		overrideOptions.inlineSourceMap = true;
 	}
 
-	const compilation = tsb.create(projectPath, overrideOptions, { verbose: false, transpileOnly }, err => reporter(err));
+	const compilation = tsb.create(projectPath, overrideOptions, {
+		verbose: false,
+		transpileOnly: Boolean(transpileOnly),
+		transpileWithSwc: typeof transpileOnly !== 'boolean' && transpileOnly.swc
+	}, err => reporter(err));
 
 	function pipeline(token?: util.ICancellationToken) {
 		const bom = require('gulp-bom') as typeof import('gulp-bom');

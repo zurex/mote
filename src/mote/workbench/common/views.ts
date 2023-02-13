@@ -1,5 +1,4 @@
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
-import { ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { flatten } from 'mote/base/common/arrays';
 import { SetMap } from 'mote/base/common/collections';
 import { Emitter, Event } from 'mote/base/common/event';
@@ -12,6 +11,7 @@ import { createDecorator } from 'mote/platform/instantiation/common/instantiatio
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IPaneComposite } from 'mote/workbench/common/panecomposite';
 import { Codicon } from 'mote/base/common/codicons';
+import { ThemeIcon } from 'mote/base/common/themables';
 
 export const defaultViewIcon = registerIcon('default-view-icon', Codicon.window, localize('defaultViewIcon', 'Default view icon.'));
 

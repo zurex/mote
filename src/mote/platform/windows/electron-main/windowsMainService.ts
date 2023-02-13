@@ -19,6 +19,9 @@ import { ILifecycleMainService } from 'mote/platform/lifecycle/electron-main/lif
 import { Emitter } from 'mote/base/common/event';
 import { once } from 'mote/base/common/functional';
 import { assertIsDefined } from 'mote/base/common/types';
+import { WindowsStateHandler } from 'mote/platform/windows/electron-main/windowsStateHandler';
+import { IStateMainService } from 'mote/platform/state/electron-main/state';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 
 interface IOpenBrowserWindowOptions {
 	readonly userEnv?: IProcessEnvironment;
@@ -44,8 +47,12 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 	private readonly _onDidTriggerSystemContextMenu = this._register(new Emitter<{ window: IAppWindow; x: number; y: number }>());
 	readonly onDidTriggerSystemContextMenu = this._onDidTriggerSystemContextMenu.event;
 
+	private readonly windowsStateHandler = this._register(new WindowsStateHandler(this, this.stateMainService, this.lifecycleMainService, this.logService, this.configurationService));
+
 	constructor(
 		@ILogService private readonly logService: ILogService,
+		@IStateMainService private readonly stateMainService: IStateMainService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@ILoggerMainService private readonly loggerService: ILoggerMainService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
@@ -142,9 +149,13 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		};
 
 		if (!window) {
+			const state = this.windowsStateHandler.getNewWindowState(configuration);
+
 			// Create the window
 			mark('mote/willCreateCodeWindow');
-			const createdWindow = window = this.instantiationService.createInstance(AppWindow);
+			const createdWindow = window = this.instantiationService.createInstance(AppWindow, {
+				state,
+			});
 			mark('mote/didCreateCodeWindow');
 
 			// Add to our list of windows

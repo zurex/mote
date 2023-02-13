@@ -29,7 +29,7 @@ import { isDark } from 'mote/platform/theme/common/theme';
 import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
 import { assertType } from 'mote/base/common/types';
 import { attachSelectBoxStyler, attachStylerCallback } from 'mote/platform/theme/browser/defaultStyles';
-import { selectBorder } from 'mote/platform/theme/common/colorRegistry';
+import { selectBorder } from 'mote/platform/theme/common/themeColors';
 
 export function createAndFillInContextMenuActions(menu: IMenu, options: IMenuActionOptions | undefined, target: IAction[] | { primary: IAction[]; secondary: IAction[] }, primaryGroup?: string): void {
 	const groups = menu.getActions(options);

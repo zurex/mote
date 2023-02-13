@@ -161,7 +161,6 @@
 			on(channel, listener) {
 				if (validateIPC(channel)) {
 					ipcRenderer.on(channel, listener);
-					console.log('listen ipc:', channel);
 					return this;
 				}
 			},

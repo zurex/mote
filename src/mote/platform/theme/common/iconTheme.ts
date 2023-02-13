@@ -1,5 +1,6 @@
+import { ThemeIcon } from 'mote/base/common/themables';
 import { getIconRegistry, IconContribution, IconDefinition } from 'mote/platform/theme/common/iconRegistry';
-import { IProductIconTheme, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { IProductIconTheme } from 'mote/platform/theme/common/themeService';
 
 
 export class IconTheme implements IProductIconTheme {

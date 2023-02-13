@@ -17,6 +17,7 @@ import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifec
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { RunOnceScheduler, runWhenIdle, timeout } from 'mote/base/common/async';
 import { mark } from 'mote/base/common/performance';
+import { WorkbenchContextKeysHandler } from 'mote/workbench/browser/workbenchContextKeys';
 
 export interface IWorkbenchOptions {
 
@@ -56,6 +57,9 @@ export class Workbench extends Layout {
 				// Registries
 				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
 				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor);
+
+				// Context Keys
+				this._register(instantiationService.createInstance(WorkbenchContextKeysHandler));
 
 				// Render Workbench
 				this.renderWorkbench(instantiationService);
@@ -109,7 +113,6 @@ export class Workbench extends Layout {
 				configurationService.acquireInstantiationService(instantiationService);
 			}
 
-			console.log('set lifecycleService phase Ready');
 			// Signal to lifecycle that services are set
 			lifecycleService.phase = LifecyclePhase.Ready;
 		});

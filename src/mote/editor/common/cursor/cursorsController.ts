@@ -13,8 +13,8 @@ import { ICoordinatesConverter } from 'mote/editor/common/viewModel';
 import { CursorCollection } from 'mote/editor/common/cursor/cursorCollection';
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { VerticalRevealType, ViewCursorStateChangedEvent, ViewRevealRangeRequestEvent } from 'mote/editor/common/viewEvents';
-import { ReplaceCommand, ReplaceCommandWithAnnotation, ReplaceCommandWithBlockType } from 'mote/editor/common/commands/replaceCommand';
-import { BlockType, BlockTypes } from 'mote/platform/store/common/record';
+import { ReplaceCommandWithAnnotation, ReplaceCommandWithBlockType } from 'mote/editor/common/commands/replaceCommand';
+import { BlockTypes } from 'mote/platform/store/common/record';
 
 export class CursorsController extends Disposable {
 

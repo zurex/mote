@@ -32,6 +32,8 @@ export interface IAppWindow extends IDisposable {
 	isMinimized(): boolean;
 
 	close(): void;
+
+	serializeWindowState(): IWindowUIState;
 }
 
 export const enum LoadReason {
@@ -74,6 +76,31 @@ export const enum UnloadReason {
 	 */
 	LOAD
 }
+
+export interface IWindowUIState {
+	width?: number;
+	height?: number;
+	x?: number;
+	y?: number;
+	mode?: WindowMode;
+	readonly display?: number;
+}
+
+export const enum WindowMode {
+	Maximized,
+	Normal,
+	Minimized, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
+	Fullscreen
+}
+
+
+export const defaultWindowUIState = function (mode = WindowMode.Normal): IWindowUIState {
+	return {
+		width: 1280,
+		height: 768,
+		mode
+	};
+};
 
 export interface ILoadEvent {
 	readonly workspace: IWorkspaceIdentifier | undefined;

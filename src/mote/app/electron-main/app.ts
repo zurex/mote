@@ -16,7 +16,7 @@ import { Server as ElectronIPCServer } from 'mote/base/parts/ipc/electron-main/i
 import { Client as MessagePortClient } from 'mote/base/parts/ipc/electron-main/ipc.mp';
 import { IStateMainService } from 'mote/platform/state/electron-main/state';
 import { IProcessEnvironment, isMacintosh } from 'mote/base/common/platform';
-import { machineIdKey } from 'mote/platform/telemetry/common/telemetry';
+import { ITelemetryService, machineIdKey } from 'mote/platform/telemetry/common/telemetry';
 import { getMachineId } from 'mote/base/node/id';
 import { SharedProcess } from 'mote/platform/sharedProcess/electron-main/sharedProcess';
 import { WindowError } from 'mote/platform/window/electron-main/window';
@@ -26,11 +26,13 @@ import { INativeHostMainService, NativeHostMainService } from 'mote/platform/nat
 import { ProxyChannel } from 'mote/base/parts/ipc/common/ipc';
 import { DialogMainService, IDialogMainService } from 'mote/platform/dialogs/electron-main/dialogMainService';
 import { IKeyboardLayoutMainService, KeyboardLayoutMainService } from 'mote/platform/keyboardLayout/electron-main/keyboardLayoutMainService';
-import { IWorkspacesService } from 'mote/platform/workspaces/common/workspaces';
-import { BrowserWorkspacesService } from 'mote/workbench/services/workspaces/browser/browserWorkspacesService';
-import { IMenubarMainService, MenubarMainService } from 'mote/platform/menubar/electron-sandbox/menubarMainService';
+import { IMenubarMainService, MenubarMainService } from 'mote/platform/menubar/electron-main/menubarMainService';
 import { isLaunchedFromCli } from 'mote/platform/environment/node/argvHelper';
 import { UpdateChannel } from 'mote/platform/update/common/updateIpc';
+import { IInitialProtocolUrls } from 'mote/platform/url/electron-main/url';
+import { once } from 'mote/base/common/functional';
+import { RunOnceScheduler, runWhenIdle } from 'mote/base/common/async';
+import { NullTelemetryService } from 'mote/platform/telemetry/common/telemetryUtils';
 
 export class MoteApplication extends Disposable {
 
@@ -65,7 +67,7 @@ export class MoteApplication extends Disposable {
 
 			// Mac only event: open new window when we get activated
 			if (!hasVisibleWindows) {
-				//this.windowsMainService?.openEmptyWindow({ context: OpenContext.DOCK });
+				this.windowsMainService?.openEmptyWindow({ context: OpenContext.DOCK });
 			}
 		});
 
@@ -108,11 +110,20 @@ export class MoteApplication extends Disposable {
 
 		// Open Windows
 		appInstantiationService.invokeFunction(
-			accessor => this.openFirstWindow(accessor, null)
+			accessor => this.openFirstWindow(accessor, undefined)
 		);
+
+		// Signal phase: after window open
+		this.lifecycleMainService.phase = LifecycleMainPhase.AfterWindowOpen;
 
 		// Post Open Windows Tasks
 		appInstantiationService.invokeFunction(accessor => this.afterWindowOpen(accessor, sharedProcess));
+
+		// Set lifecycle phase to `Eventually` after a short delay and when idle (min 2.5sec, max 5sec)
+		const eventuallyPhaseScheduler = this._register(new RunOnceScheduler(() => {
+			this._register(runWhenIdle(() => this.lifecycleMainService.phase = LifecycleMainPhase.Eventually, 2500));
+		}, 2500));
+		eventuallyPhaseScheduler.schedule();
 	}
 
 	private onUnexpectedError(error: Error): void {
@@ -212,6 +223,8 @@ export class MoteApplication extends Disposable {
 
 		//services.set(IWorkspacesService, new SyncDescriptor(BrowserWorkspacesService, undefined, false /* proxied to other processes */));
 
+		services.set(ITelemetryService, NullTelemetryService);
+
 		return this.mainInstantiationService.createChild(services);
 	}
 
@@ -272,13 +285,21 @@ export class MoteApplication extends Disposable {
 	}
 
 	private async afterWindowOpen(accessor: ServicesAccessor, sharedProcess: SharedProcess): Promise<void> {
+		const telemetryService = accessor.get(ITelemetryService);
+		const updateService = accessor.get(IUpdateService);
 
-		// Signal phase: after window open
-		this.lifecycleMainService.phase = LifecycleMainPhase.AfterWindowOpen;
+		this.handleSharedProcessErrors(telemetryService, sharedProcess);
 
+		if (updateService instanceof DarwinUpdateService) {
+			this.logService.trace('initialize updateService');
+			await updateService.initialize();
+		}
+	}
+
+	private handleSharedProcessErrors(telemetryService: ITelemetryService, sharedProcess: SharedProcess) {
 		// Observe shared process for errors
-		//let willShutdown = false;
-		//once(this.lifecycleMainService.onWillShutdown)(() => willShutdown = true);
+		let willShutdown = false;
+		once(this.lifecycleMainService.onWillShutdown)(() => willShutdown = true);
 		this._register(sharedProcess.onDidError(({ type, details }) => {
 
 			// Logging
@@ -296,12 +317,5 @@ export class MoteApplication extends Disposable {
 			}
 			onUnexpectedError(new Error(message));
 		}));
-
-		// Initialize update service
-		const updateService = accessor.get(IUpdateService);
-		if (updateService instanceof DarwinUpdateService) {
-			this.logService.trace('initialize updateService');
-			await updateService.initialize();
-		}
 	}
 }

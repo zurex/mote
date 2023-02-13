@@ -10,6 +10,12 @@ import { IAnyWorkspaceIdentifier, IWorkspaceIdentifier } from 'mote/platform/wor
 import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'mote/base/common/platform';
 
+export const WindowMinimumSize = {
+	WIDTH: 400,
+	WIDTH_WITH_VERTICAL_PANEL: 600,
+	HEIGHT: 270
+};
+
 export interface IPathData<T = IEditorOptions> {
 
 	/**
@@ -200,6 +206,8 @@ export interface IWindowSettings {
 	readonly titleBarStyle: 'native' | 'custom';
 	readonly nativeTabs: boolean;
 	readonly nativeFullScreen: boolean;
+	readonly clickThroughInactive: boolean;
+	readonly experimental?: { useSandbox: boolean };
 }
 
 export function getTitleBarStyle(configurationService: IConfigurationService): 'native' | 'custom' {

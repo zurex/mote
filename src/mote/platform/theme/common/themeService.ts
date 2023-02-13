@@ -24,12 +24,6 @@ export function themeColorFromId(id: ColorIdentifier) {
 	return { id };
 }
 
-// theme icon
-export interface ThemeIcon {
-	readonly id: string;
-	readonly color?: ThemeColor;
-}
-
 export function getThemeTypeSelector(type: ColorScheme): string {
 	switch (type) {
 		case ColorScheme.DARK: return 'mote-dark';

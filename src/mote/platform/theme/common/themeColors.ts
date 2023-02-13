@@ -249,6 +249,16 @@ export const menuSelectionBackground = registerColor('menu.selectionBackground',
 export const menuSelectionBorder = registerColor('menu.selectionBorder', { dark: null, light: null, hcDark: activeContrastBorder, hcLight: activeContrastBorder }, nls.localize('menuSelectionBorder', "Border color of the selected menu item in menus."));
 export const menuSeparatorBackground = registerColor('menu.separatorBackground', { dark: '#606060', light: '#D4D4D4', hcDark: contrastBorder, hcLight: contrastBorder }, nls.localize('menuSeparatorBackground', "Color of a separator menu item in menus."));
 
+//#region Breadcrumb colors
+
+export const breadcrumbsForeground = registerColor('breadcrumb.foreground', { light: transparent(foreground, 0.8), dark: transparent(foreground, 0.8), hcDark: transparent(foreground, 0.8), hcLight: transparent(foreground, 0.8) }, nls.localize('breadcrumbsFocusForeground', "Color of focused breadcrumb items."));
+export const breadcrumbsBackground = registerColor('breadcrumb.background', { light: editorBackground, dark: editorBackground, hcDark: editorBackground, hcLight: editorBackground }, nls.localize('breadcrumbsBackground', "Background color of breadcrumb items."));
+export const breadcrumbsFocusForeground = registerColor('breadcrumb.focusForeground', { light: darken(foreground, 0.2), dark: lighten(foreground, 0.1), hcDark: lighten(foreground, 0.1), hcLight: lighten(foreground, 0.1) }, nls.localize('breadcrumbsFocusForeground', "Color of focused breadcrumb items."));
+export const breadcrumbsActiveSelectionForeground = registerColor('breadcrumb.activeSelectionForeground', { light: darken(foreground, 0.2), dark: lighten(foreground, 0.1), hcDark: lighten(foreground, 0.1), hcLight: lighten(foreground, 0.1) }, nls.localize('breadcrumbsSelectedForeground', "Color of selected breadcrumb items."));
+export const breadcrumbsPickerBackground = registerColor('breadcrumbPicker.background', { light: editorWidgetBackground, dark: editorWidgetBackground, hcDark: editorWidgetBackground, hcLight: editorWidgetBackground }, nls.localize('breadcrumbsSelectedBackground', "Background color of breadcrumb item picker."));
+
+//#endregion
+
 export const problemsErrorIconForeground = registerColor('problemsErrorIcon.foreground', { dark: editorErrorForeground, light: editorErrorForeground, hcDark: editorErrorForeground, hcLight: editorErrorForeground }, nls.localize('problemsErrorIconForeground', "The color used for the problems error icon."));
 export const problemsWarningIconForeground = registerColor('problemsWarningIcon.foreground', { dark: editorWarningForeground, light: editorWarningForeground, hcDark: editorWarningForeground, hcLight: editorWarningForeground }, nls.localize('problemsWarningIconForeground', "The color used for the problems warning icon."));
 export const problemsInfoIconForeground = registerColor('problemsInfoIcon.foreground', { dark: editorInfoForeground, light: editorInfoForeground, hcDark: editorInfoForeground, hcLight: editorInfoForeground }, nls.localize('problemsInfoIconForeground', "The color used for the problems info icon."));

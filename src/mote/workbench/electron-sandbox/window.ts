@@ -2,7 +2,7 @@ import { localize } from 'mote/nls';
 import { addDisposableListener, EventHelper, EventType, scheduleAtNextAnimationFrame } from 'mote/base/browser/dom';
 import { onUnexpectedError } from 'mote/base/common/errors';
 import { Disposable } from 'mote/base/common/lifecycle';
-import { isCI } from 'mote/base/common/platform';
+import { isCI, isMacintosh } from 'mote/base/common/platform';
 import { ipcRenderer } from 'mote/base/parts/sandbox/electron-sandbox/globals';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 import { IDialogService } from 'mote/platform/dialogs/common/dialogs';
@@ -15,7 +15,9 @@ import { SideBySideEditor } from 'mote/workbench/common/editor';
 import { IEditorGroupsService } from 'mote/workbench/services/editor/common/editorGroupsService';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IWorkbenchLayoutService } from 'mote/workbench/services/layout/browser/layoutService';
-import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
+import { ILifecycleService, LifecyclePhase, ShutdownReason } from 'mote/workbench/services/lifecycle/common/lifecycle';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 
 export class NativeWindow extends Disposable {
 	constructor(
@@ -87,6 +89,34 @@ export class NativeWindow extends Disposable {
 				onUnexpectedError(JSON.parse(error));
 			}
 		});
+	}
+
+	static async confirmOnShutdown(accessor: ServicesAccessor, reason: ShutdownReason): Promise<boolean> {
+		const dialogService = accessor.get(IDialogService);
+		const configurationService = accessor.get(IConfigurationService);
+
+		const message = reason === ShutdownReason.QUIT ?
+			(isMacintosh ? localize('quitMessageMac', "Are you sure you want to quit?") : localize('quitMessage', "Are you sure you want to exit?")) :
+			localize('closeWindowMessage', "Are you sure you want to close the window?");
+		const primaryButton = reason === ShutdownReason.QUIT ?
+			(isMacintosh ? localize({ key: 'quitButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Quit") : localize({ key: 'exitButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Exit")) :
+			localize({ key: 'closeWindowButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Close Window");
+
+		const res = await dialogService.confirm({
+			type: 'question',
+			message,
+			primaryButton,
+			checkbox: {
+				label: localize('doNotAskAgain', "Do not ask me again")
+			}
+		});
+
+		// Update setting if checkbox checked
+		if (res.checkboxChecked) {
+			await configurationService.updateValue('window.confirmBeforeClose', 'never');
+		}
+
+		return res.confirmed;
 	}
 
 	private onWindowResize(e: UIEvent, retry: boolean): void {

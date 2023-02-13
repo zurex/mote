@@ -21,6 +21,7 @@ import 'mote/workbench/workbench.common.main';
 //#region --- workbench (desktop main)
 
 import 'mote/workbench/electron-sandbox/desktop.main';
+import 'mote/workbench/electron-sandbox/desktop.contribution';
 
 //#endregion
 

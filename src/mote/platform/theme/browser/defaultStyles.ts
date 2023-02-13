@@ -20,6 +20,7 @@ import { ICheckboxStyles, IToggleStyles } from 'mote/base/browser/ui/toggle/togg
 import { IDialogStyles } from 'mote/base/browser/ui/dialog/dialog';
 import { IFindWidgetStyles } from 'mote/base/browser/ui/tree/abstractTree';
 import { ICountBadgeStyles } from 'mote/base/browser/ui/countBadge/countBadge';
+import { IBreadcrumbsWidgetStyles } from 'mote/base/browser/ui/breadcrumbs/breadcrumbsWidget';
 
 export type IStyleOverride<T> = {
 	[P in keyof T]?: ColorIdentifier;
@@ -172,16 +173,18 @@ export function getCountBadgeStyle(override: IStyleOverride<ICountBadgeStyles>):
 	};
 }
 
-export interface IToggleStyleOverrides extends IStyleOverrides {
-	inputActiveOptionBorderColor?: ColorIdentifier;
-	inputActiveOptionForegroundColor?: ColorIdentifier;
-	inputActiveOptionBackgroundColor?: ColorIdentifier;
+export const defaultBreadcrumbsWidgetStyles = getBreadcrumbsWidgetStyles({});
+
+export function getBreadcrumbsWidgetStyles(override: IStyleOverride<IBreadcrumbsWidgetStyles>): IBreadcrumbsWidgetStyles {
+	return {
+		breadcrumbsBackground: asCssVariable(override.breadcrumbsBackground ?? themeColors.breadcrumbsBackground),
+		breadcrumbsForeground: asCssVariable(override.breadcrumbsForeground ?? themeColors.breadcrumbsForeground),
+		breadcrumbsHoverForeground: asCssVariable(override.breadcrumbsFocusForeground ?? themeColors.breadcrumbsFocusForeground),
+		breadcrumbsFocusForeground: asCssVariable(override.breadcrumbsFocusForeground ?? themeColors.breadcrumbsFocusForeground),
+		breadcrumbsFocusAndSelectionForeground: asCssVariable(override.breadcrumbsFocusAndSelectionForeground ?? themeColors.breadcrumbsActiveSelectionForeground)
+	};
 }
 
-export interface IBadgeStyleOverrides extends IStyleOverrides {
-	badgeBackground?: ColorIdentifier;
-	badgeForeground?: ColorIdentifier;
-}
 
 export interface IInputBoxStyleOverrides extends IStyleOverrides {
 	inputBackground?: ColorIdentifier;

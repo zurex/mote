@@ -665,7 +665,7 @@ export abstract class AbstractTimerService implements ITimerService {
 				ellapsedMainServer: initialStartup ? this._marks.getDuration('mote/willStartMainServer', 'mote/didStartMainServer') : undefined,
 				ellapsedWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateCodeWindow', 'mote/didCreateCodeWindow') : undefined,
 				ellapsedWindowRestoreState: initialStartup ? this._marks.getDuration('mote/willRestoreCodeWindowState', 'mote/didRestoreCodeWindowState') : undefined,
-				ellapsedBrowserWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateCodeBrowserWindow', 'mote/didCreateCodeBrowserWindow') : undefined,
+				ellapsedBrowserWindowCreate: initialStartup ? this._marks.getDuration('mote/willCreateMoteBrowserWindow', 'mote/didCreateMoteBrowserWindow') : undefined,
 				ellapsedWindowMaximize: initialStartup ? this._marks.getDuration('mote/willMaximizeCodeWindow', 'mote/didMaximizeCodeWindow') : undefined,
 				ellapsedWindowLoad: initialStartup ? this._marks.getDuration('mote/mainAppReady', 'mote/willOpenNewWindow') : undefined,
 				ellapsedWindowLoadToRequire: this._marks.getDuration('mote/willOpenNewWindow', 'mote/willLoadWorkbenchMain'),

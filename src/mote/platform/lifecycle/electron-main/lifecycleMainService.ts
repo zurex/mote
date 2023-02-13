@@ -68,7 +68,13 @@ export const enum LifecycleMainPhase {
 	 * and is typically the best place to do work that is not required
 	 * for the window to open.
 	 */
-	AfterWindowOpen = 3
+	AfterWindowOpen = 3,
+
+	/**
+	 * The last phase after a window has opened and some time has passed
+	 * (2-5 seconds).
+	 */
+	Eventually = 4
 }
 
 export interface ShutdownEvent {

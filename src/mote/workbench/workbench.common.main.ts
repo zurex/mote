@@ -8,6 +8,12 @@ import 'mote/workbench/browser/workbench.contribution';
 
 //#endregion
 
+//#region --- workbench actions
+
+import 'mote/workbench/browser/actions/layoutActions';
+
+//#endregion
+
 //#region --- workbench parts
 
 import 'mote/workbench/browser/parts/editor/editor.contribution';
