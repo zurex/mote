@@ -185,68 +185,6 @@ export function getBreadcrumbsWidgetStyles(override: IStyleOverride<IBreadcrumbs
 	};
 }
 
-
-export interface IInputBoxStyleOverrides extends IStyleOverrides {
-	inputBackground?: ColorIdentifier;
-	inputForeground?: ColorIdentifier;
-	inputBorder?: ColorIdentifier;
-	inputActiveOptionBorder?: ColorIdentifier;
-	inputActiveOptionForeground?: ColorIdentifier;
-	inputActiveOptionBackground?: ColorIdentifier;
-	inputValidationInfoBorder?: ColorIdentifier;
-	inputValidationInfoBackground?: ColorIdentifier;
-	inputValidationInfoForeground?: ColorIdentifier;
-	inputValidationWarningBorder?: ColorIdentifier;
-	inputValidationWarningBackground?: ColorIdentifier;
-	inputValidationWarningForeground?: ColorIdentifier;
-	inputValidationErrorBorder?: ColorIdentifier;
-	inputValidationErrorBackground?: ColorIdentifier;
-	inputValidationErrorForeground?: ColorIdentifier;
-}
-
-export interface ISelectBoxStyleOverrides extends IStyleOverrides, IListStyleOverrides {
-	selectBackground?: ColorIdentifier;
-	selectListBackground?: ColorIdentifier;
-	selectForeground?: ColorIdentifier;
-	decoratorRightForeground?: ColorIdentifier;
-	selectBorder?: ColorIdentifier;
-	focusBorder?: ColorIdentifier;
-}
-
-export interface IListStyleOverrides extends IStyleOverrides {
-	listBackground?: ColorIdentifier;
-	listFocusBackground?: ColorIdentifier;
-	listFocusForeground?: ColorIdentifier;
-	listFocusOutline?: ColorIdentifier;
-	listActiveSelectionBackground?: ColorIdentifier;
-	listActiveSelectionForeground?: ColorIdentifier;
-	listActiveSelectionIconForeground?: ColorIdentifier;
-	listFocusAndSelectionOutline?: ColorIdentifier;
-	listFocusAndSelectionBackground?: ColorIdentifier;
-	listFocusAndSelectionForeground?: ColorIdentifier;
-	listInactiveSelectionBackground?: ColorIdentifier;
-	listInactiveSelectionIconForeground?: ColorIdentifier;
-	listInactiveSelectionForeground?: ColorIdentifier;
-	listInactiveFocusBackground?: ColorIdentifier;
-	listInactiveFocusOutline?: ColorIdentifier;
-	listHoverBackground?: ColorIdentifier;
-	listHoverForeground?: ColorIdentifier;
-	listDropBackground?: ColorIdentifier;
-	listSelectionOutline?: ColorIdentifier;
-	listHoverOutline?: ColorIdentifier;
-	listFilterWidgetBackground?: ColorIdentifier;
-	listFilterWidgetOutline?: ColorIdentifier;
-	listFilterWidgetNoMatchesOutline?: ColorIdentifier;
-	listMatchesShadow?: ColorIdentifier;
-	treeIndentGuidesStroke?: ColorIdentifier;
-	tableColumnsBorder?: ColorIdentifier;
-	tableOddRowsBackgroundColor?: ColorIdentifier;
-}
-
-export function attachListStyler(widget: IThemable, themeService: IThemeService, overrides?: IColorMapping): IDisposable {
-	return attachStyler(themeService, { ...defaultListStyles, ...(overrides || {}) }, widget);
-}
-
 export const defaultListStyles: IColorMapping = {
 	listFocusBackground: themeColors.listFocusBackground
 };
@@ -281,6 +219,11 @@ export function getListStyles(override: IStyleOverride<IListStyles>): IListStyle
 	};
 }
 
+export function attachListStyler(widget: IThemable, themeService: IThemeService, overrides?: IColorMapping): IDisposable {
+	return attachStyler(themeService, { ...defaultListStyles, ...(overrides || {}) }, widget);
+}
+
+
 export interface IButtonStyleOverrides extends IStyleOverrides {
 	buttonForeground?: ColorIdentifier;
 	buttonBackground?: ColorIdentifier;
@@ -291,35 +234,9 @@ export interface IButtonStyleOverrides extends IStyleOverrides {
 	buttonBorder?: ColorIdentifier;
 }
 
-export interface IKeybindingLabelStyleOverrides extends IStyleOverrides {
-	keybindingLabelBackground?: ColorIdentifier;
-	keybindingLabelForeground?: ColorIdentifier;
-	keybindingLabelBorder?: ColorIdentifier;
-	keybindingLabelBottomBorder?: ColorIdentifier;
-	keybindingLabelShadow?: ColorIdentifier;
-}
-
-export interface IProgressBarStyleOverrides extends IStyleOverrides {
-	progressBarBackground?: ColorIdentifier;
-}
 
 export function attachStylerCallback(themeService: IThemeService, colors: { [name: string]: ColorIdentifier }, callback: styleFn): IDisposable {
 	return attachStyler(themeService, colors, callback);
-}
-
-export interface IBreadcrumbsWidgetStyleOverrides extends IColorMapping {
-	breadcrumbsBackground?: ColorIdentifier | ColorTransform;
-	breadcrumbsForeground?: ColorIdentifier;
-	breadcrumbsHoverForeground?: ColorIdentifier;
-	breadcrumbsFocusForeground?: ColorIdentifier;
-	breadcrumbsFocusAndSelectionForeground?: ColorIdentifier;
-}
-
-export const defaultBreadcrumbsStyles = <IBreadcrumbsWidgetStyleOverrides>{
-};
-
-export function attachBreadcrumbsStyler(widget: IThemable, themeService: IThemeService, style?: IBreadcrumbsWidgetStyleOverrides): IDisposable {
-	return attachStyler(themeService, { ...defaultBreadcrumbsStyles, ...style }, widget);
 }
 
 export interface IMenuStyleOverrides extends IColorMapping {
@@ -354,27 +271,6 @@ export function getMenuStyles(override: IStyleOverride<IMenuStyles>): IMenuStyle
 
 export function attachMenuStyler(widget: IThemable, themeService: IThemeService, style?: IMenuStyleOverrides): IDisposable {
 	return attachStyler(themeService, { ...defaultMenuStyles, ...style }, widget);
-}
-
-export interface IDialogStyleOverrides extends IButtonStyleOverrides {
-	dialogForeground?: ColorIdentifier;
-	dialogBackground?: ColorIdentifier;
-	dialogShadow?: ColorIdentifier;
-	dialogBorder?: ColorIdentifier;
-	checkboxBorder?: ColorIdentifier;
-	checkboxBackground?: ColorIdentifier;
-	checkboxForeground?: ColorIdentifier;
-	errorIconForeground?: ColorIdentifier;
-	warningIconForeground?: ColorIdentifier;
-	infoIconForeground?: ColorIdentifier;
-	inputBackground?: ColorIdentifier;
-	inputForeground?: ColorIdentifier;
-	inputBorder?: ColorIdentifier;
-}
-
-
-export function attachDialogStyler(widget: IThemable, themeService: IThemeService, style?: IDialogStyleOverrides): IDisposable {
-	return attachStyler(themeService, { ...defaultDialogStyles, ...style }, widget);
 }
 
 interface IItemContainerStyleOverrides {
