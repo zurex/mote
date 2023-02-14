@@ -158,8 +158,9 @@ export class ViewLayout extends Disposable implements IViewLayout {
 
 		const options = this.configuration.options;
 		const layoutInfo = options.get(EditorOption.LayoutInfo);
+		const padding = options.get(EditorOption.Padding);
 
-		this.linesLayout = new LinesLayout(lineCount);
+		this.linesLayout = new LinesLayout(lineCount, padding.top, padding.bottom);
 
 		this.scrollable = this._register(new EditorScrollable(0, scheduleAtNextAnimationFrame));
 		this.scrollable.setScrollDimensions(new EditorScrollDimensions(

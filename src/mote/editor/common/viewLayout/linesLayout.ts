@@ -82,16 +82,14 @@ export class EditorWhitespace implements IEditorWhitespace {
 export class LinesLayout extends Disposable {
 	private lineHeight = 32;
 
-	private _paddingTop: number = 162;
-	private _paddingBottom: number = 200;
-
 	private readonly _pendingChanges: PendingChanges;
 	private viewLineLayout!: IViewLineLayout;
 	private _arr: EditorWhitespace[] = [];
 
 	constructor(
-
 		private lineCount: number,
+		private _paddingTop: number,
+		private _paddingBottom: number
 	) {
 		super();
 

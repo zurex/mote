@@ -166,6 +166,11 @@ export interface IEditorOptions {
 	 * Defaults to false.
 	 */
 	fontLigatures?: boolean | string;
+
+	/**
+	 * Controls the spacing around the editor.
+	 */
+	padding?: IEditorPaddingOptions;
 }
 
 /**
@@ -311,6 +316,7 @@ export const enum EditorOption {
 	FontVariations,
 	LetterSpacing,
 	LineHeight,
+	Padding,
 
 	WrappingIndent,
 	WrappingStrategy,
@@ -1389,6 +1395,65 @@ class EditorLineHeight extends EditorFloatOption<EditorOption.LineHeight> {
 	}
 }
 
+//#region padding
+
+/**
+ * Configuration options for editor padding
+ */
+export interface IEditorPaddingOptions {
+	/**
+	 * Spacing between top edge of editor and first line.
+	 */
+	top?: number;
+	/**
+	 * Spacing between bottom edge of editor and last line.
+	 */
+	bottom?: number;
+}
+
+/**
+ * @internal
+ */
+export type InternalEditorPaddingOptions = Readonly<Required<IEditorPaddingOptions>>;
+
+class EditorPadding extends BaseEditorOption<EditorOption.Padding, IEditorPaddingOptions, InternalEditorPaddingOptions> {
+
+	constructor() {
+		super(
+			EditorOption.Padding, 'padding', { top: 0, bottom: 0 },
+			{
+				'editor.padding.top': {
+					type: 'number',
+					default: 0,
+					minimum: 0,
+					maximum: 1000,
+					description: nls.localize('padding.top', "Controls the amount of space between the top edge of the editor and the first line.")
+				},
+				'editor.padding.bottom': {
+					type: 'number',
+					default: 0,
+					minimum: 0,
+					maximum: 1000,
+					description: nls.localize('padding.bottom', "Controls the amount of space between the bottom edge of the editor and the last line.")
+				}
+			}
+		);
+	}
+
+	public validate(_input: any): InternalEditorPaddingOptions {
+		if (!_input || typeof _input !== 'object') {
+			return this.defaultValue;
+		}
+		const input = _input as IEditorPaddingOptions;
+
+		return {
+			top: EditorIntOption.clampedInt(input.top, 0, 0, 1000),
+			bottom: EditorIntOption.clampedInt(input.bottom, 0, 0, 1000)
+		};
+	}
+}
+//#endregion
+
 export const EditorOptions = {
 	readOnly: register(new EditorBooleanOption(
 		EditorOption.ReadOnly, 'readOnly', false,
@@ -1559,6 +1624,7 @@ export const EditorOptions = {
 	)),
 	lineHeight: register(new EditorLineHeight()),
 	scrollbar: register(new EditorScrollbar()),
+	padding: register(new EditorPadding()),
 
 	// Leave these at the end (because they have dependencies!)
 	layoutInfo: register(new EditorLayoutInfoComputer()),
