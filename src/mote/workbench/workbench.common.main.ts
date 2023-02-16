@@ -11,6 +11,7 @@ import 'mote/workbench/browser/workbench.contribution';
 //#region --- workbench actions
 
 import 'mote/workbench/browser/actions/layoutActions';
+import 'mote/workbench/browser/actions/quickAccessActions';
 
 //#endregion
 

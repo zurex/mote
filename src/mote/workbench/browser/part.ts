@@ -130,13 +130,6 @@ export abstract class Part extends Component implements ISerializableView {
 		return this.contentArea;
 	}
 
-	element!: HTMLElement;
-
-	abstract minimumWidth: number;
-	abstract maximumWidth: number;
-	abstract minimumHeight: number;
-	abstract maximumHeight: number;
-
 	layout(width: number, height: number, _top: number, _left: number): void {
 		this._dimension = new Dimension(width, height);
 	}
@@ -152,8 +145,15 @@ export abstract class Part extends Component implements ISerializableView {
 
 	//#region ISerializableView
 
-	private _onDidChange = this._register(new Emitter<IViewSize | undefined>());
+	protected _onDidChange = this._register(new Emitter<IViewSize | undefined>());
 	get onDidChange(): Event<IViewSize | undefined> { return this._onDidChange.event; }
+
+	element!: HTMLElement;
+
+	abstract minimumWidth: number;
+	abstract maximumWidth: number;
+	abstract minimumHeight: number;
+	abstract maximumHeight: number;
 
 	abstract toJSON(): object;
 

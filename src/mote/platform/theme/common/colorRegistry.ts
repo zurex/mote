@@ -182,6 +182,24 @@ class ColorRegistry implements IColorRegistry {
 
 const colorRegistry = new ColorRegistry();
 
+function migrateColorDefaults(o: any): null | ColorDefaults {
+	if (o === null) {
+		return o;
+	}
+	if (typeof o.hcLight === 'undefined') {
+		if (o.hcDark === null || typeof o.hcDark === 'string') {
+			o.hcLight = o.hcDark;
+		} else {
+			o.hcLight = o.light;
+		}
+	}
+	return o as ColorDefaults;
+}
+
+export function registerColor(id: string, defaults: ColorDefaults | null, description: string, needsTransparency?: boolean, deprecationMessage?: string): ColorIdentifier {
+	return colorRegistry.registerColor(id, migrateColorDefaults(defaults), description, needsTransparency, deprecationMessage);
+}
+
 export function getColorRegistry(): ColorRegistry {
 	return colorRegistry;
 }

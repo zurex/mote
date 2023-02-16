@@ -510,6 +510,10 @@ export class CustomMenubarControl extends MenubarControl {
 		return this._onVisibilityChange.event;
 	}
 
+	get onFocusStateChange(): Event<boolean> {
+		return this._onFocusStateChange.event;
+	}
+
 	create(parent: HTMLElement): HTMLElement {
 		this.container = parent;
 

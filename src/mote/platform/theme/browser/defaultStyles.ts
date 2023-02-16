@@ -8,7 +8,7 @@ import { IDisposable } from 'mote/base/common/lifecycle';
 import { IThemable, styleFn } from 'mote/base/common/styler';
 import * as themeColors from 'mote/platform/theme/common/themeColors';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
-import { asCssVariable, ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';
+import { asCssVariable, asCssVariableWithDefault, ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';
 import { IMenuStyles } from 'mote/base/browser/ui/menu/menu';
 import { menuBackground, menuBorder, menuForeground, menuSelectionBackground, menuSelectionForeground, widgetShadow } from 'mote/platform/theme/common/themeColors';
 import { IListStyles } from 'mote/base/browser/ui/list/listWidget';
@@ -21,10 +21,20 @@ import { IDialogStyles } from 'mote/base/browser/ui/dialog/dialog';
 import { IFindWidgetStyles } from 'mote/base/browser/ui/tree/abstractTree';
 import { ICountBadgeStyles } from 'mote/base/browser/ui/countBadge/countBadge';
 import { IBreadcrumbsWidgetStyles } from 'mote/base/browser/ui/breadcrumbs/breadcrumbsWidget';
+import { ISelectBoxStyles } from 'mote/base/browser/ui/selectBox/selectBox';
 
 export type IStyleOverride<T> = {
 	[P in keyof T]?: ColorIdentifier;
 };
+
+function overrideStyles<T>(override: IStyleOverride<T>, styles: T): any {
+	const result = { ...styles } as { [P in keyof T]: string | undefined };
+	for (const key in override) {
+		const val = override[key];
+		result[key] = val !== undefined ? asCssVariable(val) : undefined;
+	}
+	return result;
+}
 
 export interface IStyleOverrides {
 	[color: string]: ColorIdentifier | undefined;
@@ -237,6 +247,45 @@ export interface IButtonStyleOverrides extends IStyleOverrides {
 
 export function attachStylerCallback(themeService: IThemeService, colors: { [name: string]: ColorIdentifier }, callback: styleFn): IDisposable {
 	return attachStyler(themeService, colors, callback);
+}
+
+export const defaultSelectBoxStyles: ISelectBoxStyles = {
+	selectBackground: asCssVariable(themeColors.selectBackground),
+	selectListBackground: asCssVariable(themeColors.selectListBackground),
+	selectForeground: asCssVariable(themeColors.selectForeground),
+	decoratorRightForeground: asCssVariable(themeColors.pickerGroupForeground),
+	selectBorder: asCssVariable(themeColors.selectBorder),
+	focusBorder: asCssVariable(themeColors.focusBorder),
+	listFocusBackground: asCssVariable(themeColors.quickInputListFocusBackground),
+	listInactiveSelectionIconForeground: asCssVariable(themeColors.quickInputListFocusIconForeground),
+	listFocusForeground: asCssVariable(themeColors.quickInputListFocusForeground),
+	listFocusOutline: asCssVariableWithDefault(themeColors.activeContrastBorder, Color.transparent.toString()),
+	listHoverBackground: asCssVariable(themeColors.listHoverBackground),
+	listHoverForeground: asCssVariable(themeColors.listHoverForeground),
+	listHoverOutline: asCssVariable(themeColors.activeContrastBorder),
+	selectListBorder: asCssVariable(themeColors.editorWidgetBorder),
+	listBackground: undefined,
+	listActiveSelectionBackground: undefined,
+	listActiveSelectionForeground: undefined,
+	listActiveSelectionIconForeground: undefined,
+	listFocusAndSelectionBackground: undefined,
+	listDropBackground: undefined,
+	listInactiveSelectionBackground: undefined,
+	listInactiveSelectionForeground: undefined,
+	listInactiveFocusBackground: undefined,
+	listInactiveFocusOutline: undefined,
+	listSelectionOutline: undefined,
+	listFocusAndSelectionForeground: undefined,
+	listFocusAndSelectionOutline: undefined,
+	listInactiveFocusForeground: undefined,
+	tableColumnsBorder: undefined,
+	tableOddRowsBackgroundColor: undefined,
+	treeIndentGuidesStroke: undefined,
+	treeInactiveIndentGuidesStroke: undefined,
+};
+
+export function getSelectBoxStyles(override: IStyleOverride<ISelectBoxStyles>): ISelectBoxStyles {
+	return overrideStyles(override, defaultSelectBoxStyles);
 }
 
 export interface IMenuStyleOverrides extends IColorMapping {

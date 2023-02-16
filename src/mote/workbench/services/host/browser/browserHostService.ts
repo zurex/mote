@@ -1,8 +1,12 @@
+import { Event } from 'mote/base/common/event';
 import { IOpenEmptyWindowOptions, IOpenWindowOptions, isWorkspaceToOpen, IWindowOpenable, IWorkspaceToOpen } from 'mote/platform/window/common/window';
 import { IHostService } from 'mote/workbench/services/host/browser/host';
 import { Disposable } from 'mote/base/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
 import { InstantiationType, registerSingleton } from 'mote/platform/instantiation/common/extensions';
+import { memoize } from 'mote/base/common/decorators';
+import { trackFocus } from 'mote/base/browser/dom';
+import { DomEmitter } from 'mote/base/browser/event';
 
 /**
  * A workspace to open in the workbench can either be:
@@ -39,6 +43,8 @@ export interface IWorkspaceProvider {
 }
 
 export class BrowserHostService extends Disposable implements IHostService {
+	declare readonly _serviceBrand: undefined;
+
 	private workspaceProvider!: IWorkspaceProvider;
 
 	constructor(
@@ -49,6 +55,30 @@ export class BrowserHostService extends Disposable implements IHostService {
 		if (environmentService.options?.workspaceProvider) {
 			this.workspaceProvider = environmentService.options.workspaceProvider as any;
 		}
+	}
+
+	@memoize
+	get onDidChangeFocus(): Event<boolean> {
+		const focusTracker = this._register(trackFocus(window));
+		const onVisibilityChange = this._register(new DomEmitter(window.document, 'visibilitychange'));
+
+		return Event.latch(Event.any(
+			Event.map(focusTracker.onDidFocus, () => this.hasFocus),
+			Event.map(focusTracker.onDidBlur, () => this.hasFocus),
+			Event.map(onVisibilityChange.event, () => this.hasFocus)
+		));
+	}
+
+	get hasFocus(): boolean {
+		return document.hasFocus();
+	}
+
+	async hadLastFocus(): Promise<boolean> {
+		return true;
+	}
+
+	async focus(): Promise<void> {
+		window.focus();
 	}
 
 	openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;

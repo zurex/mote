@@ -1,7 +1,7 @@
 import 'mote/css!./media/titlebarpart';
 import { localize } from 'mote/nls';
 import { getZoomFactor, isWCOEnabled } from 'mote/base/browser/browser';
-import { append, $, Dimension, prepend, addDisposableListener, isAncestor, EventType, EventHelper } from 'mote/base/browser/dom';
+import { append, $, Dimension, prepend, addDisposableListener, isAncestor, EventType, EventHelper, reset } from 'mote/base/browser/dom';
 import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
 import { Codicon } from 'mote/base/common/codicons';
 import { Event, Emitter } from 'mote/base/common/event';
@@ -12,7 +12,7 @@ import { Categories } from 'mote/platform/action/common/actionCommonCategories';
 import { createActionViewItem } from 'mote/platform/actions/browser/menuEntryActionViewItem';
 import { MenuWorkbenchToolBar } from 'mote/platform/actions/browser/toolbar';
 import { Action2, MenuId, registerAction2 } from 'mote/platform/actions/common/actions';
-import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
+import { IConfigurationChangeEvent, IConfigurationService } from 'mote/platform/configuration/common/configuration';
 import { IInstantiationService, ServicesAccessor } from 'mote/platform/instantiation/common/instantiation';
 import { IStorageService } from 'mote/platform/storage/common/storage';
 import { getIconRegistry } from 'mote/platform/theme/common/iconRegistry';
@@ -29,6 +29,9 @@ import { Color } from 'mote/base/common/color';
 import { TITLE_BAR_ACTIVE_BACKGROUND, TITLE_BAR_ACTIVE_FOREGROUND, TITLE_BAR_BORDER, TITLE_BAR_INACTIVE_BACKGROUND, TITLE_BAR_INACTIVE_FOREGROUND, WORKBENCH_BACKGROUND } from 'mote/workbench/common/theme';
 import { CustomMenubarControl } from 'mote/workbench/browser/parts/titlebar/menubarControl';
 import { ITitleProperties, ITitleService } from 'mote/workbench/services/title/common/titleService';
+import { CommandCenterControl } from 'mote/workbench/browser/parts/titlebar/commandCenterControl';
+import { WindowTitle } from 'mote/workbench/browser/parts/titlebar/windowTitle';
+import { IHostService } from 'mote/workbench/services/host/browser/host';
 
 export class TitlebarPart extends Part implements ITitleService {
 
@@ -79,6 +82,8 @@ export class TitlebarPart extends Part implements ITitleService {
 
 	private isInactive: boolean = false;
 
+	private readonly windowTitle: WindowTitle;
+
 	constructor(
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
@@ -88,9 +93,11 @@ export class TitlebarPart extends Part implements ITitleService {
 		@IInstantiationService protected readonly instantiationService: IInstantiationService,
 		@IBrowserWorkbenchEnvironmentService protected readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IHostService private readonly hostService: IHostService,
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 	) {
 		super(Parts.TITLEBAR_PART, { hasTitle: false }, themeService, storageService, layoutService);
+		this.windowTitle = this._register(instantiationService.createInstance(WindowTitle));
 
 		this.titleBarStyle = getTitleBarStyle(this.configurationService);
 
@@ -111,14 +118,54 @@ export class TitlebarPart extends Part implements ITitleService {
 				this._lastHoverHideTime = Date.now();
 			}
 		};
+
+		this.registerListeners();
 	}
 
 	updateProperties(properties: ITitleProperties): void {
-		//this.windowTitle.updateProperties(properties);
+		this.windowTitle.updateProperties(properties);
 	}
 
 	get isCommandCenterVisible() {
 		return this.configurationService.getValue<boolean>(TitlebarPart.configCommandCenter);
+	}
+
+	private registerListeners(): void {
+		this._register(this.hostService.onDidChangeFocus(focused => focused ? this.onFocus() : this.onBlur()));
+		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationChanged(e)));
+	}
+
+	private onBlur(): void {
+		this.isInactive = true;
+		this.updateStyles();
+	}
+
+	private onFocus(): void {
+		this.isInactive = false;
+		this.updateStyles();
+	}
+
+	protected onConfigurationChanged(event: IConfigurationChangeEvent): void {
+
+		if (this.titleBarStyle !== 'native' && (!isMacintosh || isWeb)) {
+			if (event.affectsConfiguration('window.menuBarVisibility')) {
+				if (this.currentMenubarVisibility === 'compact') {
+					this.uninstallMenubar();
+				} else {
+					this.installMenubar();
+				}
+			}
+		}
+
+		if (this.titleBarStyle !== 'native' && this.layoutControls && event.affectsConfiguration('workbench.layoutControl.enabled')) {
+			this.layoutControls.classList.toggle('show-layout-control', this.layoutControlEnabled);
+			this._onDidChange.fire(undefined);
+		}
+
+		if (event.affectsConfiguration(TitlebarPart.configCommandCenter)) {
+			this.updateTitle();
+			this._onDidChangeCommandCenterVisibility.fire();
+		}
 	}
 
 	protected onMenubarVisibilityChanged(visible: boolean): void {
@@ -162,7 +209,11 @@ export class TitlebarPart extends Part implements ITitleService {
 	}
 
 	private updateTitle(): void {
-
+		this.titleDisposables.clear();
+		// Menu Title
+		const commandCenter = this.instantiationService.createInstance(CommandCenterControl, this.windowTitle, this.hoverDelegate);
+		reset(this.title, commandCenter.element);
+		this.titleDisposables.add(commandCenter);
 	}
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
@@ -170,8 +221,10 @@ export class TitlebarPart extends Part implements ITitleService {
 		this.rootContainer = append(parent, $('.titlebar-container'));
 
 		this.leftContent = append(this.rootContainer, $('.titlebar-left'));
+		this.leftContent.classList.add('titlebar', 'left');
 		this.centerContent = append(this.rootContainer, $('.titlebar-center'));
 		this.rightContent = append(this.rootContainer, $('.titlebar-right'));
+		this.rightContent.classList.add('titlebar', 'right');
 
 		// App Icon (Native Windows/Linux and Web)
 		if (!isMacintosh && !isWeb) {
@@ -221,7 +274,7 @@ export class TitlebarPart extends Part implements ITitleService {
 		append(primaryControlLocation === 'left' ? this.rightContent : this.leftContent, $('div.window-controls-container.secondary'));
 
 		if (this.titleBarStyle !== 'native') {
-			this.layoutControls = append(this.leftContent, $('div.layout-controls-container'));
+			this.layoutControls = append(isWeb ? this.rightContent : this.leftContent, $('div.layout-controls-container'));
 			this.layoutControls.classList.toggle('show-layout-control', this.layoutControlEnabled);
 
 			this.layoutToolbar = this.instantiationService.createInstance(MenuWorkbenchToolBar, this.layoutControls, MenuId.LayoutControlMenu, {

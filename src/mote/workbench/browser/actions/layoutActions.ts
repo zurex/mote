@@ -1,7 +1,7 @@
 import { Codicon } from 'mote/base/common/codicons';
 import { KeyCode, KeyMod } from 'mote/base/common/keyCodes';
 import { DisposableStore } from 'mote/base/common/lifecycle';
-import { isMacintosh, isNative } from 'mote/base/common/platform';
+import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'mote/base/common/platform';
 import { ThemeIcon } from 'mote/base/common/themables';
 import { localize } from 'mote/nls';
 import { Categories } from 'mote/platform/action/common/actionCommonCategories';
@@ -19,6 +19,8 @@ import { IWorkbenchLayoutService, Parts, Position } from 'mote/workbench/service
 
 // Register Icons
 const menubarIcon = registerIcon('menuBar', Codicon.layoutMenubar, localize('menuBarIcon', "Represents the menu bar"));
+const activityBarLeftIcon = registerIcon('activity-bar-left', Codicon.layoutActivitybarLeft, localize('activityBarLeft', "Represents the activity bar in the left position"));
+const activityBarRightIcon = registerIcon('activity-bar-right', Codicon.layoutActivitybarRight, localize('activityBarRight', "Represents the activity bar in the right position"));
 const panelLeftIcon = registerIcon('panel-left', Codicon.layoutSidebarLeft, localize('panelLeft', "Represents a side bar in the left position"));
 const panelLeftOffIcon = registerIcon('panel-left-off', Codicon.layoutSidebarLeftOff, localize('panelLeftOff', "Represents a side bar in the left position toggled off"));
 const panelRightIcon = registerIcon('panel-right', Codicon.layoutSidebarRight, localize('panelRight', "Represents side bar in the right position"));
@@ -83,9 +85,13 @@ export class ToggleActivityBarVisibilityAction extends Action2 {
 		const visibility = layoutService.isVisible(Parts.ACTIVITYBAR_PART);
 		const newVisibilityValue = !visibility;
 
+		layoutService.setPartHidden(newVisibilityValue, Parts.ACTIVITYBAR_PART);
+
 		configurationService.updateValue(ToggleActivityBarVisibilityAction.activityBarVisibleKey, newVisibilityValue);
 	}
 }
+
+registerAction2(ToggleActivityBarVisibilityAction);
 
 //#region Sidebar Position
 
@@ -207,6 +213,46 @@ MenuRegistry.appendMenuItems([
 	}
 ]);
 
+// --- Toggle Menu Bar
+
+if (isWindows || isLinux || isWeb) {
+	registerAction2(class ToggleMenubarAction extends Action2 {
+
+		constructor() {
+			super({
+				id: 'workbench.action.toggleMenuBar',
+				title: {
+					value: localize('toggleMenuBar', "Toggle Menu Bar"),
+					mnemonicTitle: localize({ key: 'miMenuBar', comment: ['&& denotes a mnemonic'] }, "Menu &&Bar"),
+					original: 'Toggle Menu Bar'
+				},
+				category: Categories.View,
+				f1: true,
+				toggled: ContextKeyExpr.and(IsMacNativeContext.toNegated(), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'hidden'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'toggle'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'compact')),
+				menu: [{
+					id: MenuId.MenubarAppearanceMenu,
+					group: '2_workbench_layout',
+					order: 0
+				}]
+			});
+		}
+
+		run(accessor: ServicesAccessor): void {
+			return accessor.get(IWorkbenchLayoutService).toggleMenuBar();
+		}
+	});
+
+	// Add separately to title bar context menu so we can use a different title
+	MenuRegistry.appendMenuItem(MenuId.TitleBarContext, {
+		command: {
+			id: 'workbench.action.toggleMenuBar',
+			title: localize('miMenuBarNoMnemonic', "Menu Bar"),
+			toggled: ContextKeyExpr.and(IsMacNativeContext.toNegated(), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'hidden'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'toggle'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'compact'))
+		},
+		order: 0
+	});
+}
+
 type ContextualLayoutVisualIcon = { iconA: ThemeIcon; iconB: ThemeIcon; whenA: ContextKeyExpression };
 type LayoutVisualIcon = ThemeIcon | ContextualLayoutVisualIcon;
 
@@ -247,6 +293,7 @@ if (!isMacintosh || !isNative) {
 }
 
 ToggleVisibilityActions.push(...[
+	CreateToggleLayoutItem(ToggleActivityBarVisibilityAction.ID, ContextKeyExpr.equals('config.workbench.activityBar.visible', true), localize('activityBar', "Activity Bar"), { whenA: ContextKeyExpr.equals('config.workbench.sideBar.location', 'left'), iconA: activityBarLeftIcon, iconB: activityBarRightIcon }),
 	CreateToggleLayoutItem(ToggleSidebarVisibilityAction.ID, SideBarVisibleContext, localize('sideBar', "Primary Side Bar"), { whenA: ContextKeyExpr.equals('config.workbench.sideBar.location', 'left'), iconA: panelLeftIcon, iconB: panelRightIcon }),
 ]);
 

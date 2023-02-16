@@ -1,5 +1,6 @@
 
 import { Disposable } from 'mote/base/common/lifecycle';
+import { isWeb } from 'mote/base/common/platform';
 import { IEditorWhitespace, IPartialViewLinesViewportData, IViewLineLayout, IViewModel } from 'mote/editor/common/viewModel';
 
 interface IPendingChange { id: string; newAfterLineNumber: number; newHeight: number }
@@ -224,8 +225,13 @@ export class LinesLayout extends Disposable {
 		try {
 			const offset = this.viewLineLayout.getVerticalOffsetForLineNumber(lineNumber, includeViewZones);
 			if (offset >= 0) {
-				// TODO: fix me
-				return offset - 30;
+				// TODO: should be notified by some serive that the change of paddings
+				if (isWeb) {
+					return offset - 30;
+				} else {
+					return offset - 45;
+				}
+
 			}
 		}
 		catch (e) {

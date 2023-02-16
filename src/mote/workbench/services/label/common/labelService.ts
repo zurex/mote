@@ -11,7 +11,7 @@ import { Emitter } from 'mote/base/common/event';
 import { WorkbenchExtensions, IWorkbenchContributionsRegistry, IWorkbenchContribution } from 'mote/workbench/common/contributions';
 import { Registry } from 'mote/platform/registry/common/platform';
 import { IWorkbenchEnvironmentService } from 'mote/workbench/services/environment/common/environmentService';
-import { IWorkspaceContextService, IWorkspace, isWorkspace, ISingleFolderWorkspaceIdentifier, isSingleFolderWorkspaceIdentifier, isWorkspaceIdentifier, IWorkspaceIdentifier, toWorkspaceIdentifier, WORKSPACE_EXTENSION, isUntitledWorkspace, isTemporaryWorkspace } from 'mote/platform/workspace/common/workspace';
+import { IWorkspaceContextService, IWorkspace, isWorkspace, isWorkspaceIdentifier, IWorkspaceIdentifier, toWorkspaceIdentifier, WORKSPACE_EXTENSION, ISinglePageWorkspaceIdentifier, isSinglePageWorkspaceIdentifier } from 'mote/platform/workspace/common/workspace';
 import { basenameOrAuthority, basename, joinPath, dirname } from 'mote/base/common/resources';
 import { tildify, getPathLabel } from 'mote/base/common/labels';
 import { ILabelService, ResourceLabelFormatter, ResourceLabelFormatting, IFormatterChangeEvent, Verbosity } from 'mote/platform/label/common/label';
@@ -22,7 +22,6 @@ import { InstantiationType, registerSingleton } from 'mote/platform/instantiatio
 import { IPathService } from 'mote/workbench/services/path/common/pathService';
 import { isProposedApiEnabled } from 'mote/workbench/services/extensions/common/extensions';
 import { OperatingSystem, OS } from 'mote/base/common/platform';
-import { IRemoteAgentService } from 'mote/workbench/services/remote/common/remoteAgentService';
 import { Schemas } from 'mote/base/common/network';
 import { IStorageService, StorageScope, StorageTarget } from 'mote/platform/storage/common/storage';
 import { Memento } from 'mote/workbench/common/memento';
@@ -248,7 +247,7 @@ export class LabelService extends Disposable implements ILabelService {
 				// scheme that is workspace contained.
 
 				const workspace = this.contextService.getWorkspace();
-				const firstFolder = firstOrDefault(workspace.folders);
+				const firstFolder = firstOrDefault(workspace.pages);
 				if (firstFolder && resource.scheme !== firstFolder.uri.scheme && resource.path.startsWith(posix.sep)) {
 					folder = this.contextService.getWorkspaceFolder(firstFolder.uri.with({ path: resource.path }));
 				}
@@ -300,10 +299,10 @@ export class LabelService extends Disposable implements ILabelService {
 		return pathLib.basename(label);
 	}
 
-	getWorkspaceLabel(workspace: IWorkspace | IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | URI, options?: { verbose: Verbosity }): string {
+	getWorkspaceLabel(workspace: IWorkspace | IWorkspaceIdentifier | ISinglePageWorkspaceIdentifier | URI, options?: { verbose: Verbosity }): string {
 		if (isWorkspace(workspace)) {
 			const identifier = toWorkspaceIdentifier(workspace);
-			if (isSingleFolderWorkspaceIdentifier(identifier) || isWorkspaceIdentifier(identifier)) {
+			if (isSinglePageWorkspaceIdentifier(identifier) || isWorkspaceIdentifier(identifier)) {
 				return this.getWorkspaceLabel(identifier, options);
 			}
 
@@ -316,7 +315,7 @@ export class LabelService extends Disposable implements ILabelService {
 		}
 
 		// Workspace: Single Folder (as workspace identifier)
-		if (isSingleFolderWorkspaceIdentifier(workspace)) {
+		if (isSinglePageWorkspaceIdentifier(workspace)) {
 			return this.doGetSingleFolderWorkspaceLabel(workspace.uri, options);
 		}
 
@@ -329,16 +328,6 @@ export class LabelService extends Disposable implements ILabelService {
 	}
 
 	private doGetWorkspaceLabel(workspaceUri: URI, options?: { verbose: Verbosity }): string {
-
-		// Workspace: Untitled
-		if (isUntitledWorkspace(workspaceUri, this.environmentService)) {
-			return localize('untitledWorkspace', "Untitled (Workspace)");
-		}
-
-		// Workspace: Temporary
-		if (isTemporaryWorkspace(workspaceUri)) {
-			return localize('temporaryWorkspace', "Workspace");
-		}
 
 		// Workspace: Saved
 		let filename = basename(workspaceUri);

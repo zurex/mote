@@ -67,7 +67,7 @@ export class TitlebarPart extends BrowserTitleBarPart {
 		@INativeHostService private readonly nativeHostService: INativeHostService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(themeService, storageService, layoutService, hoverService, configurationService, instantiationService, environmentService, contextMenuService, contextKeyService);
+		super(themeService, storageService, layoutService, hoverService, configurationService, instantiationService, environmentService, contextMenuService, hostService, contextKeyService);
 
 		this.environmentService = environmentService;
 	}

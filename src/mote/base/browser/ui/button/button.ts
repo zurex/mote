@@ -1,7 +1,7 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedColors } from 'mote/base/common/themes';
-import { $, addDisposableListener, EventHelper, EventType, reset } from 'mote/base/browser/dom';
+import { $, addDisposableListener, EventHelper, EventType, IFocusTracker, reset, trackFocus } from 'mote/base/browser/dom';
 import { Gesture, EventType as TouchEventType } from 'mote/base/browser/touch';
 import { Color } from 'mote/base/common/color';
 import { Emitter, Event as BaseEvent } from 'mote/base/common/event';
@@ -10,6 +10,8 @@ import { mixin } from 'mote/base/common/objects';
 import { IThemable } from 'mote/base/common/styler';
 import { StandardKeyboardEvent } from 'mote/base/browser/keyboardEvent';
 import { KeyCode } from 'mote/base/common/keyCodes';
+import { ThemeIcon } from 'mote/base/common/themables';
+import { renderLabelWithIcons } from 'mote/base/browser/ui/iconLabel/iconLabels';
 
 export interface IButton extends IDisposable {
 	readonly element: HTMLElement;
@@ -17,8 +19,10 @@ export interface IButton extends IDisposable {
 }
 
 export interface IButtonOptions extends IButtonStyles {
-	style?: CSSProperties;
-	hoverStyle?: CSSProperties;
+	readonly title?: boolean | string;
+	readonly supportIcons?: boolean;
+	readonly supportShortLabel?: boolean;
+	readonly secondary?: boolean;
 }
 
 export interface IButtonStyles {
@@ -32,36 +36,49 @@ export interface IButtonStyles {
 	readonly buttonBorder: string | undefined;
 }
 
-const defaultOptions: IButtonStyles = {
-	//buttonBackground: Color.fromHex('#0E639C'),
-	buttonHoverBackground: Color.fromHex('#37352f14'),
-	buttonForeground: Color.white,
-};
-
 export interface IButtonWithDescription extends IButton {
 	description: string;
 }
 
 export class Button extends Disposable implements IButton {
 
-	protected _element: HTMLElement;
 	protected options: IButtonOptions;
-
-	private buttonHoverBackground: Color | undefined;
-	private buttonBackground: Color | undefined;
+	protected _element: HTMLElement;
+	protected _labelElement: HTMLElement | undefined;
+	protected _labelShortElement: HTMLElement | undefined;
 
 	private _onDidClick = this._register(new Emitter<Event>());
 	get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
 
-	constructor(container: HTMLElement, options?: IButtonOptions) {
+	private focusTracker: IFocusTracker;
+
+	constructor(container: HTMLElement, options: IButtonOptions) {
 		super();
 
-		this.options = options || Object.create(null);
-		mixin(this.options, defaultOptions, false);
-		this.buttonHoverBackground = this.options.buttonHoverBackground;
-		this.buttonBackground = this.options.buttonBackground;
+		this.options = options;
 
-		this._element = $('div');
+		this._element = document.createElement('a');
+		this._element.classList.add('monaco-button');
+		this._element.tabIndex = 0;
+		this._element.setAttribute('role', 'button');
+
+		const background = options.secondary ? options.buttonSecondaryBackground : options.buttonBackground;
+		const foreground = options.secondary ? options.buttonSecondaryForeground : options.buttonForeground;
+
+		this._element.style.color = foreground || '';
+		this._element.style.backgroundColor = background || '';
+
+		if (options.supportShortLabel) {
+			this._labelShortElement = document.createElement('div');
+			this._labelShortElement.classList.add('monaco-button-label-short');
+			this._element.appendChild(this._labelShortElement);
+
+			this._labelElement = document.createElement('div');
+			this._labelElement.classList.add('monaco-button-label');
+			this._element.appendChild(this._labelElement);
+
+			this._element.classList.add('monaco-text-button-with-short-label');
+		}
 
 		container.appendChild(this._element);
 
@@ -78,48 +95,108 @@ export class Button extends Disposable implements IButton {
 			}));
 		});
 
+		this._register(addDisposableListener(this._element, EventType.KEY_DOWN, e => {
+			const event = new StandardKeyboardEvent(e);
+			let eventHandled = false;
+			if (this.enabled && (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space))) {
+				this._onDidClick.fire(e);
+				eventHandled = true;
+			} else if (event.equals(KeyCode.Escape)) {
+				this._element.blur();
+				eventHandled = true;
+			}
+
+			if (eventHandled) {
+				EventHelper.stop(event, true);
+			}
+		}));
+
 		this._register(addDisposableListener(this._element, EventType.MOUSE_OVER, e => {
 			if (!this._element.classList.contains('disabled')) {
-				this.setHoverBackground();
+				this.updateBackground(true);
 			}
 		}));
 
 		this._register(addDisposableListener(this._element, EventType.MOUSE_OUT, e => {
-			this.applyStyles(); // restore standard styles
+			this.updateBackground(false); // restore standard styles
 		}));
 
-		this.applyStyles();
+		// Also set hover background when button is focused for feedback
+		this.focusTracker = this._register(trackFocus(this._element));
+		this._register(this.focusTracker.onDidFocus(() => { if (this.enabled) { this.updateBackground(true); } }));
+		this._register(this.focusTracker.onDidBlur(() => { if (this.enabled) { this.updateBackground(false); } }));
 	}
 
-	public style(style: IButtonStyles) {
-		this.buttonHoverBackground = style.buttonHoverBackground;
-		if (style.buttonBorderColor) {
-			this.element.style.border = `1px solid ${style.buttonBorderColor}`;
+	private getContentElements(content: string): HTMLElement[] {
+		const elements: HTMLSpanElement[] = [];
+		for (let segment of renderLabelWithIcons(content)) {
+			if (typeof (segment) === 'string') {
+				segment = segment.trim();
+
+				// Ignore empty segment
+				if (segment === '') {
+					continue;
+				}
+
+				// Convert string segments to <span> nodes
+				const node = document.createElement('span');
+				node.textContent = segment;
+				elements.push(node);
+			} else {
+				elements.push(segment);
+			}
 		}
 
-		this.applyStyles();
+		return elements;
 	}
 
-	private setHoverBackground(): void {
-		const style = Object.assign({
-			backgroundColor: this.buttonHoverBackground?.toString()
-		}, this.options.hoverStyle);
-		setStyles(this._element, style);
-	}
-
-	private applyStyles(): void {
-		if (this._element) {
-			const style = Object.assign({
-				cursor: 'pointer',
-				backgroundColor: this.buttonBackground || '',
-				transition: 'background 20ms ease-in 0s'
-			}, this.options.style);
-			setStyles(this._element, style);
+	private updateBackground(hover: boolean): void {
+		let background;
+		if (this.options.secondary) {
+			background = hover ? this.options.buttonSecondaryHoverBackground : this.options.buttonSecondaryBackground;
+		} else {
+			background = hover ? this.options.buttonHoverBackground : this.options.buttonBackground;
+		}
+		if (background) {
+			this._element.style.backgroundColor = background;
 		}
 	}
 
-	setChildren(...value: Array<Node | string>) {
-		reset(this._element, ...value);
+	get element(): HTMLElement {
+		return this._element;
+	}
+
+	set label(value: string) {
+		this._element.classList.add('monaco-text-button');
+		const labelElement = this.options.supportShortLabel ? this._labelElement! : this._element;
+
+		if (this.options.supportIcons) {
+			reset(labelElement, ...this.getContentElements(value));
+		} else {
+			labelElement.textContent = value;
+		}
+
+		if (typeof this.options.title === 'string') {
+			this._element.title = this.options.title;
+		} else if (this.options.title) {
+			this._element.title = value;
+		}
+	}
+
+	set labelShort(value: string) {
+		if (!this.options.supportShortLabel || !this._labelShortElement) {
+			return;
+		}
+
+		if (this.options.supportIcons) {
+			reset(this._labelShortElement, ...this.getContentElements(value));
+		} else {
+			this._labelShortElement.textContent = value;
+		}
+	}
+
+	set icon(icon: ThemeIcon) {
+		this._element.classList.add(...ThemeIcon.asClassNameArray(icon));
 	}
 
 	set enabled(value: boolean) {
@@ -141,8 +218,8 @@ export class Button extends Disposable implements IButton {
 		this._element.focus();
 	}
 
-	get element(): HTMLElement {
-		return this._element;
+	hasFocus(): boolean {
+		return this._element === document.activeElement;
 	}
 }
 
@@ -171,7 +248,7 @@ export class SwitchButton extends Disposable implements IThemable {
 	constructor(parent: HTMLElement, turnOn = false) {
 		super();
 
-		this.button = new Button(parent);
+		this.button = new Button(parent, {});
 		this.onDidSwitch = this.button.onDidClick;
 		this._turnOn = turnOn;
 
@@ -191,7 +268,7 @@ export class SwitchButton extends Disposable implements IThemable {
 
 	public style(styles: ISwitchButtonStyles) {
 		this.styles = styles;
-		this.button.style(styles);
+		//this.button.style(styles);
 		this.update();
 	}
 

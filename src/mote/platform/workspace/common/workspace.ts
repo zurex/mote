@@ -67,6 +67,14 @@ export interface IWorkspace {
 	readonly configuration?: URI | null;
 }
 
+export function isWorkspace(thing: unknown): thing is IWorkspace {
+	const candidate = thing as IWorkspace | undefined;
+
+	return !!(candidate && typeof candidate === 'object'
+		&& typeof candidate.id === 'string'
+		&& Array.isArray(candidate.pages));
+}
+
 /**
  * A single folder workspace identifier is a path to a folder + id.
  */
@@ -102,6 +110,12 @@ export interface IWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
 export interface IEmptyWorkspaceIdentifier extends IBaseWorkspaceIdentifier { }
 
 export type IAnyWorkspaceIdentifier = IWorkspaceIdentifier | IEmptyWorkspaceIdentifier;
+
+export function isSinglePageWorkspaceIdentifier(obj: unknown): obj is ISinglePageWorkspaceIdentifier {
+	const singlePageIdentifier = obj as ISinglePageWorkspaceIdentifier | undefined;
+
+	return typeof singlePageIdentifier?.id === 'string' && URI.isUri(singlePageIdentifier.uri);
+}
 
 export const UNKNOWN_EMPTY_WINDOW_WORKSPACE: IEmptyWorkspaceIdentifier = { id: 'empty-window' };
 

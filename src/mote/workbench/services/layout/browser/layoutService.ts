@@ -59,4 +59,10 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 * Gets the current side bar position. Note that the sidebar can be hidden too.
 	 */
 	getSideBarPosition(): Position;
+
+	/**
+	 * Toggles the menu bar visibility.
+	 */
+	toggleMenuBar(): void;
+
 }

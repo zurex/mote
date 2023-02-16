@@ -11,7 +11,7 @@ import { IActionViewItem } from 'mote/base/browser/ui/actionbar/actionbar';
 import { IContextViewProvider } from 'mote/base/browser/ui/contextview/contextview';
 import { IHoverDelegate } from 'mote/base/browser/ui/iconLabel/iconHoverDelegate';
 import { ICustomHover, setupCustomHover } from 'mote/base/browser/ui/iconLabel/iconLabelHover';
-import { ISelectBoxOptions, ISelectOptionItem, SelectBox } from 'mote/base/browser/ui/selectBox/selectBox';
+import { ISelectBoxOptions, ISelectBoxStyles, ISelectOptionItem, SelectBox } from 'mote/base/browser/ui/selectBox/selectBox';
 import { IToggleStyles } from 'mote/base/browser/ui/toggle/toggle';
 import { Action, ActionRunner, IAction, IActionChangeEvent, IActionRunner, Separator } from 'mote/base/common/actions';
 import { Disposable } from 'mote/base/common/lifecycle';
@@ -418,10 +418,10 @@ export class ActionViewItem extends BaseActionViewItem {
 export class SelectActionViewItem extends BaseActionViewItem {
 	protected selectBox: SelectBox;
 
-	constructor(ctx: unknown, action: IAction, options: ISelectOptionItem[], selected: number, contextViewProvider: IContextViewProvider, selectBoxOptions?: ISelectBoxOptions) {
+	constructor(ctx: unknown, action: IAction, options: ISelectOptionItem[], selected: number, contextViewProvider: IContextViewProvider, styles: ISelectBoxStyles, selectBoxOptions?: ISelectBoxOptions) {
 		super(ctx, action);
 
-		this.selectBox = new SelectBox(options, selected, contextViewProvider, undefined, selectBoxOptions);
+		this.selectBox = new SelectBox(options, selected, contextViewProvider, styles, selectBoxOptions);
 		this.selectBox.setFocusable(false);
 
 		this._register(this.selectBox);

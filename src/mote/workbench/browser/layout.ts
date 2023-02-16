@@ -13,7 +13,7 @@ import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNod
 import { mark } from 'mote/base/common/performance';
 import { ILifecycleService } from 'mote/workbench/services/lifecycle/common/lifecycle';
 import { IBrowserWorkbenchEnvironmentService } from 'mote/workbench/services/environment/browser/environmentService';
-import { IPath } from 'mote/platform/window/common/window';
+import { getMenuBarVisibility, getTitleBarStyle, IPath } from 'mote/platform/window/common/window';
 import { pathToEditor } from 'mote/workbench/common/editor';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
@@ -22,6 +22,7 @@ import { IStatusbarService } from 'mote/workbench/services/statusbar/browser/sta
 import { isWeb } from 'mote/base/common/platform';
 import { isWCOEnabled } from 'mote/base/browser/browser';
 import { ITitleService } from 'mote/workbench/services/title/common/titleService';
+import { IConfigurationService } from 'mote/platform/configuration/common/configuration';
 
 interface IWorkbenchLayoutWindowInitializationState {
 	views: {
@@ -130,6 +131,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	protected logService!: ILogService;
 
 	//#region workbench services
+	private configurationService!: IConfigurationService;
+
 	private editorService!: IEditorService;
 	private editorGroupService!: IEditorGroupsService;
 	private environmentService!: IBrowserWorkbenchEnvironmentService;
@@ -148,6 +151,27 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		protected readonly parent: HTMLElement
 	) {
 		super();
+	}
+
+	protected initLayout(accessor: ServicesAccessor): void {
+		this.logService.debug("[Layout] initLayout");
+
+		// Services
+		this.environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
+		this.configurationService = accessor.get(IConfigurationService);
+
+		// Parts
+		this.editorService = accessor.get(IEditorService);
+		this.editorGroupService = accessor.get(IEditorGroupsService);
+		this.paneCompositeService = accessor.get(IPaneCompositePartService);
+		this.viewDescriptorService = accessor.get(IViewDescriptorService);
+		this.statusBarService = accessor.get(IStatusbarService);
+		this.titleService = accessor.get(ITitleService);
+
+		this.registerLayoutListeners();
+
+		// State
+		this.initLayoutState(accessor.get(ILifecycleService), accessor);
 	}
 
 	isVisible(part: Parts): boolean {
@@ -174,24 +198,20 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		return Position.LEFT;
 	}
 
-	protected initLayout(accessor: ServicesAccessor): void {
-		this.logService.debug("[Layout] initLayout");
-		// Services
-		//const themeService = accessor.get(IThemeService);
-		this.environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
+	toggleMenuBar(): void {
+		let currentVisibilityValue = getMenuBarVisibility(this.configurationService);
+		if (typeof currentVisibilityValue !== 'string') {
+			currentVisibilityValue = 'classic';
+		}
 
-		// Parts
-		this.editorService = accessor.get(IEditorService);
-		this.editorGroupService = accessor.get(IEditorGroupsService);
-		this.paneCompositeService = accessor.get(IPaneCompositePartService);
-		this.viewDescriptorService = accessor.get(IViewDescriptorService);
-		this.statusBarService = accessor.get(IStatusbarService);
-		this.titleService = accessor.get(ITitleService);
+		let newVisibilityValue: string;
+		if (currentVisibilityValue === 'visible' || currentVisibilityValue === 'classic') {
+			newVisibilityValue = getTitleBarStyle(this.configurationService) === 'native' ? 'toggle' : 'compact';
+		} else {
+			newVisibilityValue = 'classic';
+		}
 
-		this.registerLayoutListeners();
-
-		// State
-		this.initLayoutState(accessor.get(ILifecycleService), accessor);
+		this.configurationService.updateValue('window.menuBarVisibility', newVisibilityValue);
 	}
 
 	private registerLayoutListeners(): void {
