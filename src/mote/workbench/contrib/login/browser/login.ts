@@ -1,3 +1,4 @@
+import * as dom from 'mote/base/browser/dom';
 import { Button } from 'mote/base/browser/ui/button/button';
 import fonts from 'mote/base/browser/ui/fonts';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
@@ -10,6 +11,9 @@ import { IEditorService } from 'mote/workbench/services/editor/common/editorServ
 import { CaffeineError } from 'mote/base/common/errors';
 import { IntlProvider } from 'mote/base/common/i18n';
 import { IStorageService } from 'mote/platform/storage/common/storage';
+import { defaultButtonStyles } from 'mote/platform/theme/browser/defaultStyles';
+import { localize } from 'mote/nls';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
 
 export class LoginPage extends EditorPane {
 	public static readonly ID = 'loginPage';
@@ -187,18 +191,22 @@ export class LoginPage extends EditorPane {
 	}
 
 	private createButton(parent: HTMLElement, title: string) {
-		const span = document.createElement('span');
-		span.innerText = title;
-		const btn = new Button(parent, {
-			style: {
-				marginTop: '20px',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'center',
-				height: '32px'
-			}
+		const btnContainer = dom.append(parent, document.createElement('div'));
+		const containerStyle = {
+			marginTop: '20px',
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			height: '32px',
+			cursor: 'pointer'
+		};
+		setStyles(btnContainer, containerStyle);
+
+		const btn = new Button(btnContainer, {
+			title: title,
+			...defaultButtonStyles
 		});
-		btn.setChildren(span);
+		btn.label = localize(title, title);
 		return btn;
 	}
 	layout(dimension: Dimension): void {

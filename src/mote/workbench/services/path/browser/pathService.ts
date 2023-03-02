@@ -35,6 +35,10 @@ function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, co
 
 	const workspace = contextService.getWorkspace();
 
+	if (!workspace) {
+		return URI.from({ scheme: 'mote', path: '/' });
+	}
+
 	const firstPage = firstOrDefault(workspace.pages);
 	if (firstPage) {
 		return firstPage.uri;

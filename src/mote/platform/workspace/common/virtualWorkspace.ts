@@ -12,6 +12,9 @@ export function isVirtualResource(resource: URI) {
 }
 
 export function getVirtualWorkspaceLocation(workspace: IWorkspace): { scheme: string; authority: string } | undefined {
+	if (!workspace) {
+		return undefined;
+	}
 	if (workspace.pages.length) {
 		return workspace.pages.every(f => isVirtualResource(f.uri)) ? workspace.pages[0].uri : undefined;
 	} else if (workspace.configuration && isVirtualResource(workspace.configuration)) {

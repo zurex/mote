@@ -59,7 +59,7 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 		this._register(userService.onDidChangeCurrentProfile((profile) => this.onProfileChange(profile)));
 
 		if (!userService.currentProfile) {
-			//editorService.openEditor(new LoginInput());
+			this.workspace = new Workspace(this.currentSpaceId, [], false, null, () => true);
 			return;
 		}
 
@@ -88,6 +88,7 @@ export class BrowserWorkspaceService extends Disposable implements IWorkspaceCon
 		}));
 		this.spaceRootStores.push(spaceRootStore);
 		this._onDidChangeWorkspace.fire();
+		this.initialize();
 	}
 
 	getSpaceStores(): SpaceStore[] {

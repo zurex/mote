@@ -187,8 +187,8 @@ export class WindowTitle extends Disposable {
 		let root: URI | undefined;
 		if (workspace.configuration) {
 			root = workspace.configuration;
-		} else if (workspace.folders.length) {
-			root = workspace.folders[0].uri;
+		} else if (workspace.pages.length) {
+			root = workspace.pages[0].uri;
 		}
 
 		// Compute active editor folder
@@ -202,8 +202,8 @@ export class WindowTitle extends Disposable {
 		// Single Root Workspace: always the root single workspace in this case
 		// Otherwise: root folder of the currently active file if any
 		let folder: IWorkspaceFolder | undefined = undefined;
-		if (this.contextService.getWorkbenchState() === WorkbenchState.FOLDER) {
-			folder = workspace.folders[0];
+		if (this.contextService.getWorkbenchState() === WorkbenchState.PAGE) {
+			folder = workspace.pages[0];
 		} else if (editorResource) {
 			folder = withNullAsUndefined(this.contextService.getWorkspaceFolder(editorResource));
 		}
