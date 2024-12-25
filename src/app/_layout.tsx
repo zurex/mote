@@ -8,11 +8,12 @@ import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme } from 'mote/hooks/useColorScheme';
 
 import "../global.css";
-import { NAV_THEME } from '@/constants/theme';
+import { NAV_THEME } from 'mote/constants/theme';
 import { Platform } from 'react-native';
+import { SessionProvider } from 'mote/components/session-provider';
 
 const LIGHT_THEME: Theme = {
     dark: false,
@@ -71,12 +72,14 @@ export default function RootLayout() {
     }
 
     return (
-        <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-        </ThemeProvider>
+        <SessionProvider>
+            <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                    <Stack.Screen name="+not-found" />
+                </Stack>
+                <StatusBar style="auto" />
+            </ThemeProvider>
+        </SessionProvider>
     );
 }

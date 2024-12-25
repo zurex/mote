@@ -1,0 +1,6 @@
+{
+  "aliases": {
+    "components": "mote/components",
+    "lib": "mote/lib"
+  }
+}
