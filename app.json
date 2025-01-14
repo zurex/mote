@@ -4,7 +4,7 @@
     "slug": "mote",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/mote-1024.png",
+    "icon": "./src/assets/images/mote-1024.png",
     "scheme": "mote",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,21 +15,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/mote-1024.png",
+          "image": "./src/assets/images/mote-1024.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

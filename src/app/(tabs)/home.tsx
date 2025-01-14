@@ -1,12 +1,10 @@
-import { Image, StyleSheet, Platform, TextInput } from 'react-native';
+import { Image, StyleSheet, Platform, TextInput, KeyboardAvoidingView } from 'react-native';
 
 import { ThemedText } from 'mote/components/ThemedText';
 import { ThemedSafeAreaView, ThemedView } from 'mote/components/ThemedView';
 import { Text } from 'mote/components/ui/text';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from 'mote/components/ui/card';
 import AutoScrollView from 'mote/components/AutoScrollView';
-import { KeyboardAwareScrollView, KeyboardToolbar } from 'react-native-keyboard-controller';
-import { MemosInput } from 'mote/components/memos-input';
 
 export type MemosCardProps = {
 
@@ -64,9 +62,8 @@ function MemosCard2() {
 export default function HomeScreen() {
     return (
         <ThemedSafeAreaView style={{ flex: 1 }}>
-            <KeyboardAwareScrollView 
+            <KeyboardAvoidingView 
                 className='flex flex-1 pt-20' 
-                bottomOffset={40}
             >   
                 <ThemedView className='pl-10 pr-10'>
                     <ThemedText type="title">主页</ThemedText>
@@ -75,8 +72,7 @@ export default function HomeScreen() {
                         <MemosCard2 />
                     </AutoScrollView>
                 </ThemedView>
-                <MemosInput />
-            </KeyboardAwareScrollView>
+            </KeyboardAvoidingView>
         </ThemedSafeAreaView>
     )
 }

@@ -44,7 +44,7 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="create"
+                    name="memos"
                     options={{
                         tabBarShowLabel: false,
                         tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
@@ -52,8 +52,7 @@ export default function TabLayout() {
                     listeners={() => ({
                         tabPress: (e) => {
                             // Prevent default action
-                            e.preventDefault();
-                            memosInput.set(true);
+                            // e.preventDefault();
                             // Do something with the `navigation` object
                             // navigation.navigate('AnotherScreen');
                         },

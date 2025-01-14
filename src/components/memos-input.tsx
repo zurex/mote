@@ -1,41 +1,66 @@
-import { memosInput, useMemosInput } from 'mote/hooks/useMemosInput';
 import { useEffect, useRef, useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { Card, CardContent } from './ui/card';
-import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
+import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
+import { MoonStar } from './icon/MoonStar';
+import { BoldIcon } from './icon/BoldIcon';
+import { SendIcon } from './icon/SendIcon';
+import { HashIcon } from './icon/HashIcon';
+import { Button } from './ui/button';
+import { Text } from './ui/text';
+import { Separator } from './ui/separator';
+import { Ellipsis } from './icon/Ellipsis';
+
+type ToolButtonProps = {
+    onPress?: () => void;
+    icon: React.ReactNode;
+};
+
+function ToolButton({
+    icon,
+    onPress
+}: ToolButtonProps) {
+    return (
+        <View className='mr-2 ml-2 first:ml-0'>
+            {icon}
+        </View>
+    )
+}
 
 export function MemosInput() {
     const inputRef = useRef<TextInput>(null);
-    const [isKeyboardVisible, setIsKeyboardVisible] = useState(memosInput.get());
 
-    console.log('MemosInput->isKeyboardVisible', isKeyboardVisible);
-    useEffect(() => {
-        return memosInput.subscribe(setIsKeyboardVisible);
-      }, []);
+    const handleSend = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
 
-    useEffect(() => {
-        if (isKeyboardVisible) {
-            inputRef.current?.focus();
-        }
-    }, [isKeyboardVisible]);
     return (
-        <BlurView 
-            className='pt-10 fixed' 
-            intensity={100} 
-            tint="systemChromeMaterial" 
-            style={isKeyboardVisible ? { bottom: 80} : {width: 0, height: 0}}
-        >
-            <Card>
-                <CardContent>
+        <Card>
+            <CardContent className='pt-5'>
                 <TextInput
                     ref={inputRef}
                     multiline
-                    onBlur={() => memosInput.set(false)}
-                    placeholder="What's on your mind?" 
-                    style={{height: 50}}
-                />
-                </CardContent>
-            </Card>
-        </BlurView>
+                    autoFocus
+                    placeholder="What's on your mind?"
+                    style={{height: 100}}
+
+                    />
+            </CardContent>
+            <CardFooter className='justify-between'>
+                <View className='flex-row h-full items-center'>
+                    <ToolButton icon={<HashIcon className='text-black' />}/>
+                    <ToolButton icon={<BoldIcon className='text-black font-bold' />}/>
+                    <Separator orientation='vertical' className='h-[24px] mr-2' />
+                    <ToolButton icon={<Ellipsis className='text-black' />}/>
+                </View>
+                <Button 
+                    onPressIn={handleSend}
+                    className='bg-blue-500 rounded-3xl flex-row items-center gap-4'
+                >
+                    <SendIcon className='text-white'/>
+                    <Text className='text-white'>Send</Text>
+                </Button>
+            </CardFooter>
+        </Card>
     )
 }
