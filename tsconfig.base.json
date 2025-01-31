@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false,
+
+        /* Linting */
+        "strict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+    },
+    "references": [
+        { "path": "./packages/mote-editor/tsconfig.json" },
+        { "path": "./packages/mote-web/tsconfig.json" }
+    ]
+}
