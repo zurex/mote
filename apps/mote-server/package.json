@@ -1,27 +1,27 @@
 {
-  "name": "@mote/platform",
+  "name": "mote-server",
   "version": "0.1.0",
   "main": "index.js",
-  "license": "MIT",
+  "license": "GPLv3",
   "type": "module",
   "exports": {
     "./*": "./dist/*.js"
   },
-  "typesVersions": {
-    "*": {
-      "*": [
-        "./dist/*"
-      ]
-    }
-  },
   "scripts": {
+    "start": "node ./dist/server.main.js",
     "build": "tsc --project tsconfig.json"
   },
   "dependencies": {
     "@mote/base": "workspace:^",
-    "class-validator": "^0.14.1"
+    "@mote/platform": "workspace:^",
+    "hyper-express": "^6.17.3",
+    "morgan": "^1.10.0",
+    "throng": "^5.0.0"
   },
   "devDependencies": {
+    "@types/morgan": "^1",
+    "@types/throng": "^5",
+    "prisma": "^6.3.0",
     "typescript": "^5.7.3"
   }
 }

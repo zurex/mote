@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CharCode } from '@mote/base/common/charCode.js';
-import { illegalArgument } from '@mote/base/common/errors.js';
-import { Event } from '@mote/base/common/event.js';
-import { IDisposable } from '@mote/base/common/lifecycle.js';
-import { isChrome, isEdge, isFirefox, isLinux, isMacintosh, isSafari, isWeb, isWindows } from '@mote/base/common/platform.js';
-import { isFalsyOrWhitespace } from '@mote/base/common/strings.js';
-import { localize } from '@mote/base/nls.js';
-import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { Scanner, LexingError, Token, TokenType } from './scanner';
+import { CharCode } from '@mote/base/common/charCode';
+import { illegalArgument } from '@mote/base/common/errors';
+import { Event } from '@mote/base/common/event';
+import { IDisposable } from '@mote/base/common/lifecycle';
+import { isChrome, isEdge, isFirefox, isLinux, isMacintosh, isSafari, isWeb, isWindows } from '@mote/base/common/platform';
+import { isFalsyOrWhitespace } from '@mote/base/common/strings';
+import { localize } from '@mote/base/nls';
+import { createDecorator } from '@mote/platform/instantiation/common/instantiation';
+import { Scanner, LexingError, Token, TokenType } from './scanner.js';
 
 const CONSTANT_VALUES = new Map<string, boolean>();
 CONSTANT_VALUES.set('false', false);

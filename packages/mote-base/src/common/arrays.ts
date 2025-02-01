@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { findFirstIdxMonotonousOrArrLen } from './arraysFind';
-import { CancellationToken } from './cancellation';
-import { CancellationError } from './errors';
-import { ISplice } from './sequence';
+import { findFirstIdxMonotonousOrArrLen } from './arraysFind.js';
+import { CancellationToken } from './cancellation.js';
+import { CancellationError } from './errors.js';
+import { ISplice } from './sequence.js';
 
 /**
  * Returns the last element of an array.

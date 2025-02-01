@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from './cancellation';
-import { diffSets } from './collections';
-import { onUnexpectedError } from './errors';
-import { createSingleCallFunction } from './functional';
-import { combinedDisposable, Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from './lifecycle';
-import { LinkedList } from './linkedList';
-import { IObservable, IObserver } from './observable';
-import { StopWatch } from './stopwatch';
-import { MicrotaskDelay } from './symbols';
+import { CancellationToken } from './cancellation.js';
+import { diffSets } from './collections.js';
+import { onUnexpectedError } from './errors.js';
+import { createSingleCallFunction } from './functional.js';
+import { combinedDisposable, Disposable, DisposableMap, DisposableStore, IDisposable, toDisposable } from './lifecycle.js';
+import { LinkedList } from './linkedList.js';
+import { IObservable, IObserver } from './observable.js';
+import { StopWatch } from './stopwatch.js';
+import { MicrotaskDelay } from './symbols.js';
 
 // -----------------------------------------------------------------------------------------------------------------------
 // Uncomment the next line to print warnings whenever a listener is GC'ed without having been disposed. This is a LEAK.

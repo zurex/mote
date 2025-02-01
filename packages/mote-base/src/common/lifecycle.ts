@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { compareBy, numberComparator } from './arrays';
-import { groupBy } from './collections';
-import { createSingleCallFunction } from './functional';
-import { Iterable } from './iterator';
-import { SetMap } from './map';
+import { compareBy, numberComparator } from './arrays.js';
+import { groupBy } from './collections.js';
+import { createSingleCallFunction } from './functional.js';
+import { Iterable } from './iterator.js';
+import { SetMap } from './map.js';
 
 // #region Disposable Tracking
 

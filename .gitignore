@@ -37,7 +37,9 @@ yarn-error.*
 
 app-example
 
-
-
+# nx
 .nx/cache
 .nx/workspace-data
+
+# yarn
+.yarn

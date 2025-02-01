@@ -1,7 +1,7 @@
-import { CancellationToken, CancellationTokenSource } from "./cancellation";
-import { CancellationError } from "./errors";
-import { IDisposable } from "./lifecycle";
-import { setTimeout0 } from "./platform";
+import { CancellationToken, CancellationTokenSource } from "./cancellation.js";
+import { CancellationError } from "./errors.js";
+import { IDisposable } from "./lifecycle.js";
+import { setTimeout0 } from "./platform.js";
 
 export function isThenable<T>(obj: unknown): obj is Promise<T> {
 	return !!obj && typeof (obj as unknown as Promise<T>).then === 'function';

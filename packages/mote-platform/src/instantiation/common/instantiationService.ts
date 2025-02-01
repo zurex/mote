@@ -8,10 +8,10 @@ import { illegalState } from '@mote/base/common/errors';
 import { Event } from '@mote/base/common/event';
 import { DisposableStore, dispose, IDisposable, isDisposable, toDisposable } from '@mote/base/common/lifecycle';
 import { LinkedList } from '@mote/base/common/linkedList';
-import { SyncDescriptor, SyncDescriptor0 } from './descriptors';
-import { Graph } from './graph';
-import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor, _util } from './instantiation';
-import { ServiceCollection } from './serviceCollection';
+import { SyncDescriptor, SyncDescriptor0 } from './descriptors.js';
+import { Graph } from './graph.js';
+import { GetLeadingNonServiceArgs, IInstantiationService, ServiceIdentifier, ServicesAccessor, _util } from './instantiation.js';
+import { ServiceCollection } from './serviceCollection.js';
 
 // TRACING
 const _enableAllTracing = false
