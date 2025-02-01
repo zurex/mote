@@ -36,3 +36,8 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+
+
+.nx/cache
+.nx/workspace-data
