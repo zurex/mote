@@ -9,19 +9,33 @@
   },
   "scripts": {
     "start": "node ./dist/server.main.js",
-    "build": "tsc --project tsconfig.json"
+    "build": "tsc --project tsconfig.json && tsc-alias"
   },
   "dependencies": {
     "@mote/base": "workspace:^",
     "@mote/platform": "workspace:^",
+    "@prisma/client": "^6.3.0",
+    "@react-email/components": "^0.0.32",
+    "addressparser": "^1.0.1",
+    "date-fns": "^4.1.0",
+    "http-errors": "^2.0.0",
     "hyper-express": "^6.17.3",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
+    "react": "^19.0.0",
     "throng": "^5.0.0"
   },
   "devDependencies": {
+    "@types/addressparser": "^1",
+    "@types/http-errors": "^2",
+    "@types/jsonwebtoken": "^9",
     "@types/morgan": "^1",
+    "@types/nodemailer": "^6",
+    "@types/react": "^19",
     "@types/throng": "^5",
     "prisma": "^6.3.0",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.7.3"
   }
 }
