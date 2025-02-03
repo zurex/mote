@@ -8,16 +8,16 @@ PODS:
     - ExpoModulesCore
   - Expo (52.0.28):
     - ExpoModulesCore
-  - expo-dev-client (5.0.10):
+  - expo-dev-client (5.0.11):
     - EXManifests
     - expo-dev-launcher
     - expo-dev-menu
     - expo-dev-menu-interface
     - EXUpdatesInterface
-  - expo-dev-launcher (5.0.25):
+  - expo-dev-launcher (5.0.27):
     - DoubleConversion
     - EXManifests
-    - expo-dev-launcher/Main (= 5.0.25)
+    - expo-dev-launcher/Main (= 5.0.27)
     - expo-dev-menu
     - expo-dev-menu-interface
     - ExpoModulesCore
@@ -43,7 +43,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Main (5.0.25):
+  - expo-dev-launcher/Main (5.0.27):
     - DoubleConversion
     - EXManifests
     - expo-dev-launcher/Unsafe
@@ -72,7 +72,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - expo-dev-launcher/Unsafe (5.0.25):
+  - expo-dev-launcher/Unsafe (5.0.27):
     - DoubleConversion
     - EXManifests
     - expo-dev-menu
@@ -215,11 +215,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ExpoAsset (11.0.2):
+  - ExpoAsset (11.0.3):
     - ExpoModulesCore
   - ExpoBlur (14.0.3):
     - ExpoModulesCore
-  - ExpoFileSystem (18.0.7):
+  - ExpoFileSystem (18.0.8):
     - ExpoModulesCore
   - ExpoFont (13.0.3):
     - ExpoModulesCore
@@ -256,7 +256,7 @@ PODS:
     - Yoga
   - ExpoSplashScreen (0.29.21):
     - ExpoModulesCore
-  - ExpoSymbols (0.2.1):
+  - ExpoSymbols (0.2.2):
     - ExpoModulesCore
   - ExpoSystemUI (4.0.7):
     - ExpoModulesCore
@@ -2397,13 +2397,13 @@ SPEC CHECKSUMS:
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
   EXManifests: 81324537a654111964f6e7994dbc351a4233dcfa
   Expo: c124b1c2129e79a181c16c364aec9add939bea24
-  expo-dev-client: a02392060ef8016e11facebb6f81ff172b39775f
-  expo-dev-launcher: edecd03a5fa273a831accb92c91aa5f03cb64d78
+  expo-dev-client: 5271a230c19b164b0e42cb2c4986a690ad684990
+  expo-dev-launcher: 4061735195b76f40002c6fc79d6eb5df2f47f251
   expo-dev-menu: f4789f284d2fa7b237eaf502abc6d0ba9de91052
   expo-dev-menu-interface: 00dc42302a72722fdecec3fa048de84a9133bcc4
-  ExpoAsset: 6cc988c426b5fc997859cc0f8f6728d1376bf53f
+  ExpoAsset: 77e4579f19b48d6b3f4055c933e86ce45e80caeb
   ExpoBlur: 567af66164e3043a9a30069594aed1ddf0a88d97
-  ExpoFileSystem: a0a5c44d3d3e8a2aa54fe7c70c7690df03cf4dd8
+  ExpoFileSystem: 48e09d173f2ffe87fe318243d78d1fd650801535
   ExpoFont: 8b14db1afebf62e9774613a082e402985f4e747c
   ExpoHaptics: e01cce0741d68c281853118eb0267f88d42c6b7a
   ExpoHead: 3d555eb5d0d68c478b9ea259337686c58de22c71
@@ -2411,7 +2411,7 @@ SPEC CHECKSUMS:
   ExpoLinking: 0381341519ca7180a3a057d20edb1cf6a908aaf4
   ExpoModulesCore: 15ef3b23253d4aab95fd9bb80adeb8fa35d611eb
   ExpoSplashScreen: 2625fffb137856c82c32d6f25e7ee97249bdc0ee
-  ExpoSymbols: 54fa089478e1bc00f4d1d66ffb5c8bc64dc71ada
+  ExpoSymbols: b9f255ce49868d46a73f30e12859efeb8117bcad
   ExpoSystemUI: 7296f92af7c30ec0fc4305bbeb5c396d7fc9e86c
   ExpoWebBrowser: 6890a769e6c9d83da938dceb9a03e764afc3ec9c
   EXUpdatesInterface: 1dcebac98ac5dad4289e6ff2bd5616822e894397
